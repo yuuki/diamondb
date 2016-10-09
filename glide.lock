@@ -1,0 +1,22 @@
+hash: 160e37a321586c5f1f4eb5229d99cd8cb0eab4ccd9b0a7dc96fb90717991523e
+updated: 2016-10-10T02:57:52.678669843+09:00
+imports:
+- name: github.com/jehiah/go-strftime
+  version: 2efbe75097a505e2789f7e39cb9da067b5be8e3e
+- name: github.com/pkg/errors
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+- name: github.com/urfave/negroni
+  version: fde5e16d32adc7ad637e9cd9ad21d4ebc6192535
+testImports:
+- name: github.com/davecgh/go-spew
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - assert
