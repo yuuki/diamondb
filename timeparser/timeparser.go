@@ -1,0 +1,119 @@
+package timeparser
+
+import (
+	"strconv"
+	"strings"
+	"time"
+	"unicode"
+
+	"github.com/pkg/errors"
+
+	// "github.com/yuuki/dynamond/log"
+)
+
+func ParseAtTime(s string) (time.Time, error) {
+	var (
+		ref	string
+		offset	string
+	)
+
+	// unix time ?
+	if i, err := strconv.ParseInt(s, 10, 32); err == nil {
+		return time.Unix(i, 0), nil
+	}
+
+	if strings.Contains(s, "+") {
+		v := strings.SplitN(s, "+", 2)
+		ref, offset = v[0], v[1]
+		offset = "+" + offset
+	} else if strings.Contains(s, "-") {
+		v := strings.SplitN(s, "-", 2)
+		ref, offset = v[0], v[1]
+		offset = "-" + offset
+	} else {
+		ref, offset = s, ""
+	}
+
+	var (
+		r	time.Time
+		o       time.Duration
+	)
+
+	if ref == "" || ref == "now" {
+		r = time.Now()
+	} else {
+		return time.Time{}, errors.Errorf("Unknown day reference %s", s)
+	}
+	o, err := parseTimeOffset(offset)
+	if err != nil {
+		return time.Time{}, errors.Wrapf(err, "Failed to time offset %s", offset)
+	}
+	return r.Add(o), nil
+}
+
+func parseTimeOffset(offset string) (time.Duration, error) {
+	t := time.Duration(0)
+
+	if offset == "" {
+		return t, nil
+	}
+
+	var sign int
+	if _, err := strconv.Atoi(offset); err == nil {
+		sign = 1
+	} else {
+		switch offset[0] {
+		case '+': sign = 1
+		case '-': sign = -1
+		}
+		offset = offset[1:]
+	}
+
+	for offset != "" {
+		i := 0
+		for i < len(offset) && unicode.IsDigit(rune(offset[i])) {
+			i += 1
+		}
+		num := offset[:i]
+		offset = offset[i:]
+		i = 0
+		for i < len(offset) && IsAlpha(rune(offset[i])) {
+			i += 1
+		}
+		unit := offset[:i]
+		offset = offset[i:]
+
+		n, _ := strconv.Atoi(num)
+		t2 := time.Duration(n)
+		if strings.HasPrefix(unit, "s") {
+			t2 *= time.Second
+		} else if strings.HasPrefix(unit, "min") {
+			t2 *= time.Minute
+		} else if strings.HasPrefix(unit, "h") {
+			t2 *= time.Hour
+		} else if strings.HasPrefix(unit, "d") {
+			t2 *= 24 * time.Hour
+		} else if strings.HasPrefix(unit, "w") {
+			t2 *= 7 * 24 * time.Hour
+		} else if strings.HasPrefix(unit, "mon") {
+			t2 *= 30 * 24 * time.Hour
+		} else if strings.HasPrefix(unit, "y") {
+			t2 *= 365 * 24 * time.Hour
+		} else {
+			return time.Duration(0), errors.Errorf("Invalid offset unit '%s'", unit)
+		}
+
+		t += time.Duration(sign) * t2
+	}
+
+	return t, nil
+}
+
+func IsAlpha(s rune) bool {
+	if s < 'A' || s > 'z' {
+		return false
+	} else if s > 'Z' && s < 'a' {
+		return false
+	}
+	return true
+}

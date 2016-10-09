@@ -1,6 +1,5 @@
 package: github.com/yuuki/dynamond
 import:
-- package: github.com/jehiah/go-strftime
 - package: github.com/pkg/errors
   version: ^0.8.0
 - package: github.com/urfave/negroni
