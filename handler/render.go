@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/yuuki/dynamond/log"
@@ -17,7 +18,7 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	from := until.Add(-DAYTIME)
 
 	if v := r.FormValue("from"); v != "" {
-		t, err := timeparser.ParseAtTime(v)
+		t, err := timeparser.ParseAtTime(url.QueryEscape(v))
 		if err != nil {
 			BadRequest(w, err.Error())
 			return
@@ -25,7 +26,7 @@ func Render(w http.ResponseWriter, r *http.Request) {
 		from = t
 	}
 	if v := r.FormValue("until"); v != "" {
-		t, err := timeparser.ParseAtTime(v)
+		t, err := timeparser.ParseAtTime(url.QueryEscape(v))
 		if err != nil {
 			BadRequest(w, err.Error())
 			return
