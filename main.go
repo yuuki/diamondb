@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/urfave/negroni"
+
+	"github.com/yuuki/dynamond/handler"
 	"github.com/yuuki/dynamond/log"
 )
 
@@ -40,7 +43,13 @@ func main() {
 	}
 	log.SetDebug(debug)
 
-	n := NewServerHandler()
+	mux := http.NewServeMux()
+	mux.HandleFunc("/render", handler.Render)
+
+	n := negroni.New()
+	n.Use(negroni.NewRecovery())
+	n.Use(negroni.NewLogger())
+	n.UseHandler(mux)
 
 	log.Printf("Listening %s:%s ...", host, port)
 	if err := http.ListenAndServe(":"+port, n); err != nil {
