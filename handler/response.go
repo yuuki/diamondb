@@ -19,7 +19,7 @@ func JSON(w http.ResponseWriter, status int, v interface{}) error {
 	return nil
 }
 
-func BadRequest(w http.ResponseWriter) {
+func BadRequest(w http.ResponseWriter, msg string) {
 	log.Println(msg)
 
 	var data struct {
