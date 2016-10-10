@@ -59,7 +59,7 @@ func parseTimeOffset(offset string) (time.Duration, error) {
 	}
 
 	var sign int
-	if _, err := strconv.Atoi(offset); err == nil {
+	if unicode.IsDigit(rune(offset[0])) {
 		sign = 1
 	} else {
 		switch offset[0] {
