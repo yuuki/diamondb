@@ -7,10 +7,10 @@ import (
 	"unicode"
 
 	"github.com/pkg/errors"
-
-	// "github.com/yuuki/dynamond/log"
 )
 
+// ParseAtTime parses parameters that specify the relative or absolute time period.
+// eg. '1444508126', 'now', 'now-24h'
 func ParseAtTime(s string) (time.Time, error) {
 	var (
 		ref	string
@@ -77,7 +77,7 @@ func parseTimeOffset(offset string) (time.Duration, error) {
 		num := offset[:i]
 		offset = offset[i:]
 		i = 0
-		for i < len(offset) && IsAlpha(rune(offset[i])) {
+		for i < len(offset) && isAlpha(rune(offset[i])) {
 			i += 1
 		}
 		unit := offset[:i]
@@ -109,7 +109,7 @@ func parseTimeOffset(offset string) (time.Duration, error) {
 	return t, nil
 }
 
-func IsAlpha(s rune) bool {
+func isAlpha(s rune) bool {
 	if s < 'A' || s > 'z' {
 		return false
 	} else if s > 'Z' && s < 'a' {
