@@ -80,14 +80,6 @@ func TestParseAtTime_RelativeMinus(t *testing.T) {
 	}
 }
 
-func TestparseTimeOffset_Empty(t *testing.T) {
-	got, err := parseTimeOffset("")
-	if assert.NoError(t, err) {
-		expected := time.Duration(0)
-		assert.Equal(t, expected, got)
-	}
-}
-
 type parseOffsetTest struct {
 	offset		string
 	duration	time.Duration
