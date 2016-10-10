@@ -9,9 +9,18 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	timeFormat = "15:0420060102"
+)
+
 // ParseAtTime parses parameters that specify the relative or absolute time period.
 // eg. '1444508126', 'now', 'now-24h'
 func ParseAtTime(s string) (time.Time, error) {
+	s = strings.ToLower(strings.TrimSpace(s))
+	s = strings.Replace(s, "_", "", -1)
+	s = strings.Replace(s, ",", "", -1)
+	s = strings.Replace(s, " ", "", -1)
+
 	var (
 		ref	string
 		offset	string
@@ -22,7 +31,13 @@ func ParseAtTime(s string) (time.Time, error) {
 		return time.Unix(i, 0), nil
 	}
 
-	if strings.Contains(s, "+") {
+	if strings.Contains(s, ":") && len(s) == 13 {
+		t, err := time.Parse(timeFormat, s)
+		if err != nil {
+			return time.Time{}, errors.Wrapf(err, "Invalid time format %s", s)
+		}
+		return t, nil
+	} else if strings.Contains(s, "+") {
 		v := strings.SplitN(s, "+", 2)
 		ref, offset = v[0], v[1]
 		offset = "+" + offset

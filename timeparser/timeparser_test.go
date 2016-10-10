@@ -80,6 +80,14 @@ func TestParseAtTime_RelativeMinus(t *testing.T) {
 	}
 }
 
+func TestParseAtTime_Absolute(t *testing.T) {
+	got, err := ParseAtTime("19:22_20161010")
+	if assert.NoError(t, err) {
+		expected := time.Date(2016, 10, 10, 19, 22, 0, 0, time.UTC)
+		assert.Equal(t, expected, got)
+	}
+}
+
 type parseOffsetTest struct {
 	offset		string
 	duration	time.Duration
