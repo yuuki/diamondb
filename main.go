@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/rs/cors"
 	"github.com/urfave/negroni"
 
 	"github.com/yuuki/dynamond/handler"
@@ -49,6 +50,11 @@ func main() {
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	n.Use(negroni.NewLogger())
+	n.Use(cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST"},
+		AllowedHeaders: []string{"Origin", "Accept", "Content-Type"},
+	}))
 	n.UseHandler(mux)
 
 	log.Printf("Listening %s:%s ...", host, port)
