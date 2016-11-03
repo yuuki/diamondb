@@ -24,15 +24,19 @@ func SetClient(client dynamodbiface.DynamoDBAPI) {
 }
 
 func FetchMetric(pathExpr string, startTime, endTime time.Time) ([]*model.Metric, error) {
-	expression := fmt.Sprintf(
-		"name = %s AND timestamp BETWEEN %d AND %d",
-		pathExpr, startTime.Unix(), endTime.Unix(),
-	)
 	resp, err := svc.Query(&dynamodb.QueryInput{
 		TableName: aws.String("SeriesTest"),
 		ConsistentRead: aws.Bool(false),
-		ConditionalOperator: aws.String(dynamodb.ConditionalOperatorAnd),
-		KeyConditionExpression: aws.String(expression),
+		ExpressionAttributeNames: map[string]*string{
+			"#name": aws.String("name"),
+			"#timestamp": aws.String("timestamp"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":name_val": &dynamodb.AttributeValue{S: aws.String(pathExpr)},
+			":start_val": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", startTime.Unix()))},
+			":end_val": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", endTime.Unix()))},
+		},
+		KeyConditionExpression: aws.String("#name = :name_val AND #timestamp BETWEEN :start_val AND :end_val"),
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to dynamodb.Query %s from %d to %d",
