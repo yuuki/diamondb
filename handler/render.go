@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/yuuki/dynamond/log"
+	"github.com/yuuki/dynamond/model"
+	"github.com/yuuki/dynamond/query"
 	"github.com/yuuki/dynamond/timeparser"
 )
 
@@ -34,6 +36,25 @@ func Render(w http.ResponseWriter, r *http.Request) {
 		until = t
 	}
 	log.Debugf("from:%d until:%d", from.Unix(), until.Unix())
+
+	targets := r.Form["target"]
+	if len(targets) < 1 {
+		BadRequest(w, "no targets requested")
+		return
+	}
+
+	vmList := make([]*model.ViewMetric, 0, len(targets))
+	for _, target := range targets {
+		mList, err := query.EvalTarget(target, from, until)
+		if err != nil {
+			BadRequest(w, err.Error())
+			return
+		}
+		for _, metric := range mList {
+			vmList = append(vmList, metric.AsResponse())
+		}
+	}
+	JSON(w, http.StatusOK, vmList)
 
 	return
 }
