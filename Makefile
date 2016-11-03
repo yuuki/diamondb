@@ -11,6 +11,9 @@ mock:
 	go get github.com/golang/mock/mockgen
 	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination tsdb/dynamodbmock.go -package tsdb
 
+yacc:
+	go tool yacc -o query/parse.go query/parse.go.y
+
 build: deps
 	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o $(NAME)
 
