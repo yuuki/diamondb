@@ -19,8 +19,16 @@ func TestEvalTarget_Alias(t *testing.T) {
 	dmock.EXPECT().Query(&dynamodb.QueryInput{
 		TableName: aws.String("SeriesTest"),
 		ConsistentRead: aws.Bool(false),
-		ConditionalOperator: aws.String(dynamodb.ConditionalOperatorAnd),
-		KeyConditionExpression: aws.String("name = Sales.widgets.largeBlue AND timestamp BETWEEN 1465516800 AND 1465526800"),
+		ExpressionAttributeNames: map[string]*string{
+			"#name": aws.String("name"),
+			"#timestamp": aws.String("timestamp"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":name_val": &dynamodb.AttributeValue{S: aws.String("Sales.widgets.largeBlue")},
+			":start_val": &dynamodb.AttributeValue{N: aws.String("1465516800")},
+			":end_val": &dynamodb.AttributeValue{N: aws.String("1465526800")},
+		},
+		KeyConditionExpression: aws.String("#name = :name_val AND #timestamp BETWEEN :start_val AND :end_val"),
 	}).Return(&dynamodb.QueryOutput{
 		Count: aws.Int64(1),
 		Items: []map[string]*dynamodb.AttributeValue{
