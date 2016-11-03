@@ -19,8 +19,8 @@ type Metric struct {
 }
 
 type ViewMetric struct {
-	Target		string		`json:target`
-	DataPoints	[][]interface{}	`json:datapoints`
+	Target		string		`json:"target"`
+	DataPoints	[][]interface{}	`json:"datapoints"`
 }
 
 func NewDataPoint(ts int32, value float64) *DataPoint {
