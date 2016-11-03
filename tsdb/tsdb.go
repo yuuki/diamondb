@@ -19,7 +19,7 @@ var (
 )
 
 // SetClient replace svc to mock dynamodb client
-func SetClient(client dynamodbiface.DynamoDBAPI) {
+func SetDynamoDBClient(client dynamodbiface.DynamoDBAPI) {
 	svc = client
 }
 
