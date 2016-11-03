@@ -23,7 +23,7 @@ func SetClient(client dynamodbiface.DynamoDBAPI) {
 	svc = client
 }
 
-func FetchMetric(pathExpr string, startTime, endTime time.Time) (*model.Metric, error) {
+func FetchMetric(pathExpr string, startTime, endTime time.Time) ([]*model.Metric, error) {
 	expression := fmt.Sprintf(
 		"name = %s AND timestamp BETWEEN %d AND %d",
 		pathExpr, startTime.Unix(), endTime.Unix(),
@@ -46,7 +46,8 @@ func FetchMetric(pathExpr string, startTime, endTime time.Time) (*model.Metric, 
 		dp := model.NewDataPoint(int32(ts), value)
 		datapoints = append(datapoints, dp)
 	}
-	metric := model.NewMetric(pathExpr, datapoints)
+	metricList := make([]*model.Metric, 0, 5)
+	metricList = append(metricList, model.NewMetric(pathExpr, datapoints))
 
-	return metric, nil
+	return metricList, nil
 }

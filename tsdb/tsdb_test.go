@@ -33,8 +33,10 @@ func TestFetchMetric(t *testing.T) {
 	}, nil)
 	SetClient(dmock)
 
-	metric, err := FetchMetric("test", time.Unix(1465516800, 0), time.Unix(1465526800, 0))
+	metricList, err := FetchMetric("test", time.Unix(1465516800, 0), time.Unix(1465526800, 0))
 	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(metricList))
+		metric := metricList[0]
 		assert.Equal(t, "test", metric.Name)
 		assert.EqualValues(t, []*model.DataPoint{&model.DataPoint{1465516810, 10.0}}, metric.DataPoints)
 	}
