@@ -14,11 +14,11 @@ func doAlias(seriesList []*model.Metric, args []Expr) ([]*model.Metric, error) {
 	if !ok {
 		return nil, errors.New("Invalid argument type `newName` to function `alias`. `newName` must be string.")
 	}
-	return alias(seriesList, newNameExpr.Literal)
+	return alias(seriesList, newNameExpr.Literal), nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.alias
-func alias(seriesList []*model.Metric, newName string) ([]*model.Metric, error) {
+func alias(seriesList []*model.Metric, newName string) []*model.Metric {
 	for _, series := range seriesList {
 		series.Name = newName
 	}
