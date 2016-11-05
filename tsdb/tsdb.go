@@ -50,8 +50,9 @@ func FetchMetric(pathExpr string, startTime, endTime time.Time) ([]*model.Metric
 		dp := model.NewDataPoint(int32(ts), value)
 		datapoints = append(datapoints, dp)
 	}
+	metric := model.NewMetric(pathExpr, datapoints, 60)
 	metricList := make([]*model.Metric, 0, 5)
-	metricList = append(metricList, model.NewMetric(pathExpr, datapoints))
+	metricList = append(metricList, metric)
 
 	return metricList, nil
 }

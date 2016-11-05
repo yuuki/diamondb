@@ -19,6 +19,7 @@ func TestFetchMetric(t *testing.T) {
 			[]*model.DataPoint{
 				&model.DataPoint{1465516810, 10.0},
 			},
+			60,
 		),
 	})
 	defer ctrl.Finish()

@@ -15,12 +15,14 @@ func TestAlias(t *testing.T) {
 			[]*model.DataPoint{
 				&model.DataPoint{1465516810, 10.0},
 			},
+			60,
 		),
 		model.NewMetric(
 			"Servers.web01.sda1.free_space",
 			[]*model.DataPoint{
 				&model.DataPoint{1465516810, 10.0},
 			},
+			60,
 		),
 	}
 	metricList := alias(seriesList, "Large Blue Widgets")
