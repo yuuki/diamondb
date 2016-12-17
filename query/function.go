@@ -14,6 +14,17 @@ func gcd(a, b int) int {
 	return gcd(b, a % b)
 }
 
+// lcm is Least common multiple
+func lcm(a, b int) int {
+	if a == b {
+		return a
+	}
+	if a < b {
+		a, b = b, a // ensure a > b
+	}
+	return a * b / gcd(a, b)
+}
+
 func doAlias(seriesList []*model.Metric, args []Expr) ([]*model.Metric, error) {
 	if len(args) != 1 {
 		return nil, errors.New("too few arguments to function `alias`")

@@ -13,6 +13,11 @@ func TestGcd(t *testing.T) {
 	assert.Equal(t, 3, gcd(237, 9))
 }
 
+func TestLcm(t *testing.T) {
+	assert.Equal(t, 12, lcm(12, 24))
+	assert.Equal(t, 756, lcm(27, 28))
+}
+
 func TestAlias(t *testing.T) {
 	seriesList := []*model.Metric{
 		model.NewMetric(
