@@ -71,9 +71,6 @@ func normalize(seriesList []*model.Metric) ([]*model.Metric, int32, int32, int) 
 		start = minInt32(start, series.Start)
 		end = maxInt32(end, series.Start)
 	}
-	for _, series := range seriesList {
-		series.ValuesPerPoint = int(series.Step/step)
-	}
 	end -= (end - start) % int32(step)
 	return seriesList, start, end, step
 }

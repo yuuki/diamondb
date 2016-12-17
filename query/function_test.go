@@ -54,7 +54,6 @@ func TestNormalize_NonValues(t *testing.T) {
 			Step: 1,
 			Start: int32(1),
 			End: int32(5),
-			ValuesPerPoint: 1,
 		},
 	})
 	assert.Equal(t, "collectd.test-db{0}.load.value", seriesList[0].Name)

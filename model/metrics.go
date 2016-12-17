@@ -18,7 +18,6 @@ type Metric struct {
 	Step            int  // seconds
 	Start           int32
 	End		int32
-	ValuesPerPoint  int
 }
 
 type ViewMetric struct {
@@ -66,7 +65,6 @@ func NewMetric(name string, datapoints []*DataPoint, step int) *Metric {
 		Step: step,
 		Start: start,
 		End: end,
-		ValuesPerPoint: 1,
 	}
 }
 
