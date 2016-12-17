@@ -1,6 +1,7 @@
 package query
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -80,6 +81,13 @@ func TestNormalize_NonValues(t *testing.T) {
 	assert.Equal(t, "collectd.test-db{0}.load.value", seriesList[0].Name)
 	assert.Equal(t, int32(1), start)
 	assert.Equal(t, int32(5), end)
+	assert.Equal(t, 1, step)
+}
+
+func TestNormalize_GenerateSeriesListInput(t *testing.T) {
+	_, start, end, step := normalize(generateSeriesList())
+	assert.Equal(t, int32(0), start)
+	assert.Equal(t, int32(99), end)
 	assert.Equal(t, 1, step)
 }
 
