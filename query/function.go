@@ -3,6 +3,7 @@ package query
 import (
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -54,6 +55,27 @@ func formatSeries(seriesList []*model.Metric) string {
 	}
 	sort.Strings(series)
 	return strings.Join(series, ",")
+}
+
+func normalize(seriesList []*model.Metric) ([]*model.Metric, int32, int32, time.Duration) {
+	if len(seriesList) < 1 {
+		return seriesList, 0, 0, 0
+	}
+	var (
+		step	time.Duration
+		start	int32
+		end	int32
+	)
+	for _, series := range seriesList {
+		step = time.Duration(lcm(int(step*time.Second), int(series.Step*time.Second)))
+		start = minInt32(start, series.Start)
+		end = maxInt32(end, series.Start)
+	}
+	for _, series := range seriesList {
+		series.ValuesPerPoint = int(series.Step/step)
+	}
+	end -= (end - start) % int32(step*time.Second)
+	return seriesList, start, end, step
 }
 
 func doAlias(seriesList []*model.Metric, args []Expr) ([]*model.Metric, error) {
