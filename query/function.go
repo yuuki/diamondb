@@ -1,6 +1,9 @@
 package query
 
 import (
+	"sort"
+	"strings"
+
 	"github.com/pkg/errors"
 
 	"github.com/yuuki/dynamond/model"
@@ -37,6 +40,20 @@ func lcm(a, b int) int {
 		a, b = b, a // ensure a > b
 	}
 	return a * b / gcd(a, b)
+}
+
+func formatSeries(seriesList []*model.Metric) string {
+	// Unique & Sort
+	set := make(map[string]struct{})
+	for _, s := range seriesList {
+		set[s.Name] = struct{}{}
+	}
+	series := make([]string, 0, len(seriesList))
+	for name := range set {
+		series = append(series, name)
+	}
+	sort.Strings(series)
+	return strings.Join(series, ",")
 }
 
 func doAlias(seriesList []*model.Metric, args []Expr) ([]*model.Metric, error) {

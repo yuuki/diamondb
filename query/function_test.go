@@ -18,6 +18,27 @@ func TestLcm(t *testing.T) {
 	assert.Equal(t, 756, lcm(27, 28))
 }
 
+func TestFormatSeries_Uniq(t *testing.T) {
+	seriesList := []*model.Metric{
+		&model.Metric{Name: "server1.cpu.system"},
+		&model.Metric{Name: "server2.cpu.system"},
+		&model.Metric{Name: "server3.cpu.system"},
+	}
+	format := formatSeries(seriesList)
+	assert.Equal(t, "server1.cpu.system,server2.cpu.system,server3.cpu.system", format)
+}
+
+func TestFormatSeries_NotUniq(t *testing.T) {
+	seriesList := []*model.Metric{
+		&model.Metric{Name: "server3.cpu.system"},
+		&model.Metric{Name: "server1.cpu.system"},
+		&model.Metric{Name: "server2.cpu.system"},
+		&model.Metric{Name: "server1.cpu.system"},
+	}
+	format := formatSeries(seriesList)
+	assert.Equal(t, "server1.cpu.system,server2.cpu.system,server3.cpu.system", format)
+}
+
 func TestAlias(t *testing.T) {
 	seriesList := []*model.Metric{
 		model.NewMetric(
