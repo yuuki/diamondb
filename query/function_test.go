@@ -18,6 +18,27 @@ func TestLcm(t *testing.T) {
 	assert.Equal(t, 756, lcm(27, 28))
 }
 
+func generateSeriesList() []*model.Metric {
+	step := 1
+	datapoints1 := make([]*model.DataPoint, 0, 100)
+	for i := 0; i < 100; i++ {
+		datapoints1 = append(datapoints1, &model.DataPoint{Timestamp: int32(step*i), Value: float64(i+1)})
+	}
+	datapoints2 := make([]*model.DataPoint, 0, 100)
+	for i := 0; i < 100; i++ {
+		datapoints2 = append(datapoints2, &model.DataPoint{Timestamp: int32(step*i), Value: float64(i+1)})
+	}
+	datapoints3 := make([]*model.DataPoint, 0, 1)
+	datapoints3 = append(datapoints3, &model.DataPoint{Timestamp: 0, Value: float64(1)})
+
+	seriesList := make([]*model.Metric, 3)
+	seriesList[0] = model.NewMetric(fmt.Sprintf("collectd.test-db%d.load.value", 0), datapoints1, 1)
+	seriesList[1] = model.NewMetric(fmt.Sprintf("collectd.test-db%d.load.value", 1), datapoints2, 1)
+	seriesList[2] = model.NewMetric(fmt.Sprintf("collectd.test-db%d.load.value", 2), datapoints3, 1)
+
+        return seriesList
+}
+
 func TestFormatSeries_Uniq(t *testing.T) {
 	seriesList := []*model.Metric{
 		&model.Metric{Name: "server1.cpu.system"},
