@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"time"
 	"sort"
 )
 
@@ -16,9 +15,10 @@ type ByTimestamp []*DataPoint
 type Metric struct {
 	Name		string
 	DataPoints	[]*DataPoint
-	Step            time.Duration  // seconds
+	Step            int  // seconds
 	Start           int32
 	End		int32
+	ValuesPerPoint  int
 }
 
 type ViewMetric struct {
@@ -51,7 +51,7 @@ func NewMetric(name string, datapoints []*DataPoint, step int) *Metric {
 		return &Metric{
 			Name: name,
 			DataPoints: datapoints,
-			Step: time.Duration(step)*time.Second,
+			Step: step,
 		}
 	}
 
@@ -59,12 +59,14 @@ func NewMetric(name string, datapoints []*DataPoint, step int) *Metric {
 	// because datapoints is expected to roughly be sorted
 	sort.Stable(ByTimestamp(datapoints))
 	start, end := datapoints[0].Timestamp, datapoints[len(datapoints)-1].Timestamp
+
 	return &Metric{
 		Name: name,
 		DataPoints: datapoints,
-		Step: time.Duration(step)*time.Second,
+		Step: step,
 		Start: start,
 		End: end,
+		ValuesPerPoint: 1,
 	}
 }
 

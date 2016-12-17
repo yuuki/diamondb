@@ -2,7 +2,6 @@ package query
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -45,14 +44,14 @@ func TestNormalize_Empty(t *testing.T) {
 	assert.Equal(t, 0, len(seriesList))
 	assert.Equal(t, int32(0), start)
 	assert.Equal(t, int32(0), end)
-	assert.Equal(t, time.Duration(0), step)
+	assert.Equal(t, 0, step)
 }
 
 func TestNormalize_NonValues(t *testing.T) {
 	seriesList, start, end, step := normalize([]*model.Metric{
 		&model.Metric{
 			Name: "collectd.test-db{0}.load.value",
-			Step: time.Duration(1),
+			Step: 1,
 			Start: int32(1),
 			End: int32(5),
 			ValuesPerPoint: 1,
@@ -61,7 +60,7 @@ func TestNormalize_NonValues(t *testing.T) {
 	assert.Equal(t, "collectd.test-db{0}.load.value", seriesList[0].Name)
 	assert.Equal(t, int32(1), start)
 	assert.Equal(t, int32(5), end)
-	assert.Equal(t, time.Duration(1), step)
+	assert.Equal(t, 1, step)
 }
 
 func TestAlias(t *testing.T) {

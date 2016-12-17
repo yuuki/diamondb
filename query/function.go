@@ -57,24 +57,24 @@ func formatSeries(seriesList []*model.Metric) string {
 	return strings.Join(series, ",")
 }
 
-func normalize(seriesList []*model.Metric) ([]*model.Metric, int32, int32, time.Duration) {
+func normalize(seriesList []*model.Metric) ([]*model.Metric, int32, int32, int) {
 	if len(seriesList) < 1 {
 		return seriesList, 0, 0, 0
 	}
 	var (
-		step	time.Duration
+		step	int
 		start	int32
 		end	int32
 	)
 	for _, series := range seriesList {
-		step = time.Duration(lcm(int(step*time.Second), int(series.Step*time.Second)))
+		step = lcm(step, series.Step)
 		start = minInt32(start, series.Start)
 		end = maxInt32(end, series.Start)
 	}
 	for _, series := range seriesList {
 		series.ValuesPerPoint = int(series.Step/step)
 	}
-	end -= (end - start) % int32(step*time.Second)
+	end -= (end - start) % int32(step)
 	return seriesList, start, end, step
 }
 
