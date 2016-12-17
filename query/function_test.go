@@ -14,7 +14,7 @@ func TestGcd(t *testing.T) {
 }
 
 func TestLcm(t *testing.T) {
-	assert.Equal(t, 12, lcm(12, 24))
+	assert.Equal(t, 24, lcm(12, 24))
 	assert.Equal(t, 756, lcm(27, 28))
 }
 
