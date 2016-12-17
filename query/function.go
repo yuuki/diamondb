@@ -6,6 +6,14 @@ import (
 	"github.com/yuuki/dynamond/model"
 )
 
+// gcd is Greatest common divisor
+func gcd(a, b int) int {
+	if b == 0 {
+		return a
+	}
+	return gcd(b, a % b)
+}
+
 func doAlias(seriesList []*model.Metric, args []Expr) ([]*model.Metric, error) {
 	if len(args) != 1 {
 		return nil, errors.New("too few arguments to function `alias`")

@@ -8,6 +8,11 @@ import (
 	"github.com/yuuki/dynamond/model"
 )
 
+func TestGcd(t *testing.T) {
+	assert.Equal(t, 32, gcd(128, 32))
+	assert.Equal(t, 3, gcd(237, 9))
+}
+
 func TestAlias(t *testing.T) {
 	seriesList := []*model.Metric{
 		model.NewMetric(
