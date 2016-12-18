@@ -113,3 +113,16 @@ func TestAlias(t *testing.T) {
 	assert.Equal(t, metricList[0].Name, "Large Blue Widgets")
 	assert.Equal(t, metricList[1].Name, "Large Blue Widgets")
 }
+
+func TestAverageSeries(t *testing.T) {
+	series := averageSeries(generateSeriesList())
+	assert.Equal(t,
+		"averageSeries(collectd.test-db0.load.value,collectd.test-db1.load.value,collectd.test-db2.load.value)",
+		series.Name,
+	)
+	expected := make([]*model.DataPoint, 0, 100)
+	for i := 0; i < 100; i++ {
+		expected = append(expected, model.NewDataPoint(int32(i), float64(i+1)))
+	}
+	assert.EqualValues(t, expected, series.DataPoints)
+}

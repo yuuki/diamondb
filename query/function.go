@@ -1,9 +1,9 @@
 package query
 
 import (
+	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/pkg/errors"
 
@@ -22,6 +22,14 @@ func maxInt32(x, y int32) int32 {
 		return x
 	}
 	return y
+}
+
+func sum(vals []float64) float64 {
+	var sum float64
+	for _, v := range vals {
+		sum += v
+	}
+	return sum
 }
 
 // gcd is Greatest common divisor
@@ -43,6 +51,37 @@ func lcm(a, b int) int {
 	return a * b / gcd(a, b)
 }
 
+func zipSeriesList(seriesList []*model.Metric) (map[int32][]float64, int) {
+	if len(seriesList) < 1 {
+		return nil, 0
+	}
+
+	maxLen := 0
+	for _, series := range seriesList {
+		size := len(series.DataPoints)
+		if maxLen < size {
+			maxLen = size
+		}
+	}
+
+	valuesByTimeStamp := make(map[int32][]float64)
+	for i := 0; i < maxLen; i++ {
+		values := make([]float64, 0, len(seriesList))
+		for _, series := range seriesList {
+			if i >= len(series.DataPoints) {
+				continue
+			}
+			if series.DataPoints[i] == nil {
+				continue
+			}
+			values = append(values, series.DataPoints[i].Value)
+			ts := series.DataPoints[i].Timestamp
+			valuesByTimeStamp[ts] = values
+		}
+	}
+	return valuesByTimeStamp, maxLen
+}
+
 func formatSeries(seriesList []*model.Metric) string {
 	// Unique & Sort
 	set := make(map[string]struct{})
@@ -62,9 +101,9 @@ func normalize(seriesList []*model.Metric) ([]*model.Metric, int32, int32, int) 
 		return seriesList, 0, 0, 0
 	}
 	var (
-		step	int
-		start	int32
-		end	int32
+		step	= seriesList[0].Step
+		start	= seriesList[0].Start
+		end	= seriesList[0].End
 	)
 	for _, series := range seriesList {
 		step = lcm(step, series.Step)
@@ -91,5 +130,32 @@ func alias(seriesList []*model.Metric, newName string) []*model.Metric {
 	for _, series := range seriesList {
 		series.Name = newName
 	}
-	return seriesList, nil
+	return seriesList
 }
+
+func doAverageSeries(seriesList []*model.Metric) []*model.Metric {
+	series := averageSeries(seriesList)
+	seriesList = make([]*model.Metric, 1)
+	seriesList[0] = series
+	return seriesList
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.averageSeries
+func averageSeries(seriesList []*model.Metric) *model.Metric {
+	if len(seriesList) == 0 {
+		return model.NewEmptyMetric()
+	}
+	name := fmt.Sprintf("averageSeries(%s)", formatSeries(seriesList))
+
+	seriesList, _, _, step := normalize(seriesList)
+
+	valuesByTimeStamp, maxLen := zipSeriesList(seriesList)
+	points := make([]*model.DataPoint, 0, maxLen)
+	for ts, vals := range valuesByTimeStamp {
+		avg := sum(vals)/float64(len(vals))
+		point := model.NewDataPoint(ts, avg)
+		points = append(points, point)
+	}
+	return model.NewMetric(name, points, step)
+}
+

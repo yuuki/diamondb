@@ -49,6 +49,9 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 					return nil, errors.Wrap(err, "Failed to run `doAlias`")
 				}
 				return metricList, err
+			case "averageSeries", "avg":
+				metricList = doAverageSeries(metricList)
+				return metricList, nil
 			default:
 				return nil, errors.Errorf("Unknown function %s", e.Name)
 			}
