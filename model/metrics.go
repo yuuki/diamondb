@@ -72,6 +72,22 @@ func NewEmptyMetric() *Metric {
 	return &Metric{Name: "", DataPoints: []*DataPoint{}}
 }
 
+func (m *Metric) FilledWithNil() *Metric {
+	for i := 0; i < len(m.DataPoints); i++ {
+		p := m.DataPoints[i]
+		if p.Timestamp > (int32(m.Start) + int32(m.Step)*int32(i)) {
+			m.insertDatapoint(i, nil)
+		}
+	}
+	return m
+}
+
+func (m *Metric) insertDatapoint(i int, p *DataPoint) {
+	m.DataPoints = append(m.DataPoints, &DataPoint{})
+	copy(m.DataPoints[i+1:], m.DataPoints[i:])
+	m.DataPoints[i] = p
+}
+
 func (m *Metric) Count() int {
 	return len(m.DataPoints)
 }
