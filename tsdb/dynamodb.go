@@ -2,6 +2,7 @@ package tsdb
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,25 @@ var (
 	oneWeekSeconds int = int(oneWeek.Seconds())
 	oneDaySeconds  int = int(oneDay.Seconds())
 )
+
+
+// roleA.r.{1,2,3,4}.loadavg
+func splitName(name string) []string {
+	open := strings.IndexRune(name, '{')
+	close := strings.IndexRune(name, '}')
+	var names []string
+	if open >= 0 && close >= 0 {
+		prefix := name[0:open]
+		indices := name[open+1 : close]
+		suffix := name[close+1:]
+		for _, i := range strings.Split(indices, ",") {
+			names = append(names, prefix+i+suffix)
+		}
+	} else {
+		names = strings.Split(name, ",")
+	}
+	return names
+}
 
 func listTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
 	var (

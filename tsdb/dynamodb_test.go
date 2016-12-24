@@ -7,6 +7,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestSplitName(t *testing.T) {
+	name := "roleA.r.{1,2,3,4}.loadavg"
+	names := splitName(name)
+	expected := []string{
+		"roleA.r.1.loadavg",
+		"roleA.r.2.loadavg",
+		"roleA.r.3.loadavg",
+		"roleA.r.4.loadavg",
+	}
+	assert.Exactly(t, expected, names)
+}
+
 func TestListTablesByRange_1m1h(t *testing.T) {
 	s, e := time.Unix(100, 0), time.Unix(6000, 0)
 	slots, step := listTimeSlots(s, e)
