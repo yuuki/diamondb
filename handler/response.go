@@ -7,16 +7,16 @@ import (
 	"github.com/yuuki/dynamond/log"
 )
 
-func JSON(w http.ResponseWriter, status int, v interface{}) error {
+func JSON(w http.ResponseWriter, status int, v interface{}) {
 	res, err := json.Marshal(v)
 	if err != nil {
-		return err
+		ServerError(w, err.Error())
+		return
 	}
 
 	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(res)
-	return nil
 }
 
 func BadRequest(w http.ResponseWriter, msg string) {
