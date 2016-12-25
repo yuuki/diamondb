@@ -53,7 +53,8 @@ func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metri
 		}
 	}
 	var metrics []*model.Metric
-	for ret := range c {
+	for i := 0; i < len(slots) * len(nameGroups); i++ {
+		ret := <-c
 		switch ret.(type) {
 		case []*model.Metric:
 			metrics = append(metrics, ret.([]*model.Metric)...)
@@ -128,7 +129,6 @@ func concurrentBatchGet(slot *timeSlot, names []string, step int, c chan<- inter
 		} else {
 			c <- resp
 		}
-		close(c)
 	}()
 }
 

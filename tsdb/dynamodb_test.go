@@ -123,9 +123,8 @@ func TestConcurrentBatchGet(t *testing.T) {
 	c := make(chan interface{})
 	concurrentBatchGet(&timeSlot{"SeriesTest", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60, c)
 	var metrics []*model.Metric
-	for ret := range c {
-		metrics = append(metrics, ret.([]*model.Metric)...)
-	}
+	ret := <-c
+	metrics = append(metrics, ret.([]*model.Metric)...)
 	assert.Exactly(t, expected, metrics)
 }
 
