@@ -55,7 +55,7 @@ func ParseAtTime(s string) (time.Time, error) {
 	)
 
 	if ref == "" || ref == "now" {
-		r = time.Now()
+		r = time.Now().Round(time.Second)
 	} else {
 		return time.Time{}, errors.Errorf("Unknown day reference %s", s)
 	}

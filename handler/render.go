@@ -16,7 +16,7 @@ const (
 )
 
 func Render(w http.ResponseWriter, r *http.Request) {
-	until := time.Now()
+	until := time.Now().Round(time.Second)
 	from := until.Add(-DAYTIME)
 
 	if v := r.FormValue("from"); v != "" {
