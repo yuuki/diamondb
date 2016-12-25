@@ -112,9 +112,13 @@ An example of json response
 // AsResponse converts Metric into ViewMetric type
 func (m *Metric) AsResponse() *ViewMetric {
 	datapoints := make([][]interface{}, 0, len(m.DataPoints))
-	for _, dp := range m.DataPoints {
+	for i, dp := range m.DataPoints {
 		p := make([]interface{}, 2)
-		p[0], p[1] = dp.Value, dp.Timestamp
+		if dp == nil {
+			p[0], p[1] = nil, m.Start + int32(m.Step*i)
+		} else {
+			p[0], p[1] = dp.Value, dp.Timestamp
+		}
 		datapoints = append(datapoints, p)
 	}
 	return &ViewMetric{Target: m.Name, DataPoints: datapoints}

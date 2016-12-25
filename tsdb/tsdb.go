@@ -16,6 +16,9 @@ func FetchMetric(name string, start, end time.Time) ([]*model.Metric, error) {
 			name, start.Unix(), end.Unix(),
 		)
 	}
+	for _, m := range metrics {
+		m.FilledWithNil()
+	}
 
 	return metrics, nil
 }
