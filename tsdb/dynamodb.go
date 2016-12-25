@@ -1,9 +1,19 @@
 package tsdb
 
 import (
+	"encoding/binary"
 	"fmt"
 	"strings"
 	"time"
+	"math"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/pkg/errors"
+
+	"github.com/yuuki/dynamond/model"
 )
 
 type timeSlot struct {
@@ -22,8 +32,55 @@ var (
 	oneYearSeconds int = int(oneYear.Seconds())
 	oneWeekSeconds int = int(oneWeek.Seconds())
 	oneDaySeconds  int = int(oneDay.Seconds())
+
+	dsvc dynamodbiface.DynamoDBAPI = dynamodb.New(session.New(), &aws.Config{Region: aws.String("ap-northeast-1")})
 )
 
+// SetClient replace svc to mock dynamodb client
+func SetDynamoDB(client dynamodbiface.DynamoDBAPI) {
+	dsvc = client
+}
+
+func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, step int) []*model.Metric {
+	metrics := make([]*model.Metric, 0, 1)
+	for _, xs := range resp.Responses {
+		for _, x := range xs {
+			name := (*x["MetricName"].S)
+			points := make([]*model.DataPoint, 0, len(x["Values"].BS))
+			for _, y := range x["Values"].BS {
+				t := binary.BigEndian.Uint64(y[0:8])
+				v := math.Float64frombits(binary.BigEndian.Uint64(y[8:]))
+				points = append(points, model.NewDataPoint(int32(t), v))
+			}
+			metrics = append(metrics, model.NewMetric(name, points, step))
+		}
+	}
+	return metrics
+}
+
+func batchGet(tableName string, itemEpoch int32, names []string, step int) ([]*model.Metric, error) {
+	var keys []map[string]*dynamodb.AttributeValue
+	for _, name := range names {
+		keys = append(keys, map[string]*dynamodb.AttributeValue{
+			"MetricName": &dynamodb.AttributeValue{S: aws.String(name)},
+			"Timestamp": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", itemEpoch))},
+		})
+	}
+	items := make(map[string]*dynamodb.KeysAndAttributes)
+	items[tableName] = &dynamodb.KeysAndAttributes{Keys: keys}
+	params := &dynamodb.BatchGetItemInput{
+		RequestItems:           items,
+		ReturnConsumedCapacity: aws.String("NONE"),
+	}
+	resp, err := dsvc.BatchGetItem(params)
+	if err != nil {
+		return nil, errors.Wrapf(err,
+			"Failed to BatchGetItem %s %d %s",
+			tableName, itemEpoch, strings.Join(names, ","),
+		)
+	}
+	return batchGetResultToMap(resp, step), nil
+}
 
 // roleA.r.{1,2,3,4}.loadavg
 func splitName(name string) []string {

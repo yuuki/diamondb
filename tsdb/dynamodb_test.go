@@ -5,7 +5,42 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/yuuki/dynamond/model"
 )
+
+func TestBatchGet(t *testing.T) {
+	names := []string{
+		"server1.loadavg5",
+		"server2.loadavg5",
+	}
+	expected := []*model.Metric{
+		model.NewMetric(
+			"server1.loadavg5",
+			[]*model.DataPoint{
+				&model.DataPoint{1465516810, 10.0},
+			},
+			60,
+		),
+		model.NewMetric(
+			"server2.loadavg5",
+			[]*model.DataPoint{
+				&model.DataPoint{1465516810, 15.0},
+			},
+			60,
+		),
+	}
+	ctrl := SetMockDynamoDB2(t, &MockDynamoDB2{
+		TableName: "SeriesTest",
+		ItemEpoch: 1000,
+		Names: names,
+		Metrics: expected,
+	})
+	defer ctrl.Finish()
+	metrics, err := batchGet("SeriesTest", 1000, []string{"server1.loadavg5", "server2.loadavg5"}, 60)
+	assert.NoError(t, err)
+	assert.Exactly(t, expected, metrics)
+}
 
 func TestSplitName(t *testing.T) {
 	name := "roleA.r.{1,2,3,4}.loadavg"
