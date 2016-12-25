@@ -49,7 +49,7 @@ func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metri
 	c := make(chan interface{})
 	for _, slot := range slots {
 		for _, names := range nameGroups {
-			concurrentBatchGet(slot.tableName, int32(slot.itemEpoch), names, step, c)
+			concurrentBatchGet(slot, names, step, c)
 		}
 	}
 	var metrics []*model.Metric
@@ -93,16 +93,16 @@ func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, step int) []*model.M
 	return metrics
 }
 
-func batchGet(tableName string, itemEpoch int32, names []string, step int) ([]*model.Metric, error) {
+func batchGet(slot *timeSlot, names []string, step int) ([]*model.Metric, error) {
 	var keys []map[string]*dynamodb.AttributeValue
 	for _, name := range names {
 		keys = append(keys, map[string]*dynamodb.AttributeValue{
 			"MetricName": &dynamodb.AttributeValue{S: aws.String(name)},
-			"Timestamp": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", itemEpoch))},
+			"Timestamp": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", slot.itemEpoch))},
 		})
 	}
 	items := make(map[string]*dynamodb.KeysAndAttributes)
-	items[tableName] = &dynamodb.KeysAndAttributes{Keys: keys}
+	items[slot.tableName] = &dynamodb.KeysAndAttributes{Keys: keys}
 	params := &dynamodb.BatchGetItemInput{
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
@@ -111,19 +111,19 @@ func batchGet(tableName string, itemEpoch int32, names []string, step int) ([]*m
 	if err != nil {
 		return nil, errors.Wrapf(err,
 			"Failed to BatchGetItem %s %d %s",
-			tableName, itemEpoch, strings.Join(names, ","),
+			slot.tableName, slot.itemEpoch, strings.Join(names, ","),
 		)
 	}
 	return batchGetResultToMap(resp, step), nil
 }
 
-func concurrentBatchGet(tableName string, itemEpoch int32, names []string, step int, c chan<- interface{}) {
+func concurrentBatchGet(slot *timeSlot, names []string, step int, c chan<- interface{}) {
 	go func() {
-		resp, err := batchGet(tableName, itemEpoch, names, step)
+		resp, err := batchGet(slot, names, step)
 		if err != nil {
 			c <- errors.Wrapf(err,
 				"Failed to batchGet %s %d %s %d",
-				tableName, itemEpoch, strings.Join(names, ","), step,
+				slot.tableName, slot.itemEpoch, strings.Join(names, ","), step,
 			)
 		} else {
 			c <- resp

@@ -87,7 +87,7 @@ func TestBatchGet(t *testing.T) {
 		Metrics: expected,
 	})
 	defer ctrl.Finish()
-	metrics, err := batchGet("SeriesTest", 1000, []string{"server1.loadavg5", "server2.loadavg5"}, 60)
+	metrics, err := batchGet(&timeSlot{"SeriesTest", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60)
 	assert.NoError(t, err)
 	assert.Exactly(t, expected, metrics)
 }
@@ -121,7 +121,7 @@ func TestConcurrentBatchGet(t *testing.T) {
 	})
 	defer ctrl.Finish()
 	c := make(chan interface{})
-	concurrentBatchGet("SeriesTest", 1000, []string{"server1.loadavg5", "server2.loadavg5"}, 60, c)
+	concurrentBatchGet(&timeSlot{"SeriesTest", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60, c)
 	var metrics []*model.Metric
 	for ret := range c {
 		metrics = append(metrics, ret.([]*model.Metric)...)
