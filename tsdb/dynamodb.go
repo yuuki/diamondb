@@ -22,7 +22,7 @@ type timeSlot struct {
 }
 
 const (
-	tablePrefix string = "SeriesTest"
+	tablePrefix string = "SeriesTestRange"
 	oneYear time.Duration = time.Duration(24 * 360) * time.Hour
 	oneWeek time.Duration = time.Duration(24 * 7) * time.Hour
 	oneDay  time.Duration = time.Duration(24 * 1) * time.Hour
