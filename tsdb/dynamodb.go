@@ -26,6 +26,8 @@ const (
 	oneYear time.Duration = time.Duration(24 * 360) * time.Hour
 	oneWeek time.Duration = time.Duration(24 * 7) * time.Hour
 	oneDay  time.Duration = time.Duration(24 * 1) * time.Hour
+
+	dynamodbBatchLimit = 100
 )
 
 var (
@@ -39,6 +41,25 @@ var (
 // SetClient replace svc to mock dynamodb client
 func SetDynamoDB(client dynamodbiface.DynamoDBAPI) {
 	dsvc = client
+}
+
+func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metric, error) {
+	slots, step := listTimeSlots(start, end)
+	nameGroups := groupNames(splitName(name), dynamodbBatchLimit)
+	var metrics []*model.Metric
+	for _, slot := range slots {
+		for _, names := range nameGroups {
+			m, err := batchGet(slot.tableName, int32(slot.itemEpoch), names, step)
+			if err != nil {
+				return nil, errors.Wrapf(err,
+					"Failed to FetchMetricsFromDynamoDB %s %d %d",
+					name, start.Unix(), end.Unix(),
+				)
+			}
+			metrics = append(metrics, m...)
+		}
+	}
+	return metrics, nil
 }
 
 func groupNames(names []string, count int) [][]string {

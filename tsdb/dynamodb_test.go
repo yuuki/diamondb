@@ -10,6 +10,41 @@ import (
 	"github.com/yuuki/dynamond/model"
 )
 
+func TestFetchMetricsFromDynamoDB(t *testing.T) {
+	name := "roleA.r.{1,2}.loadavg"
+	expected := []*model.Metric{
+		model.NewMetric(
+			"roleA.r.1.loadavg",
+			[]*model.DataPoint{
+				&model.DataPoint{120, 10.0},
+				&model.DataPoint{180, 11.2},
+				&model.DataPoint{240, 13.1},
+			},
+			60,
+		),
+		model.NewMetric(
+			"roleA.r.2.loadavg",
+			[]*model.DataPoint{
+				&model.DataPoint{120, 1.0},
+				&model.DataPoint{180, 1.2},
+				&model.DataPoint{240, 1.1},
+			},
+			60,
+		),
+	}
+	ctrl := SetMockDynamoDB2(t, &MockDynamoDB2{
+		TableName: "SeriesTest-1m1h-0",
+		ItemEpoch: 0,
+		Names: []string{"roleA.r.1.loadavg", "roleA.r.2.loadavg"},
+		Metrics: expected,
+	})
+	defer ctrl.Finish()
+	metrics, err := FetchMetricsFromDynamoDB(name, time.Unix(100, 0), time.Unix(300, 0))
+	if assert.NoError(t, err) {
+		assert.Exactly(t, expected, metrics)
+	}
+}
+
 func TestGroupNames(t *testing.T) {
 	var names []string
 	for i := 1; i <= 5; i++ {
