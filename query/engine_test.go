@@ -11,7 +11,7 @@ import (
 )
 
 func TestEvalTarget_Func(t *testing.T) {
-	ctrl := tsdb.SetMockDynamoDB2(t, &tsdb.MockDynamoDB2{
+	ctrl := tsdb.SetMockDynamoDB(t, &tsdb.MockDynamoDB{
 		TableName: "SeriesTest-1m1h-0",
 		ItemEpoch: 0,
 		Names: []string{"Sales.widgets.largeBlue"},
@@ -39,7 +39,7 @@ func TestEvalTarget_Func(t *testing.T) {
 }
 
 func TestEvalTarget_FuncNest(t *testing.T) {
-	ctrl := tsdb.SetMockDynamoDB2(t, &tsdb.MockDynamoDB2{
+	ctrl := tsdb.SetMockDynamoDB(t, &tsdb.MockDynamoDB{
 		TableName: "SeriesTest-1m1h-0",
 		ItemEpoch: 0,
 		Names: []string{"Sales.widgets.largeBlue"},
