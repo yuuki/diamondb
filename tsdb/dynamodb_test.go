@@ -1,6 +1,7 @@
 package tsdb
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -8,6 +9,20 @@ import (
 
 	"github.com/yuuki/dynamond/model"
 )
+
+func TestGroupNames(t *testing.T) {
+	var names []string
+	for i := 1; i <= 5; i++ {
+		names = append(names, fmt.Sprintf("server%d.loadavg5", i))
+	}
+	nameGroups := groupNames(names, 2)
+	expected := [][]string{
+		[]string{"server1.loadavg5", "server2.loadavg5"},
+		[]string{"server3.loadavg5", "server4.loadavg5"},
+		[]string{"server5.loadavg5"},
+	}
+	assert.Exactly(t, expected, nameGroups)
+}
 
 func TestBatchGet(t *testing.T) {
 	names := []string{

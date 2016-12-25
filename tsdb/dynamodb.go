@@ -41,6 +41,17 @@ func SetDynamoDB(client dynamodbiface.DynamoDBAPI) {
 	dsvc = client
 }
 
+func groupNames(names []string, count int) [][]string {
+	nameGroups := make([][]string, 0, (len(names)+count-1)/count)
+	for i, name := range names {
+		if i%count == 0 {
+			nameGroups = append(nameGroups, []string{})
+		}
+		nameGroups[len(nameGroups)-1] = append(nameGroups[len(nameGroups)-1], name)
+	}
+	return nameGroups
+}
+
 func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, step int) []*model.Metric {
 	metrics := make([]*model.Metric, 0, 1)
 	for _, xs := range resp.Responses {
