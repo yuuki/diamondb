@@ -82,10 +82,6 @@ func TestListTablesByRange_1m1h(t *testing.T) {
 			tableName: "SeriesTest-1m1h-0",
 			itemEpoch: 3600,
 		},
-		&timeSlot{
-			tableName: "SeriesTest-1m1h-0",
-			itemEpoch: 7200,
-		},
 	}
 	assert.Exactly(t, expected, slots)
 }

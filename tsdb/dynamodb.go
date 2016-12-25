@@ -146,7 +146,7 @@ func listTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
 	endTableEpoch := endTime.Unix()
 	for tableEpoch := startTableEpoch; tableEpoch < endTableEpoch; tableEpoch += int64(tableEpochStep) {
 		startItemEpoch := maxInt64(tableEpoch, startTime.Unix() - startTime.Unix() % int64(itemEpochStep))
-		endItemEpoch := minInt64(tableEpoch + int64(tableEpochStep), endTime.Unix() + int64(itemEpochStep))
+		endItemEpoch := minInt64(tableEpoch + int64(tableEpochStep), endTime.Unix())
 		for itemEpoch := startItemEpoch; itemEpoch < endItemEpoch; itemEpoch += int64(itemEpochStep) {
 			slot := timeSlot{
 				tableName: fmt.Sprintf("%s-%d", tableName, tableEpoch),
