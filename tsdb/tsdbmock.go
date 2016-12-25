@@ -1,7 +1,10 @@
 package tsdb
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
+	"math"
 	"testing"
 	"time"
 
@@ -17,6 +20,13 @@ type MockDynamoDB struct {
 	StartVal  time.Time
 	EndVal    time.Time
 	Metric    *model.Metric
+}
+
+type MockDynamoDB2 struct {
+	TableName string
+	ItemEpoch int64
+	Names     []string
+	Metrics   []*model.Metric
 }
 
 func SetMockDynamoDB(t *testing.T, m *MockDynamoDB) *gomock.Controller {
@@ -53,6 +63,51 @@ func SetMockDynamoDB(t *testing.T, m *MockDynamoDB) *gomock.Controller {
 		Items: items,
 	}, nil)
 	SetDynamoDBClient(dmock)
+
+	return ctrl
+}
+
+func SetMockDynamoDB2(t *testing.T, m *MockDynamoDB2) *gomock.Controller {
+	ctrl := gomock.NewController(t)
+	dmock := NewMockDynamoDBAPI(ctrl)
+
+	var keys []map[string]*dynamodb.AttributeValue
+	for _, metric := range m.Metrics {
+		keys = append(keys, map[string]*dynamodb.AttributeValue{
+			"MetricName": &dynamodb.AttributeValue{S: aws.String(metric.Name)},
+			"Timestamp": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
+		})
+	}
+	items := make(map[string]*dynamodb.KeysAndAttributes)
+	items[m.TableName] = &dynamodb.KeysAndAttributes{Keys: keys}
+	params := &dynamodb.BatchGetItemInput{
+		RequestItems:           items,
+		ReturnConsumedCapacity: aws.String("NONE"),
+	}
+
+	expect := dmock.EXPECT().BatchGetItem(params)
+
+	responses := make(map[string][]map[string]*dynamodb.AttributeValue)
+	for _, metric := range m.Metrics {
+		var vals [][]byte
+		for _, point := range metric.DataPoints {
+			buf := new(bytes.Buffer)
+			binary.Write(buf, binary.BigEndian, uint64(point.Timestamp))
+			binary.Write(buf, binary.BigEndian, math.Float64bits(point.Value))
+			vals = append(vals, buf.Bytes())
+		}
+		attribute := map[string]*dynamodb.AttributeValue{
+			"MetricName": &dynamodb.AttributeValue{S: aws.String(metric.Name)},
+			"Timestamp": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
+			"Values": &dynamodb.AttributeValue{BS: vals},
+		}
+		responses[m.TableName] = append(responses[m.TableName], attribute)
+	}
+
+	expect.Return(&dynamodb.BatchGetItemOutput{
+		Responses: responses,
+	}, nil)
+	SetDynamoDB(dmock)
 
 	return ctrl
 }
