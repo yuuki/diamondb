@@ -46,19 +46,22 @@ func SetDynamoDB(client dynamodbiface.DynamoDBAPI) {
 func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metric, error) {
 	slots, step := listTimeSlots(start, end)
 	nameGroups := groupNames(splitName(name), dynamodbBatchLimit)
-	var metrics []*model.Metric
+	c := make(chan interface{})
 	for _, slot := range slots {
 		for _, names := range nameGroups {
-			m, err := batchGet(slot.tableName, int32(slot.itemEpoch), names, step)
-			if err != nil {
-				return nil, errors.Wrapf(err,
-					"Failed to FetchMetricsFromDynamoDB %s %d %d",
-					name, start.Unix(), end.Unix(),
-				)
-			}
-			metrics = append(metrics, m...)
+			concurrentBatchGet(slot.tableName, int32(slot.itemEpoch), names, step, c)
 		}
 	}
+	var metrics []*model.Metric
+	for ret := range c {
+		switch ret.(type) {
+		case []*model.Metric:
+			metrics = append(metrics, ret.([]*model.Metric)...)
+		case error:
+			fmt.Println(ret.(error)) //TODO error handling
+		}
+	}
+
 	return metrics, nil
 }
 
@@ -112,6 +115,21 @@ func batchGet(tableName string, itemEpoch int32, names []string, step int) ([]*m
 		)
 	}
 	return batchGetResultToMap(resp, step), nil
+}
+
+func concurrentBatchGet(tableName string, itemEpoch int32, names []string, step int, c chan<- interface{}) {
+	go func() {
+		resp, err := batchGet(tableName, itemEpoch, names, step)
+		if err != nil {
+			c <- errors.Wrapf(err,
+				"Failed to batchGet %s %d %s %d",
+				tableName, itemEpoch, strings.Join(names, ","), step,
+			)
+		} else {
+			c <- resp
+		}
+		close(c)
+	}()
 }
 
 // roleA.r.{1,2,3,4}.loadavg
