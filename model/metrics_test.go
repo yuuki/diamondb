@@ -17,8 +17,8 @@ func TestNewMetric(t *testing.T) {
 
 	assert.Equal(t, "server1.loadavg5", metric.Name)
 	assert.Equal(t, 30, metric.Step)
-	assert.Equal(t, int32(1465516800), metric.Start)
-	assert.Equal(t, int32(1465516860), metric.End)
+	assert.Equal(t, uint64(1465516800), metric.Start)
+	assert.Equal(t, uint64(1465516860), metric.End)
 
 	sortedPoints := []*DataPoint{
 		&DataPoint{1465516800, 10.0},
@@ -40,8 +40,8 @@ func TestFilledWithNil(t *testing.T) {
 
 	assert.Equal(t, "server1.loadavg5", metric.Name)
 	assert.Equal(t, 15, metric.Step)
-	assert.Equal(t, int32(1465516800), metric.Start)
-	assert.Equal(t, int32(1465516860), metric.End)
+	assert.Equal(t, uint64(1465516800), metric.Start)
+	assert.Equal(t, uint64(1465516860), metric.End)
 
 	expected := []*DataPoint{
 		&DataPoint{1465516800, 10.0},

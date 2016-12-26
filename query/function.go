@@ -3,6 +3,7 @@ package query
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -10,14 +11,14 @@ import (
 	"github.com/yuuki/dynamond/model"
 )
 
-func minInt32(x, y int32) int32 {
+func minUint64(x, y uint64) uint64 {
 	if x < y {
 		return x
 	}
 	return y
 }
 
-func maxInt32(x, y int32) int32 {
+func maxUint64(x, y uint64) uint64 {
 	if x > y {
 		return x
 	}
@@ -51,7 +52,7 @@ func lcm(a, b int) int {
 	return a * b / gcd(a, b)
 }
 
-func zipSeriesList(seriesList []*model.Metric) (map[int32][]float64, int) {
+func zipSeriesList(seriesList []*model.Metric) (map[string][]float64, int) {
 	if len(seriesList) < 1 {
 		return nil, 0
 	}
@@ -64,7 +65,7 @@ func zipSeriesList(seriesList []*model.Metric) (map[int32][]float64, int) {
 		}
 	}
 
-	valuesByTimeStamp := make(map[int32][]float64)
+	valuesByTimeStamp := make(map[string][]float64)
 	for i := 0; i < maxLen; i++ {
 		values := make([]float64, 0, len(seriesList))
 		for _, series := range seriesList {
@@ -76,7 +77,8 @@ func zipSeriesList(seriesList []*model.Metric) (map[int32][]float64, int) {
 			}
 			values = append(values, series.DataPoints[i].Value)
 			ts := series.DataPoints[i].Timestamp
-			valuesByTimeStamp[ts] = values
+			// use type string as map index because cannot use type uint64 as type int32 in map index
+			valuesByTimeStamp[fmt.Sprintf("%d", ts)] = values
 		}
 	}
 	return valuesByTimeStamp, maxLen
@@ -96,7 +98,7 @@ func formatSeries(seriesList []*model.Metric) string {
 	return strings.Join(series, ",")
 }
 
-func normalize(seriesList []*model.Metric) ([]*model.Metric, int32, int32, int) {
+func normalize(seriesList []*model.Metric) ([]*model.Metric, uint64, uint64, int) {
 	if len(seriesList) < 1 {
 		return seriesList, 0, 0, 0
 	}
@@ -107,10 +109,10 @@ func normalize(seriesList []*model.Metric) ([]*model.Metric, int32, int32, int) 
 	)
 	for _, series := range seriesList {
 		step = lcm(step, series.Step)
-		start = minInt32(start, series.Start)
-		end = maxInt32(end, series.Start)
+		start = minUint64(start, series.Start)
+		end = maxUint64(end, series.Start)
 	}
-	end -= (end - start) % int32(step)
+	end -= (end - start) % uint64(step)
 	return seriesList, start, end, step
 }
 
@@ -151,8 +153,9 @@ func averageSeries(seriesList []*model.Metric) *model.Metric {
 
 	valuesByTimeStamp, maxLen := zipSeriesList(seriesList)
 	points := make([]*model.DataPoint, 0, maxLen)
-	for ts, vals := range valuesByTimeStamp {
+	for key, vals := range valuesByTimeStamp {
 		avg := sum(vals)/float64(len(vals))
+		ts, _ := strconv.ParseUint(key, 10, 64)
 		point := model.NewDataPoint(ts, avg)
 		points = append(points, point)
 	}
