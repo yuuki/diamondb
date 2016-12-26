@@ -23,11 +23,11 @@ func generateSeriesList() []*model.Metric {
 	step := 1
 	datapoints1 := make([]*model.DataPoint, 0, 100)
 	for i := 0; i < 100; i++ {
-		datapoints1 = append(datapoints1, &model.DataPoint{Timestamp: uint64(step*i), Value: float64(i+1)})
+		datapoints1 = append(datapoints1, &model.DataPoint{Timestamp: int64(step*i), Value: float64(i+1)})
 	}
 	datapoints2 := make([]*model.DataPoint, 0, 100)
 	for i := 0; i < 100; i++ {
-		datapoints2 = append(datapoints2, &model.DataPoint{Timestamp: uint64(step*i), Value: float64(i+1)})
+		datapoints2 = append(datapoints2, &model.DataPoint{Timestamp: int64(step*i), Value: float64(i+1)})
 	}
 	datapoints3 := make([]*model.DataPoint, 0, 1)
 	datapoints3 = append(datapoints3, &model.DataPoint{Timestamp: 0, Value: float64(1)})
@@ -64,8 +64,8 @@ func TestFormatSeries_NotUniq(t *testing.T) {
 func TestNormalize_Empty(t *testing.T) {
 	seriesList, start, end, step := normalize([]*model.Metric{})
 	assert.Exactly(t, 0, len(seriesList))
-	assert.Exactly(t, uint64(0), start)
-	assert.Exactly(t, uint64(0), end)
+	assert.Exactly(t, int64(0), start)
+	assert.Exactly(t, int64(0), end)
 	assert.Exactly(t, 0, step)
 }
 
@@ -74,20 +74,20 @@ func TestNormalize_NonValues(t *testing.T) {
 		&model.Metric{
 			Name: "collectd.test-db{0}.load.value",
 			Step: 1,
-			Start: uint64(1),
-			End: uint64(5),
+			Start: int64(1),
+			End: int64(5),
 		},
 	})
 	assert.Exactly(t, "collectd.test-db{0}.load.value", seriesList[0].Name)
-	assert.Exactly(t, uint64(1), start)
-	assert.Exactly(t, uint64(5), end)
+	assert.Exactly(t, int64(1), start)
+	assert.Exactly(t, int64(5), end)
 	assert.Exactly(t, 1, step)
 }
 
 func TestNormalize_GenerateSeriesListInput(t *testing.T) {
 	_, start, end, step := normalize(generateSeriesList())
-	assert.Exactly(t, uint64(0), start)
-	assert.Exactly(t, uint64(99), end)
+	assert.Exactly(t, int64(0), start)
+	assert.Exactly(t, int64(99), end)
 	assert.Exactly(t, 1, step)
 }
 
@@ -122,7 +122,7 @@ func TestAverageSeries(t *testing.T) {
 	)
 	expected := make([]*model.DataPoint, 0, 100)
 	for i := 0; i < 100; i++ {
-		expected = append(expected, model.NewDataPoint(uint64(i), float64(i+1)))
+		expected = append(expected, model.NewDataPoint(int64(i), float64(i+1)))
 	}
 	assert.Exactly(t, expected, series.DataPoints)
 }

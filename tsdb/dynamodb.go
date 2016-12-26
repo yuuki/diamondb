@@ -84,7 +84,7 @@ func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, step int) []*model.M
 			name := (*x["MetricName"].S)
 			points := make([]*model.DataPoint, 0, len(x["Values"].BS))
 			for _, y := range x["Values"].BS {
-				t := binary.BigEndian.Uint64(y[0:8])
+				t := int64(binary.BigEndian.Uint64(y[0:8]))
 				v := math.Float64frombits(binary.BigEndian.Uint64(y[8:]))
 				points = append(points, model.NewDataPoint(t, v))
 			}

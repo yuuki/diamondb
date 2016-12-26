@@ -6,7 +6,7 @@ import (
 )
 
 type DataPoint struct {
-	Timestamp	uint64
+	Timestamp	int64
 	Value		float64
 }
 
@@ -16,8 +16,8 @@ type Metric struct {
 	Name		string
 	DataPoints	[]*DataPoint
 	Step            int  // seconds
-	Start           uint64
-	End		uint64
+	Start           int64
+	End		int64
 }
 
 type ViewMetric struct {
@@ -25,7 +25,7 @@ type ViewMetric struct {
 	DataPoints	[][]interface{}	`json:"datapoints"`
 }
 
-func NewDataPoint(ts uint64, value float64) *DataPoint {
+func NewDataPoint(ts int64, value float64) *DataPoint {
 	return &DataPoint{Timestamp: ts, Value: value}
 }
 
@@ -75,7 +75,7 @@ func NewEmptyMetric() *Metric {
 func (m *Metric) FilledWithNil() *Metric {
 	for i := 0; i < len(m.DataPoints); i++ {
 		p := m.DataPoints[i]
-		if p.Timestamp > (m.Start + uint64(m.Step*i)) {
+		if p.Timestamp > (m.Start + int64(m.Step*i)) {
 			m.insertDatapoint(i, nil)
 		}
 	}
@@ -115,7 +115,7 @@ func (m *Metric) AsResponse() *ViewMetric {
 	for i, dp := range m.DataPoints {
 		p := make([]interface{}, 2)
 		if dp == nil {
-			p[0], p[1] = nil, m.Start + uint64(m.Step*i)
+			p[0], p[1] = nil, m.Start + int64(m.Step*i)
 		} else {
 			p[0], p[1] = dp.Value, dp.Timestamp
 		}

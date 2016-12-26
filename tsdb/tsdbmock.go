@@ -46,7 +46,7 @@ func SetMockDynamoDB(t *testing.T, m *MockDynamoDB) *gomock.Controller {
 		var vals [][]byte
 		for _, point := range metric.DataPoints {
 			buf := new(bytes.Buffer)
-			binary.Write(buf, binary.BigEndian, uint64(point.Timestamp))
+			binary.Write(buf, binary.BigEndian, int64(point.Timestamp))
 			binary.Write(buf, binary.BigEndian, math.Float64bits(point.Value))
 			vals = append(vals, buf.Bytes())
 		}

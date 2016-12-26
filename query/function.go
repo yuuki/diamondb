@@ -11,14 +11,14 @@ import (
 	"github.com/yuuki/dynamond/model"
 )
 
-func minUint64(x, y uint64) uint64 {
+func minUint64(x, y int64) int64 {
 	if x < y {
 		return x
 	}
 	return y
 }
 
-func maxUint64(x, y uint64) uint64 {
+func maxUint64(x, y int64) int64 {
 	if x > y {
 		return x
 	}
@@ -77,7 +77,7 @@ func zipSeriesList(seriesList []*model.Metric) (map[string][]float64, int) {
 			}
 			values = append(values, series.DataPoints[i].Value)
 			ts := series.DataPoints[i].Timestamp
-			// use type string as map index because cannot use type uint64 as type int32 in map index
+			// use type string as map index because cannot use type int64 as type int32 in map index
 			valuesByTimeStamp[fmt.Sprintf("%d", ts)] = values
 		}
 	}
@@ -98,7 +98,7 @@ func formatSeries(seriesList []*model.Metric) string {
 	return strings.Join(series, ",")
 }
 
-func normalize(seriesList []*model.Metric) ([]*model.Metric, uint64, uint64, int) {
+func normalize(seriesList []*model.Metric) ([]*model.Metric, int64, int64, int) {
 	if len(seriesList) < 1 {
 		return seriesList, 0, 0, 0
 	}
@@ -112,7 +112,7 @@ func normalize(seriesList []*model.Metric) ([]*model.Metric, uint64, uint64, int
 		start = minUint64(start, series.Start)
 		end = maxUint64(end, series.Start)
 	}
-	end -= (end - start) % uint64(step)
+	end -= (end - start) % int64(step)
 	return seriesList, start, end, step
 }
 
@@ -155,7 +155,7 @@ func averageSeries(seriesList []*model.Metric) *model.Metric {
 	points := make([]*model.DataPoint, 0, maxLen)
 	for key, vals := range valuesByTimeStamp {
 		avg := sum(vals)/float64(len(vals))
-		ts, _ := strconv.ParseUint(key, 10, 64)
+		ts, _ := strconv.ParseInt(key, 10, 64)
 		point := model.NewDataPoint(ts, avg)
 		points = append(points, point)
 	}
