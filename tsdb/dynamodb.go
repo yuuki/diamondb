@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/pkg/errors"
 
+	"github.com/yuuki/dynamond/mathutil"
 	"github.com/yuuki/dynamond/model"
 )
 
@@ -184,8 +185,8 @@ func listTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
 	startTableEpoch := startTime.Unix() - startTime.Unix() % int64(tableEpochStep)
 	endTableEpoch := endTime.Unix()
 	for tableEpoch := startTableEpoch; tableEpoch < endTableEpoch; tableEpoch += int64(tableEpochStep) {
-		startItemEpoch := maxInt64(tableEpoch, startTime.Unix() - startTime.Unix() % int64(itemEpochStep))
-		endItemEpoch := minInt64(tableEpoch + int64(tableEpochStep), endTime.Unix())
+		startItemEpoch := mathutil.MaxInt64(tableEpoch, startTime.Unix() - startTime.Unix() % int64(itemEpochStep))
+		endItemEpoch := mathutil.MinInt64(tableEpoch + int64(tableEpochStep), endTime.Unix())
 		for itemEpoch := startItemEpoch; itemEpoch < endItemEpoch; itemEpoch += int64(itemEpochStep) {
 			slot := timeSlot{
 				tableName: fmt.Sprintf("%s-%d", tableName, tableEpoch),
@@ -196,20 +197,5 @@ func listTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
 	}
 
 	return slots, step
-}
-
-
-func minInt64(x, y int64) int64 {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-func maxInt64(x, y int64) int64 {
-	if x > y {
-		return x
-	}
-	return y
 }
 

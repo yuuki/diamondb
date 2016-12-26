@@ -9,16 +9,6 @@ import (
 	"github.com/yuuki/dynamond/model"
 )
 
-func TestGcd(t *testing.T) {
-	assert.Exactly(t, 32, gcd(128, 32))
-	assert.Exactly(t, 3, gcd(237, 9))
-}
-
-func TestLcm(t *testing.T) {
-	assert.Exactly(t, 24, lcm(12, 24))
-	assert.Exactly(t, 756, lcm(27, 28))
-}
-
 func generateSeriesList() []*model.Metric {
 	step := 1
 	datapoints1 := make([]*model.DataPoint, 0, 100)

@@ -8,49 +8,9 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/yuuki/dynamond/mathutil"
 	"github.com/yuuki/dynamond/model"
 )
-
-func minUint64(x, y int64) int64 {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-func maxUint64(x, y int64) int64 {
-	if x > y {
-		return x
-	}
-	return y
-}
-
-func sum(vals []float64) float64 {
-	var sum float64
-	for _, v := range vals {
-		sum += v
-	}
-	return sum
-}
-
-// gcd is Greatest common divisor
-func gcd(a, b int) int {
-	if b == 0 {
-		return a
-	}
-	return gcd(b, a % b)
-}
-
-// lcm is Least common multiple
-func lcm(a, b int) int {
-	if a == b {
-		return a
-	}
-	if a < b {
-		a, b = b, a // ensure a > b
-	}
-	return a * b / gcd(a, b)
-}
 
 func zipSeriesList(seriesList []*model.Metric) (map[string][]float64, int) {
 	if len(seriesList) < 1 {
@@ -108,9 +68,9 @@ func normalize(seriesList []*model.Metric) ([]*model.Metric, int64, int64, int) 
 		end	= seriesList[0].End
 	)
 	for _, series := range seriesList {
-		step = lcm(step, series.Step)
-		start = minUint64(start, series.Start)
-		end = maxUint64(end, series.Start)
+		step = mathutil.Lcm(step, series.Step)
+		start = mathutil.MinInt64(start, series.Start)
+		end = mathutil.MaxInt64(end, series.Start)
 	}
 	end -= (end - start) % int64(step)
 	return seriesList, start, end, step
@@ -154,7 +114,7 @@ func averageSeries(seriesList []*model.Metric) *model.Metric {
 	valuesByTimeStamp, maxLen := zipSeriesList(seriesList)
 	points := make([]*model.DataPoint, 0, maxLen)
 	for key, vals := range valuesByTimeStamp {
-		avg := sum(vals)/float64(len(vals))
+		avg := mathutil.SumFloat64(vals) / float64(len(vals))
 		ts, _ := strconv.ParseInt(key, 10, 64)
 		point := model.NewDataPoint(ts, avg)
 		points = append(points, point)
