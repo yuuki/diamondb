@@ -15,3 +15,4 @@ testImport:
   version: ^1.1.4
   subpackages:
   - assert
+- package: github.com/golang/mock
