@@ -10,13 +10,13 @@ import (
 )
 
 func TestGcd(t *testing.T) {
-	assert.Equal(t, 32, gcd(128, 32))
-	assert.Equal(t, 3, gcd(237, 9))
+	assert.Exactly(t, 32, gcd(128, 32))
+	assert.Exactly(t, 3, gcd(237, 9))
 }
 
 func TestLcm(t *testing.T) {
-	assert.Equal(t, 24, lcm(12, 24))
-	assert.Equal(t, 756, lcm(27, 28))
+	assert.Exactly(t, 24, lcm(12, 24))
+	assert.Exactly(t, 756, lcm(27, 28))
 }
 
 func generateSeriesList() []*model.Metric {
@@ -47,7 +47,7 @@ func TestFormatSeries_Uniq(t *testing.T) {
 		&model.Metric{Name: "server3.cpu.system"},
 	}
 	format := formatSeries(seriesList)
-	assert.Equal(t, "server1.cpu.system,server2.cpu.system,server3.cpu.system", format)
+	assert.Exactly(t, "server1.cpu.system,server2.cpu.system,server3.cpu.system", format)
 }
 
 func TestFormatSeries_NotUniq(t *testing.T) {
@@ -58,15 +58,15 @@ func TestFormatSeries_NotUniq(t *testing.T) {
 		&model.Metric{Name: "server1.cpu.system"},
 	}
 	format := formatSeries(seriesList)
-	assert.Equal(t, "server1.cpu.system,server2.cpu.system,server3.cpu.system", format)
+	assert.Exactly(t, "server1.cpu.system,server2.cpu.system,server3.cpu.system", format)
 }
 
 func TestNormalize_Empty(t *testing.T) {
 	seriesList, start, end, step := normalize([]*model.Metric{})
-	assert.Equal(t, 0, len(seriesList))
-	assert.Equal(t, uint64(0), start)
-	assert.Equal(t, uint64(0), end)
-	assert.Equal(t, 0, step)
+	assert.Exactly(t, 0, len(seriesList))
+	assert.Exactly(t, uint64(0), start)
+	assert.Exactly(t, uint64(0), end)
+	assert.Exactly(t, 0, step)
 }
 
 func TestNormalize_NonValues(t *testing.T) {
@@ -78,17 +78,17 @@ func TestNormalize_NonValues(t *testing.T) {
 			End: uint64(5),
 		},
 	})
-	assert.Equal(t, "collectd.test-db{0}.load.value", seriesList[0].Name)
-	assert.Equal(t, uint64(1), start)
-	assert.Equal(t, uint64(5), end)
-	assert.Equal(t, 1, step)
+	assert.Exactly(t, "collectd.test-db{0}.load.value", seriesList[0].Name)
+	assert.Exactly(t, uint64(1), start)
+	assert.Exactly(t, uint64(5), end)
+	assert.Exactly(t, 1, step)
 }
 
 func TestNormalize_GenerateSeriesListInput(t *testing.T) {
 	_, start, end, step := normalize(generateSeriesList())
-	assert.Equal(t, uint64(0), start)
-	assert.Equal(t, uint64(99), end)
-	assert.Equal(t, 1, step)
+	assert.Exactly(t, uint64(0), start)
+	assert.Exactly(t, uint64(99), end)
+	assert.Exactly(t, 1, step)
 }
 
 func TestAlias(t *testing.T) {
@@ -109,14 +109,14 @@ func TestAlias(t *testing.T) {
 		),
 	}
 	metricList := alias(seriesList, "Large Blue Widgets")
-	assert.Equal(t, 2, len(metricList))
-	assert.Equal(t, metricList[0].Name, "Large Blue Widgets")
-	assert.Equal(t, metricList[1].Name, "Large Blue Widgets")
+	assert.Exactly(t, 2, len(metricList))
+	assert.Exactly(t, metricList[0].Name, "Large Blue Widgets")
+	assert.Exactly(t, metricList[1].Name, "Large Blue Widgets")
 }
 
 func TestAverageSeries(t *testing.T) {
 	series := averageSeries(generateSeriesList())
-	assert.Equal(t,
+	assert.Exactly(t,
 		"averageSeries(collectd.test-db0.load.value,collectd.test-db1.load.value,collectd.test-db2.load.value)",
 		series.Name,
 	)
@@ -124,5 +124,5 @@ func TestAverageSeries(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		expected = append(expected, model.NewDataPoint(uint64(i), float64(i+1)))
 	}
-	assert.EqualValues(t, expected, series.DataPoints)
+	assert.Exactly(t, expected, series.DataPoints)
 }

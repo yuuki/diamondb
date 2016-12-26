@@ -143,7 +143,7 @@ func TestSplitName(t *testing.T) {
 func TestListTablesByRange_1m1h(t *testing.T) {
 	s, e := time.Unix(100, 0), time.Unix(6000, 0)
 	slots, step := listTimeSlots(s, e)
-	assert.Equal(t, 60, step)
+	assert.Exactly(t, 60, step)
 	expected := []*timeSlot{
 		&timeSlot{
 			tableName: "SeriesTestRange-1m1h-0",
@@ -160,7 +160,7 @@ func TestListTablesByRange_1m1h(t *testing.T) {
 func TestListTablesByRange_5m1d(t *testing.T) {
 	s, e := time.Unix(10000, 0), time.Unix(100000, 0)
 	slots, step := listTimeSlots(s, e)
-	assert.Equal(t, 300, step)
+	assert.Exactly(t, 300, step)
 	expected := []*timeSlot{
 		&timeSlot{
 			tableName: "SeriesTestRange-5m1d-0",
@@ -177,7 +177,7 @@ func TestListTablesByRange_5m1d(t *testing.T) {
 func TestListTablesByRange_1h7d(t *testing.T) {
 	s, e := time.Unix(100000, 0), time.Unix(1000000, 0)
 	slots, step := listTimeSlots(s, e)
-	assert.Equal(t, 3600, step)
+	assert.Exactly(t, 3600, step)
 	expected := []*timeSlot{
 		&timeSlot{
 			tableName: "SeriesTestRange-1h7d-0",
@@ -194,7 +194,7 @@ func TestListTablesByRange_1h7d(t *testing.T) {
 func TestListTablesByRange_1d360d(t *testing.T) {
 	s, e := time.Unix(1000000, 0), time.Unix(100000000, 0)
 	slots, step := listTimeSlots(s, e)
-	assert.Equal(t, 86400, step)
+	assert.Exactly(t, 86400, step)
 	expected := []*timeSlot{
 		&timeSlot{
 			tableName: "SeriesTestRange-1d360d-0",

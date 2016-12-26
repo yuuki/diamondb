@@ -15,17 +15,17 @@ func TestNewMetric(t *testing.T) {
 
 	metric := NewMetric("server1.loadavg5", points, 30)
 
-	assert.Equal(t, "server1.loadavg5", metric.Name)
-	assert.Equal(t, 30, metric.Step)
-	assert.Equal(t, uint64(1465516800), metric.Start)
-	assert.Equal(t, uint64(1465516860), metric.End)
+	assert.Exactly(t, "server1.loadavg5", metric.Name)
+	assert.Exactly(t, 30, metric.Step)
+	assert.Exactly(t, uint64(1465516800), metric.Start)
+	assert.Exactly(t, uint64(1465516860), metric.End)
 
 	sortedPoints := []*DataPoint{
 		&DataPoint{1465516800, 10.0},
 		&DataPoint{1465516830, 20.0},
 		&DataPoint{1465516860, 15.0},
 	}
-	assert.EqualValues(t, sortedPoints, metric.DataPoints)
+	assert.Exactly(t, sortedPoints, metric.DataPoints)
 }
 
 func TestFilledWithNil(t *testing.T) {
@@ -38,10 +38,10 @@ func TestFilledWithNil(t *testing.T) {
 
 	metric = metric.FilledWithNil()
 
-	assert.Equal(t, "server1.loadavg5", metric.Name)
-	assert.Equal(t, 15, metric.Step)
-	assert.Equal(t, uint64(1465516800), metric.Start)
-	assert.Equal(t, uint64(1465516860), metric.End)
+	assert.Exactly(t, "server1.loadavg5", metric.Name)
+	assert.Exactly(t, 15, metric.Step)
+	assert.Exactly(t, uint64(1465516800), metric.Start)
+	assert.Exactly(t, uint64(1465516860), metric.End)
 
 	expected := []*DataPoint{
 		&DataPoint{1465516800, 10.0},
@@ -50,7 +50,7 @@ func TestFilledWithNil(t *testing.T) {
 		nil,
 		&DataPoint{1465516860, 15.0},
 	}
-	assert.EqualValues(t, expected, metric.DataPoints)
+	assert.Exactly(t, expected, metric.DataPoints)
 }
 
 func TestInsertDatapoint(t *testing.T) {
@@ -69,5 +69,5 @@ func TestInsertDatapoint(t *testing.T) {
 		&DataPoint{1465516830, 20.0},
 		&DataPoint{1465516860, 15.0},
 	}
-	assert.EqualValues(t, expected, metric.DataPoints)
+	assert.Exactly(t, expected, metric.DataPoints)
 }

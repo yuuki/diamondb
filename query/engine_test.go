@@ -33,8 +33,8 @@ func TestEvalTarget_Func(t *testing.T) {
 		time.Unix(120, 0),
 	)
 	if assert.NoError(t, err) {
-		assert.Equal(t, 1, len(metrics))
-		assert.Equal(t, metrics[0].Name, "Large Blue Widgets")
+		assert.Exactly(t, 1, len(metrics))
+		assert.Exactly(t, metrics[0].Name, "Large Blue Widgets")
 	}
 }
 
@@ -61,7 +61,7 @@ func TestEvalTarget_FuncNest(t *testing.T) {
 		time.Unix(120, 0),
 	)
 	if assert.NoError(t, err) {
-		assert.Equal(t, 1, len(metrics))
-		assert.Equal(t, metrics[0].Name, "Large Blue Widgets Sales")
+		assert.Exactly(t, 1, len(metrics))
+		assert.Exactly(t, metrics[0].Name, "Large Blue Widgets Sales")
 	}
 }

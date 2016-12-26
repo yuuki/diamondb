@@ -17,10 +17,10 @@ func TestParseAtTime_Empty(t *testing.T) {
 		ey, em, ed := expected.Date()
 		eh, _, _ := expected.Clock()
 
-		assert.Equal(t, gy, ey)
-		assert.Equal(t, gm, em)
-		assert.Equal(t, gd, ed)
-		assert.Equal(t, gh, eh)
+		assert.Exactly(t, gy, ey)
+		assert.Exactly(t, gm, em)
+		assert.Exactly(t, gd, ed)
+		assert.Exactly(t, gh, eh)
 	}
 }
 
@@ -28,7 +28,7 @@ func TestParseAtTime_UnixTime(t *testing.T) {
 	got, err := ParseAtTime("1444508126")
 	if assert.NoError(t, err) {
 		expected := time.Unix(1444508126, 0)
-		assert.EqualValues(t, expected, got)
+		assert.Exactly(t, expected, got)
 	}
 }
 
@@ -41,10 +41,10 @@ func TestParseAtTime_CurrentTime(t *testing.T) {
 		ey, em, ed := expected.Date()
 		eh, _, _ := expected.Clock()
 
-		assert.Equal(t, gy, ey)
-		assert.Equal(t, gm, em)
-		assert.Equal(t, gd, ed)
-		assert.Equal(t, gh, eh)
+		assert.Exactly(t, gy, ey)
+		assert.Exactly(t, gm, em)
+		assert.Exactly(t, gd, ed)
+		assert.Exactly(t, gh, eh)
 	}
 }
 
@@ -57,10 +57,10 @@ func TestParseAtTime_RelativePlus(t *testing.T) {
 		ey, em, ed := expected.Date()
 		eh, _, _ := expected.Clock()
 
-		assert.Equal(t, gy, ey)
-		assert.Equal(t, gm, em)
-		assert.Equal(t, gd, ed)
-		assert.Equal(t, gh, eh)
+		assert.Exactly(t, gy, ey)
+		assert.Exactly(t, gm, em)
+		assert.Exactly(t, gd, ed)
+		assert.Exactly(t, gh, eh)
 	}
 }
 
@@ -73,10 +73,10 @@ func TestParseAtTime_RelativeMinus(t *testing.T) {
 		ey, em, ed := expected.Date()
 		eh, _, _ := expected.Clock()
 
-		assert.Equal(t, gy, ey)
-		assert.Equal(t, gm, em)
-		assert.Equal(t, gd, ed)
-		assert.Equal(t, gh, eh)
+		assert.Exactly(t, gy, ey)
+		assert.Exactly(t, gm, em)
+		assert.Exactly(t, gd, ed)
+		assert.Exactly(t, gh, eh)
 	}
 }
 
@@ -84,7 +84,7 @@ func TestParseAtTime_Absolute(t *testing.T) {
 	got, err := ParseAtTime("19:22_20161010")
 	if assert.NoError(t, err) {
 		expected := time.Date(2016, 10, 10, 19, 22, 0, 0, time.UTC)
-		assert.Equal(t, expected, got)
+		assert.Exactly(t, expected, got)
 	}
 }
 
@@ -115,7 +115,7 @@ func TestParseTimeOffset(t *testing.T) {
 	for i, test := range parseOffsetTests {
 		got, err := parseTimeOffset(test.offset)
 		if assert.NoError(t, err) {
-			assert.Equal(t, test.duration, got, fmt.Sprintf("#%d", i))
+			assert.Exactly(t, test.duration, got, fmt.Sprintf("#%d", i))
 		}
 	}
 }
