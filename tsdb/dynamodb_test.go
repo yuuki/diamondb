@@ -33,7 +33,7 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 		),
 	}
 	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
-		TableName: "SeriesTestRange-1m1h-0",
+		TableName: "SeriesTestRange-1m1h",
 		ItemEpoch: 0,
 		Metrics: expected,
 	})
@@ -76,12 +76,12 @@ func TestBatchGet(t *testing.T) {
 		),
 	}
 	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
-		TableName: "SeriesTestRange",
+		TableName: "SeriesTestRange-1m1h",
 		ItemEpoch: 1000,
 		Metrics: expected,
 	})
 	defer ctrl.Finish()
-	metrics, err := batchGet(&timeSlot{"SeriesTestRange", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60)
+	metrics, err := batchGet(&timeSlot{"SeriesTestRange-1m1h-1000", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60)
 	assert.NoError(t, err)
 	assert.Exactly(t, expected, metrics)
 }
@@ -104,13 +104,13 @@ func TestConcurrentBatchGet(t *testing.T) {
 		),
 	}
 	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
-		TableName: "SeriesTestRange",
+		TableName: "SeriesTestRange-1m1h",
 		ItemEpoch: 1000,
 		Metrics: expected,
 	})
 	defer ctrl.Finish()
 	c := make(chan interface{})
-	concurrentBatchGet(&timeSlot{"SeriesTestRange", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60, c)
+	concurrentBatchGet(&timeSlot{"SeriesTestRange-1m1h-1000", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60, c)
 	var metrics []*model.Metric
 	ret := <-c
 	metrics = append(metrics, ret.([]*model.Metric)...)
