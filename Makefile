@@ -20,6 +20,9 @@ build: deps
 test:
 	go test -v $(shell go list ./... | grep -v /vendor/)
 
+fmt:
+	gofmt -s -w $(shell git ls | grep -e '\.go$$' | grep -v /vendor/)
+
 lint:
 	go lint -v $(shell go list ./... | grep -v /vendor/)
 
