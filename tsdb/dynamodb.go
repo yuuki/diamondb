@@ -23,7 +23,11 @@ type timeSlot struct {
 }
 
 const (
-	tablePrefix string = "SeriesTestRange"
+	dynamoDBTablePrefix string = "SeriesTestRange"
+	DynamoDBTableOneYear string = dynamoDBTablePrefix + "-1d360d"
+	DynamoDBTableOneWeek string = dynamoDBTablePrefix + "-1h7d"
+	DynamoDBTableOneDay  string = dynamoDBTablePrefix + "-5m1d"
+	DynamoDBTableOneHour string = dynamoDBTablePrefix + "-1m1h"
 	oneYear time.Duration = time.Duration(24 * 360) * time.Hour
 	oneWeek time.Duration = time.Duration(24 * 7) * time.Hour
 	oneDay  time.Duration = time.Duration(24 * 1) * time.Hour
@@ -160,22 +164,22 @@ func listTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
 	)
 	diffTime := endTime.Sub(startTime)
 	if oneYear <= diffTime {
-		tableName = tablePrefix + "-1d360d"
+		tableName = DynamoDBTableOneYear
 		tableEpochStep = oneYearSeconds
 		itemEpochStep = tableEpochStep
 		step = 60 * 60 * 24
 	} else if oneWeek <= diffTime {
-		tableName = tablePrefix + "-1h7d"
+		tableName = DynamoDBTableOneWeek
 		tableEpochStep = 60 * 60 * 24 * 7
 		itemEpochStep = tableEpochStep
 		step = 60 * 60
 	} else if oneDay <= diffTime {
-		tableName = tablePrefix + "-5m1d"
+		tableName = DynamoDBTableOneDay
 		tableEpochStep = 60 * 60 * 24
 		itemEpochStep = tableEpochStep
 		step = 5 * 60
 	} else {
-		tableName = tablePrefix + "-1m1h"
+		tableName = DynamoDBTableOneHour
 		tableEpochStep = 60 * 60 * 24
 		itemEpochStep = 60 * 60
 		step = 60
