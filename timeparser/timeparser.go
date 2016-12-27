@@ -22,8 +22,8 @@ func ParseAtTime(s string) (time.Time, error) {
 	s = strings.Replace(s, " ", "", -1)
 
 	var (
-		ref	string
-		offset	string
+		ref    string
+		offset string
 	)
 
 	// unix time ?
@@ -50,8 +50,8 @@ func ParseAtTime(s string) (time.Time, error) {
 	}
 
 	var (
-		r	time.Time
-		o       time.Duration
+		r time.Time
+		o time.Duration
 	)
 
 	if ref == "" || ref == "now" {
@@ -78,8 +78,10 @@ func parseTimeOffset(offset string) (time.Duration, error) {
 		sign = 1
 	} else {
 		switch offset[0] {
-		case '+': sign = 1
-		case '-': sign = -1
+		case '+':
+			sign = 1
+		case '-':
+			sign = -1
 		}
 		offset = offset[1:]
 	}

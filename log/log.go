@@ -1,8 +1,8 @@
 package log
 
 import (
-	"log"
 	"io"
+	"log"
 	"os"
 )
 
@@ -18,7 +18,7 @@ func NewLogger() *Logger {
 	log.SetFlags(0)
 	log.SetOutput(os.Stderr)
 	return &Logger{
-		debug:  false,
+		debug: false,
 	}
 }
 

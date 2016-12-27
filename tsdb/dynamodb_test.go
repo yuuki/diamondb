@@ -16,18 +16,18 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 		model.NewMetric(
 			"roleA.r.1.loadavg",
 			[]*model.DataPoint{
-				&model.DataPoint{120, 10.0},
-				&model.DataPoint{180, 11.2},
-				&model.DataPoint{240, 13.1},
+				{120, 10.0},
+				{180, 11.2},
+				{240, 13.1},
 			},
 			60,
 		),
 		model.NewMetric(
 			"roleA.r.2.loadavg",
 			[]*model.DataPoint{
-				&model.DataPoint{120, 1.0},
-				&model.DataPoint{180, 1.2},
-				&model.DataPoint{240, 1.1},
+				{120, 1.0},
+				{180, 1.2},
+				{240, 1.1},
 			},
 			60,
 		),
@@ -35,7 +35,7 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 0,
-		Metrics: expected,
+		Metrics:   expected,
 	})
 	defer ctrl.Finish()
 	metrics, err := FetchMetricsFromDynamoDB(name, time.Unix(100, 0), time.Unix(300, 0))
@@ -51,9 +51,9 @@ func TestGroupNames(t *testing.T) {
 	}
 	nameGroups := groupNames(names, 2)
 	expected := [][]string{
-		[]string{"server1.loadavg5", "server2.loadavg5"},
-		[]string{"server3.loadavg5", "server4.loadavg5"},
-		[]string{"server5.loadavg5"},
+		{"server1.loadavg5", "server2.loadavg5"},
+		{"server3.loadavg5", "server4.loadavg5"},
+		{"server5.loadavg5"},
 	}
 	assert.Exactly(t, expected, nameGroups)
 }
@@ -63,14 +63,14 @@ func TestBatchGet(t *testing.T) {
 		model.NewMetric(
 			"server1.loadavg5",
 			[]*model.DataPoint{
-				&model.DataPoint{1465516810, 10.0},
+				{1465516810, 10.0},
 			},
 			60,
 		),
 		model.NewMetric(
 			"server2.loadavg5",
 			[]*model.DataPoint{
-				&model.DataPoint{1465516810, 15.0},
+				{1465516810, 15.0},
 			},
 			60,
 		),
@@ -78,7 +78,7 @@ func TestBatchGet(t *testing.T) {
 	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 1000,
-		Metrics: expected,
+		Metrics:   expected,
 	})
 	defer ctrl.Finish()
 	metrics, err := batchGet(&timeSlot{DynamoDBTableOneHour + "-0", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60)
@@ -91,14 +91,14 @@ func TestConcurrentBatchGet(t *testing.T) {
 		model.NewMetric(
 			"server1.loadavg5",
 			[]*model.DataPoint{
-				&model.DataPoint{1465516810, 10.0},
+				{1465516810, 10.0},
 			},
 			60,
 		),
 		model.NewMetric(
 			"server2.loadavg5",
 			[]*model.DataPoint{
-				&model.DataPoint{1465516810, 15.0},
+				{1465516810, 15.0},
 			},
 			60,
 		),
@@ -106,7 +106,7 @@ func TestConcurrentBatchGet(t *testing.T) {
 	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 1000,
-		Metrics: expected,
+		Metrics:   expected,
 	})
 	defer ctrl.Finish()
 	c := make(chan interface{})
@@ -134,11 +134,11 @@ func TestListTablesByRange_1m1h(t *testing.T) {
 	slots, step := listTimeSlots(s, e)
 	assert.Exactly(t, 60, step)
 	expected := []*timeSlot{
-		&timeSlot{
+		{
 			tableName: DynamoDBTableOneHour + "-0",
 			itemEpoch: 0,
 		},
-		&timeSlot{
+		{
 			tableName: DynamoDBTableOneHour + "-0",
 			itemEpoch: 3600,
 		},
@@ -151,11 +151,11 @@ func TestListTablesByRange_5m1d(t *testing.T) {
 	slots, step := listTimeSlots(s, e)
 	assert.Exactly(t, 300, step)
 	expected := []*timeSlot{
-		&timeSlot{
+		{
 			tableName: DynamoDBTableOneDay + "-0",
 			itemEpoch: 0,
 		},
-		&timeSlot{
+		{
 			tableName: DynamoDBTableOneDay + "-86400",
 			itemEpoch: 86400,
 		},
@@ -168,11 +168,11 @@ func TestListTablesByRange_1h7d(t *testing.T) {
 	slots, step := listTimeSlots(s, e)
 	assert.Exactly(t, 3600, step)
 	expected := []*timeSlot{
-		&timeSlot{
+		{
 			tableName: DynamoDBTableOneWeek + "-0",
 			itemEpoch: 0,
 		},
-		&timeSlot{
+		{
 			tableName: DynamoDBTableOneWeek + "-604800",
 			itemEpoch: 604800,
 		},
@@ -185,19 +185,19 @@ func TestListTablesByRange_1d360d(t *testing.T) {
 	slots, step := listTimeSlots(s, e)
 	assert.Exactly(t, 86400, step)
 	expected := []*timeSlot{
-		&timeSlot{
+		{
 			tableName: DynamoDBTableOneYear + "-0",
 			itemEpoch: 0,
 		},
-		&timeSlot{
+		{
 			tableName: DynamoDBTableOneYear + "-31104000",
 			itemEpoch: 31104000,
 		},
-		&timeSlot{
+		{
 			tableName: DynamoDBTableOneYear + "-62208000",
 			itemEpoch: 62208000,
 		},
-		&timeSlot{
+		{
 			tableName: DynamoDBTableOneYear + "-93312000",
 			itemEpoch: 93312000,
 		},

@@ -18,7 +18,7 @@ func TestEvalTarget_Func(t *testing.T) {
 			model.NewMetric(
 				"Sales.widgets.largeBlue",
 				[]*model.DataPoint{
-					&model.DataPoint{60, 10.0},
+					{60, 10.0},
 				},
 				60,
 			),
@@ -45,7 +45,7 @@ func TestEvalTarget_FuncNest(t *testing.T) {
 			model.NewMetric(
 				"Sales.widgets.largeBlue",
 				[]*model.DataPoint{
-					&model.DataPoint{60, 10.0},
+					{60, 10.0},
 				},
 				60,
 			),

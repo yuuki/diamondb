@@ -24,7 +24,7 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 	case FuncExpr:
 		var (
 			metricList []*model.Metric
-			err error
+			err        error
 		)
 		for _, expr := range e.SubExprs {
 			switch expr.(type) {

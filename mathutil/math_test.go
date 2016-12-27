@@ -15,4 +15,3 @@ func TestLcm(t *testing.T) {
 	assert.Exactly(t, 24, Lcm(12, 24))
 	assert.Exactly(t, 756, Lcm(27, 28))
 }
-

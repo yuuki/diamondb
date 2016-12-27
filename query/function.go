@@ -63,9 +63,9 @@ func normalize(seriesList []*model.Metric) ([]*model.Metric, int64, int64, int) 
 		return seriesList, 0, 0, 0
 	}
 	var (
-		step	= seriesList[0].Step
-		start	= seriesList[0].Start
-		end	= seriesList[0].End
+		step  = seriesList[0].Step
+		start = seriesList[0].Start
+		end   = seriesList[0].End
 	)
 	for _, series := range seriesList {
 		step = mathutil.Lcm(step, series.Step)
@@ -121,4 +121,3 @@ func averageSeries(seriesList []*model.Metric) *model.Metric {
 	}
 	return model.NewMetric(name, points, step)
 }
-

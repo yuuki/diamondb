@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	DAYTIME = time.Duration(24 * 60 * 60) * time.Second
+	DAYTIME = time.Duration(24*60*60) * time.Second
 )
 
 func Render(w http.ResponseWriter, r *http.Request) {

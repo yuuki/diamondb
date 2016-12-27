@@ -3,9 +3,9 @@ package tsdb
 import (
 	"encoding/binary"
 	"fmt"
+	"math"
 	"strings"
 	"time"
-	"math"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -23,14 +23,14 @@ type timeSlot struct {
 }
 
 const (
-	dynamoDBTablePrefix string = "SeriesTestRange"
-	DynamoDBTableOneYear string = dynamoDBTablePrefix + "-1d360d"
-	DynamoDBTableOneWeek string = dynamoDBTablePrefix + "-1h7d"
-	DynamoDBTableOneDay  string = dynamoDBTablePrefix + "-5m1d"
-	DynamoDBTableOneHour string = dynamoDBTablePrefix + "-1m1h"
-	oneYear time.Duration = time.Duration(24 * 360) * time.Hour
-	oneWeek time.Duration = time.Duration(24 * 7) * time.Hour
-	oneDay  time.Duration = time.Duration(24 * 1) * time.Hour
+	dynamoDBTablePrefix  string        = "SeriesTestRange"
+	DynamoDBTableOneYear string        = dynamoDBTablePrefix + "-1d360d"
+	DynamoDBTableOneWeek string        = dynamoDBTablePrefix + "-1h7d"
+	DynamoDBTableOneDay  string        = dynamoDBTablePrefix + "-5m1d"
+	DynamoDBTableOneHour string        = dynamoDBTablePrefix + "-1m1h"
+	oneYear              time.Duration = time.Duration(24*360) * time.Hour
+	oneWeek              time.Duration = time.Duration(24*7) * time.Hour
+	oneDay               time.Duration = time.Duration(24*1) * time.Hour
 
 	dynamodbBatchLimit = 100
 )
@@ -58,7 +58,7 @@ func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metri
 		}
 	}
 	var metrics []*model.Metric
-	for i := 0; i < len(slots) * len(nameGroups); i++ {
+	for i := 0; i < len(slots)*len(nameGroups); i++ {
 		ret := <-c
 		switch ret.(type) {
 		case []*model.Metric:
@@ -103,8 +103,8 @@ func batchGet(slot *timeSlot, names []string, step int) ([]*model.Metric, error)
 	var keys []map[string]*dynamodb.AttributeValue
 	for _, name := range names {
 		keys = append(keys, map[string]*dynamodb.AttributeValue{
-			"MetricName": &dynamodb.AttributeValue{S: aws.String(name)},
-			"Timestamp": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", slot.itemEpoch))},
+			"MetricName": {S: aws.String(name)},
+			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", slot.itemEpoch))},
 		})
 	}
 	items := make(map[string]*dynamodb.KeysAndAttributes)
@@ -157,8 +157,8 @@ func splitName(name string) []string {
 
 func listTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
 	var (
-		tableName string
-		step int
+		tableName      string
+		step           int
 		tableEpochStep int
 		itemEpochStep  int
 	)
@@ -186,11 +186,11 @@ func listTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
 	}
 
 	slots := make([]*timeSlot, 0, 5)
-	startTableEpoch := startTime.Unix() - startTime.Unix() % int64(tableEpochStep)
+	startTableEpoch := startTime.Unix() - startTime.Unix()%int64(tableEpochStep)
 	endTableEpoch := endTime.Unix()
 	for tableEpoch := startTableEpoch; tableEpoch < endTableEpoch; tableEpoch += int64(tableEpochStep) {
-		startItemEpoch := mathutil.MaxInt64(tableEpoch, startTime.Unix() - startTime.Unix() % int64(itemEpochStep))
-		endItemEpoch := mathutil.MinInt64(tableEpoch + int64(tableEpochStep), endTime.Unix())
+		startItemEpoch := mathutil.MaxInt64(tableEpoch, startTime.Unix()-startTime.Unix()%int64(itemEpochStep))
+		endItemEpoch := mathutil.MinInt64(tableEpoch+int64(tableEpochStep), endTime.Unix())
 		for itemEpoch := startItemEpoch; itemEpoch < endItemEpoch; itemEpoch += int64(itemEpochStep) {
 			slot := timeSlot{
 				tableName: fmt.Sprintf("%s-%d", tableName, tableEpoch),
@@ -202,4 +202,3 @@ func listTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
 
 	return slots, step
 }
-

@@ -6,23 +6,23 @@ import (
 )
 
 type DataPoint struct {
-	Timestamp	int64
-	Value		float64
+	Timestamp int64
+	Value     float64
 }
 
 type ByTimestamp []*DataPoint
 
 type Metric struct {
-	Name		string
-	DataPoints	[]*DataPoint
-	Step            int  // seconds
-	Start           int64
-	End		int64
+	Name       string
+	DataPoints []*DataPoint
+	Step       int // seconds
+	Start      int64
+	End        int64
 }
 
 type ViewMetric struct {
-	Target		string		`json:"target"`
-	DataPoints	[][]interface{}	`json:"datapoints"`
+	Target     string          `json:"target"`
+	DataPoints [][]interface{} `json:"datapoints"`
 }
 
 func NewDataPoint(ts int64, value float64) *DataPoint {
@@ -48,9 +48,9 @@ func (d ByTimestamp) Less(i, j int) bool {
 func NewMetric(name string, datapoints []*DataPoint, step int) *Metric {
 	if len(datapoints) < 1 {
 		return &Metric{
-			Name: name,
+			Name:       name,
 			DataPoints: datapoints,
-			Step: step,
+			Step:       step,
 		}
 	}
 
@@ -60,11 +60,11 @@ func NewMetric(name string, datapoints []*DataPoint, step int) *Metric {
 	start, end := datapoints[0].Timestamp, datapoints[len(datapoints)-1].Timestamp
 
 	return &Metric{
-		Name: name,
+		Name:       name,
 		DataPoints: datapoints,
-		Step: step,
-		Start: start,
-		End: end,
+		Step:       step,
+		Start:      start,
+		End:        end,
 	}
 }
 
@@ -92,7 +92,6 @@ func (m *Metric) Count() int {
 	return len(m.DataPoints)
 }
 
-
 /*
 An example of json response
 {
@@ -115,7 +114,7 @@ func (m *Metric) AsResponse() *ViewMetric {
 	for i, dp := range m.DataPoints {
 		p := make([]interface{}, 2)
 		if dp == nil {
-			p[0], p[1] = nil, m.Start + int64(m.Step*i)
+			p[0], p[1] = nil, m.Start+int64(m.Step*i)
 		} else {
 			p[0], p[1] = dp.Value, dp.Timestamp
 		}

@@ -23,7 +23,7 @@ func BadRequest(w http.ResponseWriter, msg string) {
 	log.Println(msg)
 
 	var data struct {
-		Error  string `json:"error"`
+		Error string `json:"error"`
 	}
 	data.Error = msg
 	JSON(w, http.StatusBadRequest, data)
@@ -38,10 +38,9 @@ func ServerError(w http.ResponseWriter, msg string) {
 	log.Println(msg)
 
 	var data struct {
-		Error  string `json:"error"`
+		Error string `json:"error"`
 	}
 	data.Error = msg
 	JSON(w, http.StatusInternalServerError, data)
 	return
 }
-

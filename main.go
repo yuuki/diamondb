@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	DEFAULT_HOST	= "localhost"
-	DEFAULT_PORT	= "8000"
-	DEFAULT_CONFIG	= "dynamond.conf"
+	DEFAULT_HOST   = "localhost"
+	DEFAULT_PORT   = "8000"
+	DEFAULT_CONFIG = "dynamond.conf"
 )
 
 func main() {
@@ -26,11 +26,11 @@ func main() {
 
 func Run(args []string) int {
 	var (
-		host    string
-		port	string
+		host     string
+		port     string
 		confPath string
-		version bool
-		debug	bool
+		version  bool
+		debug    bool
 	)
 
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)

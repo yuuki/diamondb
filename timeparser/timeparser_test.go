@@ -1,9 +1,9 @@
 package timeparser
 
 import (
+	"fmt"
 	"testing"
 	"time"
-	"fmt"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -89,26 +89,26 @@ func TestParseAtTime_Absolute(t *testing.T) {
 }
 
 type parseOffsetTest struct {
-	offset		string
-	duration	time.Duration
+	offset   string
+	duration time.Duration
 }
 
 var parseOffsetTests = []parseOffsetTest{
 	{"", time.Duration(0)},
 	{"-", time.Duration(0)},
 	{"+", time.Duration(0)},
-	{"10days", time.Duration(10*24*time.Hour)},
+	{"10days", time.Duration(10 * 24 * time.Hour)},
 	{"0days", time.Duration(0)},
-	{"-10days", time.Duration(-10*24*time.Hour)},
-	{"5seconds", time.Duration(5*time.Second)},
-	{"5minutes", time.Duration(5*time.Minute)},
-	{"5hours", time.Duration(5*time.Hour)},
-	{"5weeks", time.Duration(5*7*24*time.Hour)},
-	{"1month", time.Duration(30*24*time.Hour)},
-	{"2months", time.Duration(60*24*time.Hour)},
-	{"12months", time.Duration(360*24*time.Hour)},
-	{"1year", time.Duration(365*24*time.Hour)},
-	{"2years", time.Duration(730*24*time.Hour)},
+	{"-10days", time.Duration(-10 * 24 * time.Hour)},
+	{"5seconds", time.Duration(5 * time.Second)},
+	{"5minutes", time.Duration(5 * time.Minute)},
+	{"5hours", time.Duration(5 * time.Hour)},
+	{"5weeks", time.Duration(5 * 7 * 24 * time.Hour)},
+	{"1month", time.Duration(30 * 24 * time.Hour)},
+	{"2months", time.Duration(60 * 24 * time.Hour)},
+	{"12months", time.Duration(360 * 24 * time.Hour)},
+	{"1year", time.Duration(365 * 24 * time.Hour)},
+	{"2years", time.Duration(730 * 24 * time.Hour)},
 }
 
 func TestParseTimeOffset(t *testing.T) {

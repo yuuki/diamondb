@@ -27,8 +27,8 @@ func SetMockDynamoDB(t *testing.T, m *MockDynamoDBParam) *gomock.Controller {
 	var keys []map[string]*dynamodb.AttributeValue
 	for _, metric := range m.Metrics {
 		keys = append(keys, map[string]*dynamodb.AttributeValue{
-			"MetricName": &dynamodb.AttributeValue{S: aws.String(metric.Name)},
-			"Timestamp": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
+			"MetricName": {S: aws.String(metric.Name)},
+			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
 		})
 	}
 	items := make(map[string]*dynamodb.KeysAndAttributes)
@@ -50,9 +50,9 @@ func SetMockDynamoDB(t *testing.T, m *MockDynamoDBParam) *gomock.Controller {
 			vals = append(vals, buf.Bytes())
 		}
 		attribute := map[string]*dynamodb.AttributeValue{
-			"MetricName": &dynamodb.AttributeValue{S: aws.String(metric.Name)},
-			"Timestamp": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
-			"Values": &dynamodb.AttributeValue{BS: vals},
+			"MetricName": {S: aws.String(metric.Name)},
+			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
+			"Values":     {BS: vals},
 		}
 		responses[m.TableName] = append(responses[m.TableName], attribute)
 	}

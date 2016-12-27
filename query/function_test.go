@@ -13,11 +13,11 @@ func generateSeriesList() []*model.Metric {
 	step := 1
 	datapoints1 := make([]*model.DataPoint, 0, 100)
 	for i := 0; i < 100; i++ {
-		datapoints1 = append(datapoints1, &model.DataPoint{Timestamp: int64(step*i), Value: float64(i+1)})
+		datapoints1 = append(datapoints1, &model.DataPoint{Timestamp: int64(step * i), Value: float64(i + 1)})
 	}
 	datapoints2 := make([]*model.DataPoint, 0, 100)
 	for i := 0; i < 100; i++ {
-		datapoints2 = append(datapoints2, &model.DataPoint{Timestamp: int64(step*i), Value: float64(i+1)})
+		datapoints2 = append(datapoints2, &model.DataPoint{Timestamp: int64(step * i), Value: float64(i + 1)})
 	}
 	datapoints3 := make([]*model.DataPoint, 0, 1)
 	datapoints3 = append(datapoints3, &model.DataPoint{Timestamp: 0, Value: float64(1)})
@@ -27,14 +27,14 @@ func generateSeriesList() []*model.Metric {
 	seriesList[1] = model.NewMetric(fmt.Sprintf("collectd.test-db%d.load.value", 1), datapoints2, 1)
 	seriesList[2] = model.NewMetric(fmt.Sprintf("collectd.test-db%d.load.value", 2), datapoints3, 1)
 
-        return seriesList
+	return seriesList
 }
 
 func TestFormatSeries_Uniq(t *testing.T) {
 	seriesList := []*model.Metric{
-		&model.Metric{Name: "server1.cpu.system"},
-		&model.Metric{Name: "server2.cpu.system"},
-		&model.Metric{Name: "server3.cpu.system"},
+		{Name: "server1.cpu.system"},
+		{Name: "server2.cpu.system"},
+		{Name: "server3.cpu.system"},
 	}
 	format := formatSeries(seriesList)
 	assert.Exactly(t, "server1.cpu.system,server2.cpu.system,server3.cpu.system", format)
@@ -42,10 +42,10 @@ func TestFormatSeries_Uniq(t *testing.T) {
 
 func TestFormatSeries_NotUniq(t *testing.T) {
 	seriesList := []*model.Metric{
-		&model.Metric{Name: "server3.cpu.system"},
-		&model.Metric{Name: "server1.cpu.system"},
-		&model.Metric{Name: "server2.cpu.system"},
-		&model.Metric{Name: "server1.cpu.system"},
+		{Name: "server3.cpu.system"},
+		{Name: "server1.cpu.system"},
+		{Name: "server2.cpu.system"},
+		{Name: "server1.cpu.system"},
 	}
 	format := formatSeries(seriesList)
 	assert.Exactly(t, "server1.cpu.system,server2.cpu.system,server3.cpu.system", format)
@@ -61,11 +61,11 @@ func TestNormalize_Empty(t *testing.T) {
 
 func TestNormalize_NonValues(t *testing.T) {
 	seriesList, start, end, step := normalize([]*model.Metric{
-		&model.Metric{
-			Name: "collectd.test-db{0}.load.value",
-			Step: 1,
+		{
+			Name:  "collectd.test-db{0}.load.value",
+			Step:  1,
 			Start: int64(1),
-			End: int64(5),
+			End:   int64(5),
 		},
 	})
 	assert.Exactly(t, "collectd.test-db{0}.load.value", seriesList[0].Name)
@@ -86,14 +86,14 @@ func TestAlias(t *testing.T) {
 		model.NewMetric(
 			"Sales.widgets.largeBlue",
 			[]*model.DataPoint{
-				&model.DataPoint{1465516810, 10.0},
+				{1465516810, 10.0},
 			},
 			60,
 		),
 		model.NewMetric(
 			"Servers.web01.sda1.free_space",
 			[]*model.DataPoint{
-				&model.DataPoint{1465516810, 10.0},
+				{1465516810, 10.0},
 			},
 			60,
 		),

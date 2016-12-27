@@ -24,16 +24,16 @@ type Error struct {
 }
 
 var symTable = map[string]int{
-	"(":             LBRACK,
-	")":             RBRACK,
+	"(": LBRACK,
+	")": RBRACK,
 
-	"true":          TRUE,
-	"false":         FALSE,
+	"true":  TRUE,
+	"false": FALSE,
 
-	"alias":         FUNC,
-	"avg":           FUNC,
-	"averageSeries": FUNC,
-	"summarize":     FUNC,
+	"alias":                 FUNC,
+	"avg":                   FUNC,
+	"averageSeries":         FUNC,
+	"summarize":             FUNC,
 	"nonNegativeDerivative": FUNC,
 }
 
@@ -49,7 +49,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	}
 	if token == scanner.Char || token == scanner.String {
 		token = STRING
-		tokstr = tokstr[1:len(tokstr)-1]
+		tokstr = tokstr[1 : len(tokstr)-1]
 	}
 	if v, ok := symTable[l.TokenText()]; ok {
 		token = v
