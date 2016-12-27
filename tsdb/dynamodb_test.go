@@ -81,7 +81,7 @@ func TestBatchGet(t *testing.T) {
 		Metrics: expected,
 	})
 	defer ctrl.Finish()
-	metrics, err := batchGet(&timeSlot{"SeriesTestRange-1m1h-0", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60)
+	metrics, err := batchGet(&timeSlot{DynamoDBTableOneHour + "-0", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60)
 	assert.NoError(t, err)
 	assert.Exactly(t, expected, metrics)
 }
@@ -110,7 +110,7 @@ func TestConcurrentBatchGet(t *testing.T) {
 	})
 	defer ctrl.Finish()
 	c := make(chan interface{})
-	concurrentBatchGet(&timeSlot{"SeriesTestRange-1m1h-0", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60, c)
+	concurrentBatchGet(&timeSlot{DynamoDBTableOneHour + "-0", 1000}, []string{"server1.loadavg5", "server2.loadavg5"}, 60, c)
 	var metrics []*model.Metric
 	ret := <-c
 	metrics = append(metrics, ret.([]*model.Metric)...)
