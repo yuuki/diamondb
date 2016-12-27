@@ -14,14 +14,14 @@ import (
 	"github.com/yuuki/dynamond/model"
 )
 
-type MockDynamoDB struct {
+type MockDynamoDBParam struct {
 	TableName string
 	ItemEpoch int64
 	Names     []string
 	Metrics   []*model.Metric
 }
 
-func SetMockDynamoDB(t *testing.T, m *MockDynamoDB) *gomock.Controller {
+func SetMockDynamoDB(t *testing.T, m *MockDynamoDBParam) *gomock.Controller {
 	ctrl := gomock.NewController(t)
 	dmock := NewMockDynamoDBAPI(ctrl)
 

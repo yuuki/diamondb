@@ -32,7 +32,7 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 			60,
 		),
 	}
-	ctrl := SetMockDynamoDB(t, &MockDynamoDB{
+	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: "SeriesTestRange-1m1h-0",
 		ItemEpoch: 0,
 		Names: []string{"roleA.r.1.loadavg", "roleA.r.2.loadavg"},
@@ -80,7 +80,7 @@ func TestBatchGet(t *testing.T) {
 			60,
 		),
 	}
-	ctrl := SetMockDynamoDB(t, &MockDynamoDB{
+	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: "SeriesTestRange",
 		ItemEpoch: 1000,
 		Names: names,
@@ -113,7 +113,7 @@ func TestConcurrentBatchGet(t *testing.T) {
 			60,
 		),
 	}
-	ctrl := SetMockDynamoDB(t, &MockDynamoDB{
+	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: "SeriesTestRange",
 		ItemEpoch: 1000,
 		Names: names,
