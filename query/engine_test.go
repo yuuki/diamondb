@@ -12,7 +12,7 @@ import (
 
 func TestEvalTarget_Func(t *testing.T) {
 	ctrl := tsdb.SetMockDynamoDB(t, &tsdb.MockDynamoDBParam{
-		TableName: "SeriesTestRange-1m1h",
+		TableName: tsdb.DynamoDBTableOneHour + "-0",
 		ItemEpoch: 0,
 		Metrics: []*model.Metric{
 			model.NewMetric(
@@ -39,7 +39,7 @@ func TestEvalTarget_Func(t *testing.T) {
 
 func TestEvalTarget_FuncNest(t *testing.T) {
 	ctrl := tsdb.SetMockDynamoDB(t, &tsdb.MockDynamoDBParam{
-		TableName: "SeriesTestRange-1m1h",
+		TableName: tsdb.DynamoDBTableOneHour + "-0",
 		ItemEpoch: 0,
 		Metrics: []*model.Metric{
 			model.NewMetric(

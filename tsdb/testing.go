@@ -21,8 +21,6 @@ type MockDynamoDBParam struct {
 }
 
 func SetMockDynamoDB(t *testing.T, m *MockDynamoDBParam) *gomock.Controller {
-	tableName := fmt.Sprintf("%s-%d", m.TableName, m.ItemEpoch)
-
 	ctrl := gomock.NewController(t)
 	dmock := NewMockDynamoDBAPI(ctrl)
 
@@ -34,7 +32,7 @@ func SetMockDynamoDB(t *testing.T, m *MockDynamoDBParam) *gomock.Controller {
 		})
 	}
 	items := make(map[string]*dynamodb.KeysAndAttributes)
-	items[tableName] = &dynamodb.KeysAndAttributes{Keys: keys}
+	items[m.TableName] = &dynamodb.KeysAndAttributes{Keys: keys}
 	params := &dynamodb.BatchGetItemInput{
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
@@ -56,7 +54,7 @@ func SetMockDynamoDB(t *testing.T, m *MockDynamoDBParam) *gomock.Controller {
 			"Timestamp": &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
 			"Values": &dynamodb.AttributeValue{BS: vals},
 		}
-		responses[tableName] = append(responses[tableName], attribute)
+		responses[m.TableName] = append(responses[m.TableName], attribute)
 	}
 
 	expect.Return(&dynamodb.BatchGetItemOutput{
