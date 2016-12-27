@@ -35,7 +35,6 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: "SeriesTestRange-1m1h-0",
 		ItemEpoch: 0,
-		Names: []string{"roleA.r.1.loadavg", "roleA.r.2.loadavg"},
 		Metrics: expected,
 	})
 	defer ctrl.Finish()
@@ -60,10 +59,6 @@ func TestGroupNames(t *testing.T) {
 }
 
 func TestBatchGet(t *testing.T) {
-	names := []string{
-		"server1.loadavg5",
-		"server2.loadavg5",
-	}
 	expected := []*model.Metric{
 		model.NewMetric(
 			"server1.loadavg5",
@@ -83,7 +78,6 @@ func TestBatchGet(t *testing.T) {
 	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: "SeriesTestRange",
 		ItemEpoch: 1000,
-		Names: names,
 		Metrics: expected,
 	})
 	defer ctrl.Finish()
@@ -93,10 +87,6 @@ func TestBatchGet(t *testing.T) {
 }
 
 func TestConcurrentBatchGet(t *testing.T) {
-	names := []string{
-		"server1.loadavg5",
-		"server2.loadavg5",
-	}
 	expected := []*model.Metric{
 		model.NewMetric(
 			"server1.loadavg5",
@@ -116,7 +106,6 @@ func TestConcurrentBatchGet(t *testing.T) {
 	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: "SeriesTestRange",
 		ItemEpoch: 1000,
-		Names: names,
 		Metrics: expected,
 	})
 	defer ctrl.Finish()

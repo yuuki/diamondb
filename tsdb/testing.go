@@ -17,7 +17,6 @@ import (
 type MockDynamoDBParam struct {
 	TableName string
 	ItemEpoch int64
-	Names     []string
 	Metrics   []*model.Metric
 }
 
