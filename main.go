@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 
@@ -20,11 +21,20 @@ const (
 	DEFAULT_CONFIG = "dynamond.conf"
 )
 
-func main() {
-	os.Exit(Run(os.Args))
+// CLI is the command line object
+type CLI struct {
+	// outStream and errStream are the stdout and stderr
+	// to write message from the CLI.
+	outStream, errStream io.Writer
 }
 
-func Run(args []string) int {
+func main() {
+	cli := &CLI{outStream: os.Stdout, errStream: os.Stderr}
+	os.Exit(cli.Run(os.Args))
+}
+
+// Run invokes the CLI with the given arguments.
+func (cli *CLI) Run(args []string) int {
 	var (
 		host     string
 		port     string
@@ -34,8 +44,9 @@ func Run(args []string) int {
 	)
 
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
+	flags.SetOutput(cli.errStream)
 	flags.Usage = func() {
-		fmt.Fprintf(os.Stderr, helpText)
+		fmt.Fprint(cli.errStream, helpText)
 	}
 	flags.StringVar(&host, "host", DEFAULT_HOST, "")
 	flags.StringVar(&host, "H", DEFAULT_HOST, "")
@@ -48,10 +59,15 @@ func Run(args []string) int {
 	flags.BoolVar(&debug, "debug", false, "")
 	flags.BoolVar(&debug, "d", false, "")
 
-	if err := flags.Parse(os.Args[1:]); err != nil {
+	if err := flags.Parse(args[1:]); err != nil {
 		return 1
 	}
 	log.SetDebug(debug)
+
+	if version {
+		fmt.Fprintf(cli.errStream, "%s version %s, build %s \n", Name, Version, GitCommit)
+		return 0
+	}
 
 	if err := config.Load(confPath); err != nil {
 		log.Printf("Failed to load the config file: %s", err)
