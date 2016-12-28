@@ -9,9 +9,9 @@ import (
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
 
-	"github.com/yuuki/dynamond/config"
-	"github.com/yuuki/dynamond/handler"
-	"github.com/yuuki/dynamond/log"
+	"github.com/yuuki/dynamond/lib/config"
+	"github.com/yuuki/dynamond/lib/log"
+	"github.com/yuuki/dynamond/lib/web"
 )
 
 const (
@@ -59,7 +59,7 @@ func Run(args []string) int {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/render", handler.Render)
+	mux.HandleFunc("/render", web.Render)
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())

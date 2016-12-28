@@ -1,10 +1,10 @@
-package handler
+package web
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/yuuki/dynamond/log"
+	"github.com/yuuki/dynamond/lib/log"
 )
 
 func JSON(w http.ResponseWriter, status int, v interface{}) {

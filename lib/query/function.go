@@ -8,8 +8,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/dynamond/mathutil"
-	"github.com/yuuki/dynamond/model"
+	"github.com/yuuki/dynamond/lib/mathutil"
+	"github.com/yuuki/dynamond/lib/model"
 )
 
 func zipSeriesList(seriesList []*model.Metric) (map[string][]float64, int) {

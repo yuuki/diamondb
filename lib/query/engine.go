@@ -5,8 +5,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/dynamond/model"
-	"github.com/yuuki/dynamond/tsdb"
+	"github.com/yuuki/dynamond/lib/model"
+	"github.com/yuuki/dynamond/lib/tsdb"
 )
 
 func EvalTarget(target string, startTime, endTime time.Time) ([]*model.Metric, error) {

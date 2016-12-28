@@ -1,14 +1,14 @@
-package handler
+package web
 
 import (
 	"net/http"
 	"net/url"
 	"time"
 
-	"github.com/yuuki/dynamond/log"
-	"github.com/yuuki/dynamond/model"
-	"github.com/yuuki/dynamond/query"
-	"github.com/yuuki/dynamond/timeparser"
+	"github.com/yuuki/dynamond/lib/log"
+	"github.com/yuuki/dynamond/lib/model"
+	"github.com/yuuki/dynamond/lib/query"
+	"github.com/yuuki/dynamond/lib/timeparser"
 )
 
 const (
