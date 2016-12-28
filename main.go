@@ -15,12 +15,6 @@ import (
 	"github.com/yuuki/dynamond/lib/web"
 )
 
-const (
-	DEFAULT_HOST   = "localhost"
-	DEFAULT_PORT   = "8000"
-	DEFAULT_CONFIG = "dynamond.conf"
-)
-
 // CLI is the command line object
 type CLI struct {
 	// outStream and errStream are the stdout and stderr
@@ -36,11 +30,10 @@ func main() {
 // Run invokes the CLI with the given arguments.
 func (cli *CLI) Run(args []string) int {
 	var (
-		host     string
-		port     string
-		confPath string
-		version  bool
-		debug    bool
+		host    string
+		port    string
+		version bool
+		debug   bool
 	)
 
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
@@ -48,12 +41,10 @@ func (cli *CLI) Run(args []string) int {
 	flags.Usage = func() {
 		fmt.Fprint(cli.errStream, helpText)
 	}
-	flags.StringVar(&host, "host", DEFAULT_HOST, "")
-	flags.StringVar(&host, "H", DEFAULT_HOST, "")
-	flags.StringVar(&port, "port", DEFAULT_PORT, "")
-	flags.StringVar(&port, "P", DEFAULT_PORT, "")
-	flags.StringVar(&confPath, "conf", DEFAULT_CONFIG, "")
-	flags.StringVar(&confPath, "f", DEFAULT_CONFIG, "")
+	flags.StringVar(&host, "host", config.DefaultHost, "")
+	flags.StringVar(&host, "H", config.DefaultHost, "")
+	flags.StringVar(&port, "port", config.DefaultPort, "")
+	flags.StringVar(&port, "P", config.DefaultPort, "")
 	flags.BoolVar(&version, "version", false, "")
 	flags.BoolVar(&version, "v", false, "")
 	flags.BoolVar(&debug, "debug", false, "")
@@ -69,8 +60,8 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 
-	if err := config.Load(confPath); err != nil {
-		log.Printf("Failed to load the config file: %s", err)
+	if err := config.Load(); err != nil {
+		log.Printf("Failed to load the config: %s", err)
 		return 2
 	}
 
@@ -102,8 +93,7 @@ Usage: dynamond [options]
   dynamond is the DynamoDB-based TSDB API server.
 
 Options:
-
-  --config, -f         Config file
+  --host, -H           Bind host
 
   --port, -P           Listen port
 
