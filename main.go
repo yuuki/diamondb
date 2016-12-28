@@ -10,9 +10,9 @@ import (
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
 
-	"github.com/yuuki/dynamond/lib/config"
-	"github.com/yuuki/dynamond/lib/log"
-	"github.com/yuuki/dynamond/lib/web"
+	"github.com/yuuki/diamondb/lib/config"
+	"github.com/yuuki/diamondb/lib/log"
+	"github.com/yuuki/diamondb/lib/web"
 )
 
 // CLI is the command line object
@@ -88,9 +88,9 @@ func (cli *CLI) Run(args []string) int {
 }
 
 var helpText = `
-Usage: dynamond [options]
+Usage: diamondb [options]
 
-  dynamond is the DynamoDB-based TSDB API server.
+  diamondb is the DynamoDB-based TSDB API server.
 
 Options:
   --host, -H           Bind host

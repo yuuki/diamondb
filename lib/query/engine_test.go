@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yuuki/dynamond/lib/model"
-	"github.com/yuuki/dynamond/lib/tsdb"
+	"github.com/yuuki/diamondb/lib/model"
+	"github.com/yuuki/diamondb/lib/tsdb"
 )
 
 func TestEvalTarget_Func(t *testing.T) {

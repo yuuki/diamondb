@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
 
-	"github.com/yuuki/dynamond/lib/model"
+	"github.com/yuuki/diamondb/lib/model"
 )
 
 type MockDynamoDBParam struct {

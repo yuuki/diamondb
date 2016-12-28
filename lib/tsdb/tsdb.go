@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/dynamond/lib/model"
+	"github.com/yuuki/diamondb/lib/model"
 )
 
 func FetchMetric(name string, start, end time.Time) ([]*model.Metric, error) {

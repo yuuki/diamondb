@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/yuuki/dynamond/lib/log"
+	"github.com/yuuki/diamondb/lib/log"
 )
 
 func JSON(w http.ResponseWriter, status int, v interface{}) {

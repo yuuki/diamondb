@@ -19,11 +19,11 @@ const (
 var Config = &config{}
 
 func Load() error {
-	Config.Host = os.Getenv("DYNAMOND_HOST")
+	Config.Host = os.Getenv("DIAMONDB_HOST")
 	if Config.Host == "" {
 		Config.Host = DefaultHost
 	}
-	Config.Port = os.Getenv("DYNAMOND_PORT")
+	Config.Port = os.Getenv("DIAMONDB_PORT")
 	if Config.Port == "" {
 		Config.Port = DefaultPort
 	}

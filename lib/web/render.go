@@ -5,10 +5,10 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/yuuki/dynamond/lib/log"
-	"github.com/yuuki/dynamond/lib/model"
-	"github.com/yuuki/dynamond/lib/query"
-	"github.com/yuuki/dynamond/lib/timeparser"
+	"github.com/yuuki/diamondb/lib/log"
+	"github.com/yuuki/diamondb/lib/model"
+	"github.com/yuuki/diamondb/lib/query"
+	"github.com/yuuki/diamondb/lib/timeparser"
 )
 
 const (

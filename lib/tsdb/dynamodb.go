@@ -13,8 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/dynamond/lib/mathutil"
-	"github.com/yuuki/dynamond/lib/model"
+	"github.com/yuuki/diamondb/lib/mathutil"
+	"github.com/yuuki/diamondb/lib/model"
 )
 
 type timeSlot struct {

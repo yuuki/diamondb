@@ -1,4 +1,4 @@
-package: github.com/yuuki/dynamond
+package: github.com/yuuki/diamondb
 import:
 - package: github.com/pkg/errors
   version: ^0.8.0

@@ -10,14 +10,14 @@ import (
 func TestRun_versionFlag(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	cli := &CLI{outStream: outStream, errStream: errStream}
-	args := strings.Split("dynamond --version", " ")
+	args := strings.Split("diamondb --version", " ")
 
 	status := cli.Run(args)
 	if status != 0 {
 		t.Errorf("expected %d to eq %d", status, 0)
 	}
 
-	expected := fmt.Sprintf("dynamond version %s", Version)
+	expected := fmt.Sprintf("diamondb version %s", Version)
 	if !strings.Contains(errStream.String(), expected) {
 		t.Errorf("expected %q to eq %q", errStream.String(), expected)
 	}
@@ -26,7 +26,7 @@ func TestRun_versionFlag(t *testing.T) {
 func TestRun_parseError(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	cli := &CLI{outStream: outStream, errStream: errStream}
-	args := strings.Split("dynamond --not-exist", " ")
+	args := strings.Split("diamondb --not-exist", " ")
 
 	status := cli.Run(args)
 	if status != 1 {

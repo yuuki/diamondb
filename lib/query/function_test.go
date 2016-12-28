@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/yuuki/dynamond/lib/model"
+	"github.com/yuuki/diamondb/lib/model"
 )
 
 func generateSeriesList() []*model.Metric {

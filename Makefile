@@ -1,4 +1,4 @@
-NAME=dynamond
+NAME=diamondb
 COMMIT = $$(git describe --always)
 
 all: build
