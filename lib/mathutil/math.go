@@ -22,6 +22,14 @@ func SumFloat64(vals []float64) float64 {
 	return sum
 }
 
+func MultiplyFloat64(vals []float64) float64 {
+	multiplies := 1.0
+	for _, v := range vals {
+		multiplies *= v
+	}
+	return multiplies
+}
+
 // gcd is Greatest common divisor
 func Gcd(a, b int) int {
 	if b == 0 {
