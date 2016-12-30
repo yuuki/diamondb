@@ -2,6 +2,7 @@ package query
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"testing"
 
@@ -167,6 +168,26 @@ func TestAverageSeries(t *testing.T) {
 	}
 	expected := &model.Metric{
 		Name:       "averageSeries(server0.loadavg5,server1.loadavg5,server2.loadavg5)",
+		DataPoints: points,
+		Start:      0,
+		End:        99,
+		Step:       1,
+	}
+	if !reflect.DeepEqual(series, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, series)
+	}
+}
+
+func TestMultiplySeries(t *testing.T) {
+	series := multiplySeries(generateSeriesList())
+
+	points := make([]*model.DataPoint, 100)
+	points[0] = model.NewDataPoint(int64(0), float64(1*1*1))
+	for i := 1; i < 100; i++ {
+		points[i] = model.NewDataPoint(int64(i), math.Pow(float64(i+1), 2))
+	}
+	expected := &model.Metric{
+		Name:       "multiplySeries(server0.loadavg5,server1.loadavg5,server2.loadavg5)",
 		DataPoints: points,
 		Start:      0,
 		End:        99,
