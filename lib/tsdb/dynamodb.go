@@ -49,7 +49,7 @@ func SetDynamoDB(client dynamodbiface.DynamoDBAPI) {
 }
 
 func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metric, error) {
-	slots, step := listTimeSlots(start, end)
+	slots, step := selectTimeSlots(start, end)
 	nameGroups := groupNames(splitName(name), dynamodbBatchLimit)
 	c := make(chan interface{})
 	for _, slot := range slots {
@@ -155,7 +155,7 @@ func splitName(name string) []string {
 	return names
 }
 
-func listTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
+func selectTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
 	var (
 		tableName      string
 		step           int

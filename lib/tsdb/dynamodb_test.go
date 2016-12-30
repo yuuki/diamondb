@@ -153,94 +153,83 @@ func TestSplitName(t *testing.T) {
 	}
 }
 
-func TestListTablesByRange_1m1h(t *testing.T) {
-	slots, step := listTimeSlots(time.Unix(100, 0), time.Unix(6000, 0))
-
-	if step != 60 {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", 60, step)
-	}
-	expected := []*timeSlot{
-		{
-			tableName: DynamoDBTableOneHour + "-0",
-			itemEpoch: 0,
+var selectTimeSlotsTests = []struct {
+	start     time.Time
+	end       time.Time
+	step      int
+	timeSlots []*timeSlot
+}{
+	{
+		time.Unix(100, 0), time.Unix(6000, 0), 60,
+		[]*timeSlot{
+			{
+				tableName: DynamoDBTableOneHour + "-0",
+				itemEpoch: 0,
+			},
+			{
+				tableName: DynamoDBTableOneHour + "-0",
+				itemEpoch: 3600,
+			},
 		},
-		{
-			tableName: DynamoDBTableOneHour + "-0",
-			itemEpoch: 3600,
+	},
+	{
+		time.Unix(10000, 0), time.Unix(100000, 0), 300,
+		[]*timeSlot{
+			{
+				tableName: DynamoDBTableOneDay + "-0",
+				itemEpoch: 0,
+			},
+			{
+				tableName: DynamoDBTableOneDay + "-86400",
+				itemEpoch: 86400,
+			},
 		},
-	}
-	if !reflect.DeepEqual(slots, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, slots)
-	}
+	},
+	{
+		time.Unix(100000, 0), time.Unix(1000000, 0), 3600,
+		[]*timeSlot{
+			{
+				tableName: DynamoDBTableOneWeek + "-0",
+				itemEpoch: 0,
+			},
+			{
+				tableName: DynamoDBTableOneWeek + "-604800",
+				itemEpoch: 604800,
+			},
+		},
+	},
+	{
+		time.Unix(1000000, 0), time.Unix(100000000, 0), 86400,
+		[]*timeSlot{
+			{
+				tableName: DynamoDBTableOneYear + "-0",
+				itemEpoch: 0,
+			},
+			{
+				tableName: DynamoDBTableOneYear + "-31104000",
+				itemEpoch: 31104000,
+			},
+			{
+				tableName: DynamoDBTableOneYear + "-62208000",
+				itemEpoch: 62208000,
+			},
+			{
+				tableName: DynamoDBTableOneYear + "-93312000",
+				itemEpoch: 93312000,
+			},
+		},
+	},
 }
 
-func TestListTablesByRange_5m1d(t *testing.T) {
-	slots, step := listTimeSlots(time.Unix(10000, 0), time.Unix(100000, 0))
+func TestSelectTimeSlots(t *testing.T) {
+	for _, lc := range selectTimeSlotsTests {
+		slots, step := selectTimeSlots(lc.start, lc.end)
 
-	if step != 300 {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", 300, step)
-	}
-	expected := []*timeSlot{
-		{
-			tableName: DynamoDBTableOneDay + "-0",
-			itemEpoch: 0,
-		},
-		{
-			tableName: DynamoDBTableOneDay + "-86400",
-			itemEpoch: 86400,
-		},
-	}
-	if !reflect.DeepEqual(slots, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, slots)
-	}
-}
-
-func TestListTablesByRange_1h7d(t *testing.T) {
-	slots, step := listTimeSlots(time.Unix(100000, 0), time.Unix(1000000, 0))
-
-	if step != 3600 {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", 3600, step)
-	}
-	expected := []*timeSlot{
-		{
-			tableName: DynamoDBTableOneWeek + "-0",
-			itemEpoch: 0,
-		},
-		{
-			tableName: DynamoDBTableOneWeek + "-604800",
-			itemEpoch: 604800,
-		},
-	}
-	if !reflect.DeepEqual(slots, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, slots)
-	}
-}
-
-func TestListTablesByRange_1d360d(t *testing.T) {
-	slots, step := listTimeSlots(time.Unix(1000000, 0), time.Unix(100000000, 0))
-
-	if step != 86400 {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", 86400, step)
-	}
-	expected := []*timeSlot{
-		{
-			tableName: DynamoDBTableOneYear + "-0",
-			itemEpoch: 0,
-		},
-		{
-			tableName: DynamoDBTableOneYear + "-31104000",
-			itemEpoch: 31104000,
-		},
-		{
-			tableName: DynamoDBTableOneYear + "-62208000",
-			itemEpoch: 62208000,
-		},
-		{
-			tableName: DynamoDBTableOneYear + "-93312000",
-			itemEpoch: 93312000,
-		},
-	}
-	if !reflect.DeepEqual(slots, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, slots)
+		if step != lc.step {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", lc.step, step)
+		}
+		if !reflect.DeepEqual(slots, lc.timeSlots) {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", lc.timeSlots, slots)
+		}
 	}
 }
