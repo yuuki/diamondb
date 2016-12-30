@@ -102,6 +102,7 @@ func doSumSeries(seriesList []*model.Metric) []*model.Metric {
 	return seriesList
 }
 
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeries
 func sumSeries(seriesList []*model.Metric) *model.Metric {
 	if len(seriesList) == 0 {
 		return model.NewEmptyMetric()
