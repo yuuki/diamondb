@@ -1,25 +1,26 @@
 package query
 
 import (
+	"reflect"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/yuuki/diamondb/lib/model"
 	"github.com/yuuki/diamondb/lib/tsdb"
 )
 
 func TestEvalTarget_Func(t *testing.T) {
+	points := []*model.DataPoint{
+		{60, 10.0},
+		{120, 11.0},
+	}
 	ctrl := tsdb.SetMockDynamoDB(t, &tsdb.MockDynamoDBParam{
 		TableName: tsdb.DynamoDBTableOneHour + "-0",
 		ItemEpoch: 0,
 		Metrics: []*model.Metric{
 			model.NewMetric(
-				"Sales.widgets.largeBlue",
-				[]*model.DataPoint{
-					{60, 10.0},
-				},
+				"server1.loadavg5",
+				points,
 				60,
 			),
 		},
@@ -27,26 +28,34 @@ func TestEvalTarget_Func(t *testing.T) {
 	defer ctrl.Finish()
 
 	metrics, err := EvalTarget(
-		"alias(Sales.widgets.largeBlue,\"Large Blue Widgets\")",
+		"alias(server1.loadavg5,\"server01.loadavg5\")",
 		time.Unix(0, 0),
 		time.Unix(120, 0),
 	)
-	if assert.NoError(t, err) {
-		assert.Exactly(t, 1, len(metrics))
-		assert.Exactly(t, metrics[0].Name, "Large Blue Widgets")
+
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	expected := []*model.Metric{
+		{Name: "server01.loadavg5", Start: 60, End: 120, Step: 60, DataPoints: points},
+	}
+	if !reflect.DeepEqual(metrics, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
 	}
 }
 
 func TestEvalTarget_FuncNest(t *testing.T) {
+	points := []*model.DataPoint{
+		{60, 10.0},
+		{120, 11.0},
+	}
 	ctrl := tsdb.SetMockDynamoDB(t, &tsdb.MockDynamoDBParam{
 		TableName: tsdb.DynamoDBTableOneHour + "-0",
 		ItemEpoch: 0,
 		Metrics: []*model.Metric{
 			model.NewMetric(
-				"Sales.widgets.largeBlue",
-				[]*model.DataPoint{
-					{60, 10.0},
-				},
+				"server1.loadavg5",
+				points,
 				60,
 			),
 		},
@@ -54,12 +63,18 @@ func TestEvalTarget_FuncNest(t *testing.T) {
 	defer ctrl.Finish()
 
 	metrics, err := EvalTarget(
-		"alias(alias(Sales.widgets.largeBlue,\"Large Blue Widgets\"),\"Large Blue Widgets Sales\")",
+		"alias(alias(server1.loadavg5,\"server01.loadavg5\"),\"server001.loadavg5\")",
 		time.Unix(0, 0),
 		time.Unix(120, 0),
 	)
-	if assert.NoError(t, err) {
-		assert.Exactly(t, 1, len(metrics))
-		assert.Exactly(t, metrics[0].Name, "Large Blue Widgets Sales")
+
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	expected := []*model.Metric{
+		{Name: "server001.loadavg5", Start: 60, End: 120, Step: 60, DataPoints: points},
+	}
+	if !reflect.DeepEqual(metrics, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
 	}
 }
