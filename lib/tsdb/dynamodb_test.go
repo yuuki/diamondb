@@ -2,10 +2,9 @@ package tsdb
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/yuuki/diamondb/lib/model"
 )
@@ -38,9 +37,13 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 		Metrics:   expected,
 	})
 	defer ctrl.Finish()
+
 	metrics, err := FetchMetricsFromDynamoDB(name, time.Unix(100, 0), time.Unix(300, 0))
-	if assert.NoError(t, err) {
-		assert.Exactly(t, expected, metrics)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	if !reflect.DeepEqual(metrics, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
 	}
 }
 
@@ -55,7 +58,9 @@ func TestGroupNames(t *testing.T) {
 		{"server3.loadavg5", "server4.loadavg5"},
 		{"server5.loadavg5"},
 	}
-	assert.Exactly(t, expected, nameGroups)
+	if !reflect.DeepEqual(nameGroups, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, nameGroups)
+	}
 }
 
 func TestBatchGet(t *testing.T) {
@@ -81,13 +86,18 @@ func TestBatchGet(t *testing.T) {
 		Metrics:   expected,
 	})
 	defer ctrl.Finish()
+
 	metrics, err := batchGet(
 		&timeSlot{DynamoDBTableOneHour + "-0", 1000},
 		[]string{"server1.loadavg5", "server2.loadavg5"},
 		60,
 	)
-	assert.NoError(t, err)
-	assert.Exactly(t, expected, metrics)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	if !reflect.DeepEqual(metrics, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	}
 }
 
 func TestConcurrentBatchGet(t *testing.T) {
@@ -113,6 +123,7 @@ func TestConcurrentBatchGet(t *testing.T) {
 		Metrics:   expected,
 	})
 	defer ctrl.Finish()
+
 	c := make(chan interface{})
 	concurrentBatchGet(
 		&timeSlot{DynamoDBTableOneHour + "-0", 1000},
@@ -123,7 +134,9 @@ func TestConcurrentBatchGet(t *testing.T) {
 	var metrics []*model.Metric
 	ret := <-c
 	metrics = append(metrics, ret.([]*model.Metric)...)
-	assert.Exactly(t, expected, metrics)
+	if !reflect.DeepEqual(metrics, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	}
 }
 
 func TestSplitName(t *testing.T) {
@@ -135,13 +148,17 @@ func TestSplitName(t *testing.T) {
 		"roleA.r.3.loadavg",
 		"roleA.r.4.loadavg",
 	}
-	assert.Exactly(t, expected, names)
+	if !reflect.DeepEqual(names, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, names)
+	}
 }
 
 func TestListTablesByRange_1m1h(t *testing.T) {
-	s, e := time.Unix(100, 0), time.Unix(6000, 0)
-	slots, step := listTimeSlots(s, e)
-	assert.Exactly(t, 60, step)
+	slots, step := listTimeSlots(time.Unix(100, 0), time.Unix(6000, 0))
+
+	if step != 60 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 60, step)
+	}
 	expected := []*timeSlot{
 		{
 			tableName: DynamoDBTableOneHour + "-0",
@@ -152,13 +169,17 @@ func TestListTablesByRange_1m1h(t *testing.T) {
 			itemEpoch: 3600,
 		},
 	}
-	assert.Exactly(t, expected, slots)
+	if !reflect.DeepEqual(slots, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, slots)
+	}
 }
 
 func TestListTablesByRange_5m1d(t *testing.T) {
-	s, e := time.Unix(10000, 0), time.Unix(100000, 0)
-	slots, step := listTimeSlots(s, e)
-	assert.Exactly(t, 300, step)
+	slots, step := listTimeSlots(time.Unix(10000, 0), time.Unix(100000, 0))
+
+	if step != 300 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 300, step)
+	}
 	expected := []*timeSlot{
 		{
 			tableName: DynamoDBTableOneDay + "-0",
@@ -169,13 +190,17 @@ func TestListTablesByRange_5m1d(t *testing.T) {
 			itemEpoch: 86400,
 		},
 	}
-	assert.Exactly(t, expected, slots)
+	if !reflect.DeepEqual(slots, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, slots)
+	}
 }
 
 func TestListTablesByRange_1h7d(t *testing.T) {
-	s, e := time.Unix(100000, 0), time.Unix(1000000, 0)
-	slots, step := listTimeSlots(s, e)
-	assert.Exactly(t, 3600, step)
+	slots, step := listTimeSlots(time.Unix(100000, 0), time.Unix(1000000, 0))
+
+	if step != 3600 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 3600, step)
+	}
 	expected := []*timeSlot{
 		{
 			tableName: DynamoDBTableOneWeek + "-0",
@@ -186,13 +211,17 @@ func TestListTablesByRange_1h7d(t *testing.T) {
 			itemEpoch: 604800,
 		},
 	}
-	assert.Exactly(t, expected, slots)
+	if !reflect.DeepEqual(slots, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, slots)
+	}
 }
 
 func TestListTablesByRange_1d360d(t *testing.T) {
-	s, e := time.Unix(1000000, 0), time.Unix(100000000, 0)
-	slots, step := listTimeSlots(s, e)
-	assert.Exactly(t, 86400, step)
+	slots, step := listTimeSlots(time.Unix(1000000, 0), time.Unix(100000000, 0))
+
+	if step != 86400 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 86400, step)
+	}
 	expected := []*timeSlot{
 		{
 			tableName: DynamoDBTableOneYear + "-0",
@@ -211,5 +240,7 @@ func TestListTablesByRange_1d360d(t *testing.T) {
 			itemEpoch: 93312000,
 		},
 	}
-	assert.Exactly(t, expected, slots)
+	if !reflect.DeepEqual(slots, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, slots)
+	}
 }
