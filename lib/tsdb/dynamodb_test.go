@@ -153,7 +153,7 @@ func TestSplitName(t *testing.T) {
 	}
 }
 
-var listTablesByRangeTests = []struct {
+var selectTimeSlotsTests = []struct {
 	start     time.Time
 	end       time.Time
 	step      int
@@ -221,9 +221,9 @@ var listTablesByRangeTests = []struct {
 	},
 }
 
-func TestListTablesByRange_1m1h(t *testing.T) {
-	for _, lc := range listTablesByRangeTests {
-		slots, step := listTimeSlots(lc.start, lc.end)
+func TestSelectTimeSlots(t *testing.T) {
+	for _, lc := range selectTimeSlotsTests {
+		slots, step := selectTimeSlots(lc.start, lc.end)
 
 		if step != lc.step {
 			t.Fatalf("\nExpected: %+v\nActual:   %+v", lc.step, step)
