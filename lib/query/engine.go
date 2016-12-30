@@ -52,6 +52,9 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 			case "averageSeries", "avg":
 				metricList = doAverageSeries(metricList)
 				return metricList, nil
+			case "sumSeries", "sum":
+				metricList = doSumSeries(metricList)
+				return metricList, nil
 			default:
 				return nil, errors.Errorf("Unknown function %s", e.Name)
 			}

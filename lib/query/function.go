@@ -95,6 +95,33 @@ func alias(seriesList []*model.Metric, newName string) []*model.Metric {
 	return seriesList
 }
 
+func doSumSeries(seriesList []*model.Metric) []*model.Metric {
+	series := sumSeries(seriesList)
+	seriesList = make([]*model.Metric, 1)
+	seriesList[0] = series
+	return seriesList
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeries
+func sumSeries(seriesList []*model.Metric) *model.Metric {
+	if len(seriesList) == 0 {
+		return model.NewEmptyMetric()
+	}
+	name := fmt.Sprintf("sumSeries(%s)", formatSeries(seriesList))
+
+	seriesList, _, _, step := normalize(seriesList)
+
+	valuesByTimeStamp, maxLen := zipSeriesList(seriesList)
+	points := make([]*model.DataPoint, 0, maxLen)
+	for key, vals := range valuesByTimeStamp {
+		avg := mathutil.SumFloat64(vals)
+		ts, _ := strconv.ParseInt(key, 10, 64)
+		point := model.NewDataPoint(ts, avg)
+		points = append(points, point)
+	}
+	return model.NewMetric(name, points, step)
+}
+
 func doAverageSeries(seriesList []*model.Metric) []*model.Metric {
 	series := averageSeries(seriesList)
 	seriesList = make([]*model.Metric, 1)

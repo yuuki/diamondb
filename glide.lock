@@ -1,16 +1,56 @@
 hash: ac1f481779b55092c053ff2a5b8f5f765b03a81da9fc9334c4a8fa529c513a69
-updated: 2016-12-31T02:45:31.801688008+09:00
+updated: 2016-12-31T03:42:03.6358025+09:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 6c577e9e7b08a6d10bad1c9703227cd0403a8dd7
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/request
+  - aws/session
+  - aws/signer/v4
+  - private/endpoints
+  - private/protocol
+  - private/protocol/json/jsonutil
+  - private/protocol/jsonrpc
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/xml/xmlutil
+  - private/waiter
+  - service/dynamodb
+  - service/dynamodb/dynamodbiface
+  - service/sts
+- name: github.com/go-ini/ini
+  version: 6f66b0e091edb3c7b380f7c4f0f884274d550b67
 - name: github.com/go-redis/redis
-  version: b7bae3a78050e2e7ec2130a05cde296a9ff2e9c0
+  version: 8fcba2ea878201b70c5a63dd416141d4ddbc601a
+- name: github.com/golang/mock
+  version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
+  subpackages:
+  - gomock
+- name: github.com/jmespath/go-jmespath
+  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/rs/cors
   version: a62a804a8a009876ca59105f7899938a1349f4b3
+- name: github.com/rs/xhandler
+  version: ed27b6fd65218132ee50cd95f38474a3d8a2cd12
 - name: github.com/urfave/negroni
   version: fde5e16d32adc7ad637e9cd9ad21d4ebc6192535
-testImports:
-- name: github.com/golang/mock
-  version: ""
+- name: golang.org/x/net
+  version: f09c4662a0bd6bd8943ac7b4931e185df9471da4
+  subpackages:
+  - context
+testImports: []
