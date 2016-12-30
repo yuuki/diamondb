@@ -1,100 +1,169 @@
 package query
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
+import "testing"
 
 func TestParsetTarget_SeriesListExpr(t *testing.T) {
-	expr, err := ParseTarget("server.web1.load")
-	if assert.NoError(t, err) {
-		v, ok := expr.(SeriesListExpr)
-		assert.True(t, ok, "expr should be SeriesListExpr")
-		assert.Exactly(t, "server.web1.load", v.Literal)
+	expr, err := ParseTarget("server1.loadavg5")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	v, ok := expr.(SeriesListExpr)
+	if !ok {
+		t.Fatalf("expr %#v should be SeriesListExpr", v)
+	}
+	if v.Literal != "server1.loadavg5" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "server1.loadavg5", v.Literal)
 	}
 }
 
 func TestParsetTarget_FuncExpr(t *testing.T) {
-	expr, err := ParseTarget("averageSeries(company.server.*.threads.busy)")
-	if assert.NoError(t, err) {
-		v1, ok1 := expr.(FuncExpr)
-		if assert.True(t, ok1, "expr should be FuncExpr") {
-			assert.Exactly(t, "averageSeries", v1.Name)
-		}
-		v2, ok2 := v1.SubExprs[0].(SeriesListExpr)
-		if assert.True(t, ok2, "expr should be SeriesListExpr") {
-			assert.Exactly(t, "company.server.*.threads.busy", v2.Literal)
-		}
+	expr, err := ParseTarget("averageSeries(server1.loadavg5)")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	v1, ok1 := expr.(FuncExpr)
+	if !ok1 {
+		t.Fatalf("expr %#v should be FuncExpr", v1)
+	}
+	if v1.Name != "averageSeries" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "averageSeries", v1.Name)
+	}
+
+	v2, ok2 := v1.SubExprs[0].(SeriesListExpr)
+	if !ok2 {
+		t.Fatalf("expr %#v should be SeriesListExpr", v2)
+	}
+	if v2.Literal != "server1.loadavg5" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "server1.loadavg5", v2.Literal)
 	}
 }
 
 func TestParsetTarget_FuncExprWithArg(t *testing.T) {
-	expr, err := ParseTarget("alias(Sales.widgets.largeBlue,\"Large Blue Widgets\")")
-	if assert.NoError(t, err) {
-		v1, ok1 := expr.(FuncExpr)
-		if assert.True(t, ok1, "expr should be FuncExpr") {
-			assert.Exactly(t, "alias", v1.Name)
-		}
-		assert.Exactly(t, 2, len(v1.SubExprs))
-		v2, ok2 := v1.SubExprs[0].(SeriesListExpr)
-		if assert.True(t, ok2, "expr should be SeriesListExpr") {
-			assert.Exactly(t, "Sales.widgets.largeBlue", v2.Literal)
-		}
-		v3, ok3 := v1.SubExprs[1].(StringExpr)
-		if assert.True(t, ok3, "expr should be StringExpr") {
-			assert.Exactly(t, "Large Blue Widgets", v3.Literal)
-		}
+	expr, err := ParseTarget("alias(server1.loadavg5,\"server01.loadavg5\")")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	v1, ok1 := expr.(FuncExpr)
+	if !ok1 {
+		t.Fatalf("expr %#v should be FuncExpr", v1)
+	}
+	if v1.Name != "alias" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "alias", v1.Name)
+	}
+	if l := len(v1.SubExprs); l != 2 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 2, l)
+	}
+
+	v2, ok2 := v1.SubExprs[0].(SeriesListExpr)
+	if !ok2 {
+		t.Fatalf("expr %#v should be SeriesListExpr", v2)
+	}
+	if v2.Literal != "server1.loadavg5" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "server1.loadavg5", v2.Literal)
+	}
+
+	v3, ok3 := v1.SubExprs[1].(StringExpr)
+	if !ok3 {
+		t.Fatalf("expr %#v should be StringExpr", v3)
+	}
+	if v3.Literal != "server01.loadavg5" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "server01.loadavg5", v3.Literal)
 	}
 }
 
 func TestParsetTarget_FuncExprWithBoolExpr(t *testing.T) {
-	expr, err := ParseTarget("summarize(metric,\"13week\",\"avg\",true)")
-	if assert.NoError(t, err) {
-		v1, ok1 := expr.(FuncExpr)
-		if assert.True(t, ok1, "expr should be FuncExpr") {
-			assert.Exactly(t, "summarize", v1.Name)
-		}
-		assert.Exactly(t, 4, len(v1.SubExprs))
-		v2, ok2 := v1.SubExprs[0].(SeriesListExpr)
-		if assert.True(t, ok2, "expr should be SeriesListExpr") {
-			assert.Exactly(t, "metric", v2.Literal)
-		}
-		v3, ok3 := v1.SubExprs[1].(StringExpr)
-		if assert.True(t, ok3, "expr should be StringExpr") {
-			assert.Exactly(t, "13week", v3.Literal)
-		}
-		v4, ok4 := v1.SubExprs[2].(StringExpr)
-		if assert.True(t, ok4, "expr should be StringExpr") {
-			assert.Exactly(t, "avg", v4.Literal)
-		}
-		v5, ok5 := v1.SubExprs[3].(BoolExpr)
-		if assert.True(t, ok5, "expr should be BoolExpr") {
-			assert.True(t, v5.Literal)
-		}
+	expr, err := ParseTarget("summarize(server1.loadavg5,\"13week\",\"avg\",true)")
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	v1, ok1 := expr.(FuncExpr)
+	if !ok1 {
+		t.Fatalf("expr %#v should be FuncExpr", v1)
+	}
+	if v1.Name != "summarize" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "summarize", v1.Name)
+	}
+	if l := len(v1.SubExprs); l != 4 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 4, l)
+	}
+
+	v2, ok2 := v1.SubExprs[0].(SeriesListExpr)
+	if !ok2 {
+		t.Fatalf("expr %#v should be SeriesListExpr", v2)
+	}
+	if v2.Literal != "server1.loadavg5" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "server1.loadavg5", v2.Literal)
+	}
+
+	v3, ok3 := v1.SubExprs[1].(StringExpr)
+	if !ok3 {
+		t.Fatalf("expr %#v should be StringExpr", v3)
+	}
+	if v3.Literal != "13week" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "13week", v3.Literal)
+	}
+
+	v4, ok4 := v1.SubExprs[2].(StringExpr)
+	if !ok4 {
+		t.Fatalf("expr %#v should be StringExpr", v4)
+	}
+	if v4.Literal != "avg" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "avg", v4.Literal)
+	}
+
+	v5, ok5 := v1.SubExprs[3].(BoolExpr)
+	if !ok5 {
+		t.Fatalf("expr %#v should be BoolExpr", v5)
+	}
+	if v5.Literal != true {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", true, v5.Literal)
 	}
 }
 
 func TestParsetTarget_FuncExprWithFuncExpr(t *testing.T) {
 	expr, err := ParseTarget("summarize(nonNegativeDerivative(gauge.num_users),\"1week\")")
-	if assert.NoError(t, err) {
-		v1, ok1 := expr.(FuncExpr)
-		if assert.True(t, ok1, "expr should be FuncExpr") {
-			assert.Exactly(t, "summarize", v1.Name)
-		}
-		assert.Exactly(t, 2, len(v1.SubExprs))
-		v2, ok2 := v1.SubExprs[0].(FuncExpr)
-		if assert.True(t, ok2, "expr should be FuncExpr") {
-			assert.Exactly(t, 1, len(v2.SubExprs))
-			assert.Exactly(t, "nonNegativeDerivative", v2.Name)
-			v3, ok3 := v2.SubExprs[0].(SeriesListExpr)
-			if assert.True(t, ok3, "expr should be SeriesListExpr") {
-				assert.Exactly(t, "gauge.num_users", v3.Literal)
-			}
-		}
-		v4, ok4 := v1.SubExprs[1].(StringExpr)
-		if assert.True(t, ok4, "expr should be StringExpr") {
-			assert.Exactly(t, "1week", v4.Literal)
-		}
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	v1, ok1 := expr.(FuncExpr)
+	if !ok1 {
+		t.Fatalf("expr %#v should be FuncExpr", v1)
+	}
+	if v1.Name != "summarize" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "summarize", v1.Name)
+	}
+	if l := len(v1.SubExprs); l != 2 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 2, l)
+	}
+
+	v2, ok2 := v1.SubExprs[0].(FuncExpr)
+	if !ok2 {
+		t.Fatalf("expr %#v should be FuncExpr", v2)
+	}
+	if v2.Name != "nonNegativeDerivative" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "nonNegativeDerivative", v2.Name)
+	}
+	if l := len(v2.SubExprs); l != 1 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 1, l)
+	}
+
+	v3, ok3 := v2.SubExprs[0].(SeriesListExpr)
+	if !ok3 {
+		t.Fatalf("expr %#v should be SeriesListExpr", v3)
+	}
+	if v3.Literal != "gauge.num_users" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "gauge.num", v3.Literal)
+	}
+	v4, ok4 := v1.SubExprs[1].(StringExpr)
+	if !ok4 {
+		t.Fatalf("expr %#v should be StringExpr", v4)
+	}
+	if v4.Literal != "1week" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "1week", v4.Literal)
 	}
 }

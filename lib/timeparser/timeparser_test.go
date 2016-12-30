@@ -1,99 +1,72 @@
 package timeparser
 
 import (
-	"fmt"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestParseAtTime_Empty(t *testing.T) {
 	got, err := ParseAtTime("")
-	if assert.NoError(t, err) {
-		expected := time.Now()
-		gy, gm, gd := got.Date()
-		gh, _, _ := got.Clock()
-		ey, em, ed := expected.Date()
-		eh, _, _ := expected.Clock()
-
-		assert.Exactly(t, gy, ey)
-		assert.Exactly(t, gm, em)
-		assert.Exactly(t, gd, ed)
-		assert.Exactly(t, gh, eh)
+	if err != nil {
+		t.Fatalf("err: %s", err)
 	}
+
+	TestTimeNearlyEqual(t, got, time.Now())
 }
 
 func TestParseAtTime_UnixTime(t *testing.T) {
-	got, err := ParseAtTime("1444508126")
-	if assert.NoError(t, err) {
-		expected := time.Unix(1444508126, 0)
-		assert.Exactly(t, expected, got)
+	got, err := ParseAtTime("100")
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	if got != time.Unix(100, 0) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", time.Unix(100, 0), got)
 	}
 }
 
 func TestParseAtTime_CurrentTime(t *testing.T) {
 	got, err := ParseAtTime("now")
-	if assert.NoError(t, err) {
-		expected := time.Now()
-		gy, gm, gd := got.Date()
-		gh, _, _ := got.Clock()
-		ey, em, ed := expected.Date()
-		eh, _, _ := expected.Clock()
-
-		assert.Exactly(t, gy, ey)
-		assert.Exactly(t, gm, em)
-		assert.Exactly(t, gd, ed)
-		assert.Exactly(t, gh, eh)
+	if err != nil {
+		t.Fatalf("err: %s", err)
 	}
+
+	TestTimeNearlyEqual(t, got, time.Now())
 }
 
 func TestParseAtTime_RelativePlus(t *testing.T) {
 	got, err := ParseAtTime("now+3d")
-	if assert.NoError(t, err) {
-		expected := time.Now().AddDate(0, 0, 3)
-		gy, gm, gd := got.Date()
-		gh, _, _ := got.Clock()
-		ey, em, ed := expected.Date()
-		eh, _, _ := expected.Clock()
-
-		assert.Exactly(t, gy, ey)
-		assert.Exactly(t, gm, em)
-		assert.Exactly(t, gd, ed)
-		assert.Exactly(t, gh, eh)
+	if err != nil {
+		t.Fatalf("err: %s", err)
 	}
+
+	TestTimeNearlyEqual(t, got, time.Now().AddDate(0, 0, 3))
 }
 
 func TestParseAtTime_RelativeMinus(t *testing.T) {
 	got, err := ParseAtTime("now-30d")
-	if assert.NoError(t, err) {
-		expected := time.Now().AddDate(0, 0, -30)
-		gy, gm, gd := got.Date()
-		gh, _, _ := got.Clock()
-		ey, em, ed := expected.Date()
-		eh, _, _ := expected.Clock()
-
-		assert.Exactly(t, gy, ey)
-		assert.Exactly(t, gm, em)
-		assert.Exactly(t, gd, ed)
-		assert.Exactly(t, gh, eh)
+	if err != nil {
+		t.Fatalf("err: %s", err)
 	}
+
+	TestTimeNearlyEqual(t, got, time.Now().AddDate(0, 0, -30))
 }
 
 func TestParseAtTime_Absolute(t *testing.T) {
 	got, err := ParseAtTime("19:22_20161010")
-	if assert.NoError(t, err) {
-		expected := time.Date(2016, 10, 10, 19, 22, 0, 0, time.UTC)
-		assert.Exactly(t, expected, got)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	expected := time.Date(2016, 10, 10, 19, 22, 0, 0, time.UTC)
+	if expected != got {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, got)
 	}
 }
 
-type parseOffsetTest struct {
+var parseOffsetTests = []struct {
 	offset   string
 	duration time.Duration
-}
-
-var parseOffsetTests = []parseOffsetTest{
+}{
 	{"", time.Duration(0)},
 	{"-", time.Duration(0)},
 	{"+", time.Duration(0)},
@@ -112,10 +85,13 @@ var parseOffsetTests = []parseOffsetTest{
 }
 
 func TestParseTimeOffset(t *testing.T) {
-	for i, test := range parseOffsetTests {
-		got, err := parseTimeOffset(test.offset)
-		if assert.NoError(t, err) {
-			assert.Exactly(t, test.duration, got, fmt.Sprintf("#%d", i))
+	for i, tc := range parseOffsetTests {
+		got, err := parseTimeOffset(tc.offset)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+		if tc.duration != got {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v (#%d)", tc.duration, got, i)
 		}
 	}
 }

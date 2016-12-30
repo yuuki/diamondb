@@ -15,3 +15,6 @@
 - github.com/rs/cors
   - Copyright (c) 2014 Olivier Poitrey <rs@dailymotion.com>
   - [MIT LICENSE](https://github.com/rs/cors/blob/master/LICENSE)
+- github.com/go-redis/redis
+  - Copyright (c) 2013 The github.com/go-redis/redis Authors.
+  - [BSD LICENSE](https://github.com/go-redis/redis/blob/v5/LICENSE)
