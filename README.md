@@ -1,7 +1,15 @@
 DiamonDB
 ========
 
-DynamoDB-based TSDB API server in Golang, with graphite-web-like API.
+# What is DiamonDB?
+
+A Reliable, Scalable, Cloud-Based Time Series Database.
+
+- __Reliablity on top of well-known storage implementations__
+- __Horizontal scalability__
+- __Cost optimized__
+- __Compatible with Graphite API__
+- __Written in Go__
 
 # LICENSE
 
