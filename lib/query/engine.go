@@ -55,6 +55,9 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 			case "sumSeries", "sum":
 				metricList = doSumSeries(metricList)
 				return metricList, nil
+			case "maxSeries":
+				metricList = doMaxSeries(metricList)
+				return metricList, nil
 			case "multiplySeries":
 				metricList = doMultiplySeries(metricList)
 				return metricList, nil

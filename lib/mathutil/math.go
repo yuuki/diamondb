@@ -14,6 +14,13 @@ func MaxInt64(x, y int64) int64 {
 	return y
 }
 
+func maxFloat64(x, y float64) float64 {
+	if x > y {
+		return x
+	}
+	return y
+}
+
 func SumFloat64(vals []float64) float64 {
 	var sum float64
 	for _, v := range vals {
@@ -28,6 +35,14 @@ func MultiplyFloat64(vals []float64) float64 {
 		multiplies *= v
 	}
 	return multiplies
+}
+
+func MaxFloat64(vals []float64) float64 {
+	var max float64
+	for _, v := range vals {
+		max = maxFloat64(max, v)
+	}
+	return max
 }
 
 // gcd is Greatest common divisor
