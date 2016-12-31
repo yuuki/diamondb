@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/yuuki/diamondb/lib/model"
-	"github.com/yuuki/diamondb/lib/tsdb"
+	"github.com/yuuki/diamondb/lib/storage"
 )
 
 func TestEvalTarget_Func(t *testing.T) {
@@ -14,8 +14,8 @@ func TestEvalTarget_Func(t *testing.T) {
 		{60, 10.0},
 		{120, 11.0},
 	}
-	ctrl := tsdb.SetMockDynamoDB(t, &tsdb.MockDynamoDBParam{
-		TableName: tsdb.DynamoDBTableOneHour + "-0",
+	ctrl := storage.SetMockDynamoDB(t, &storage.MockDynamoDBParam{
+		TableName: storage.DynamoDBTableOneHour + "-0",
 		ItemEpoch: 0,
 		Metrics: []*model.Metric{
 			model.NewMetric(
@@ -49,8 +49,8 @@ func TestEvalTarget_FuncNest(t *testing.T) {
 		{60, 10.0},
 		{120, 11.0},
 	}
-	ctrl := tsdb.SetMockDynamoDB(t, &tsdb.MockDynamoDBParam{
-		TableName: tsdb.DynamoDBTableOneHour + "-0",
+	ctrl := storage.SetMockDynamoDB(t, &storage.MockDynamoDBParam{
+		TableName: storage.DynamoDBTableOneHour + "-0",
 		ItemEpoch: 0,
 		Metrics: []*model.Metric{
 			model.NewMetric(

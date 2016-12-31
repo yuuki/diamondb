@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/yuuki/diamondb/lib/model"
-	"github.com/yuuki/diamondb/lib/tsdb"
+	"github.com/yuuki/diamondb/lib/storage"
 )
 
 func EvalTarget(target string, startTime, endTime time.Time) ([]*model.Metric, error) {
@@ -20,7 +20,7 @@ func EvalTarget(target string, startTime, endTime time.Time) ([]*model.Metric, e
 func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error) {
 	switch e := expr.(type) {
 	case SeriesListExpr:
-		return tsdb.FetchMetric(e.Literal, startTime, endTime)
+		return storage.FetchMetric(e.Literal, startTime, endTime)
 	case FuncExpr:
 		var (
 			metricList []*model.Metric

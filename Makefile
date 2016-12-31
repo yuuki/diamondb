@@ -9,7 +9,7 @@ deps:
 mock:
 	go get github.com/golang/mock/gomock
 	go get github.com/golang/mock/mockgen
-	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination lib/tsdb/dynamodb_mock.go -package tsdb
+	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination lib/storage/dynamodb_mock.go -package storage
 
 yacc:
 	go tool yacc -o query/parse.go query/parse.go.y
