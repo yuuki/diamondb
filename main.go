@@ -29,6 +29,11 @@ func main() {
 
 // Run invokes the CLI with the given arguments.
 func (cli *CLI) Run(args []string) int {
+	if err := config.Load(); err != nil {
+		log.Printf("Failed to load the config: %s", err)
+		return 2
+	}
+
 	var (
 		host    string
 		port    string
@@ -41,10 +46,10 @@ func (cli *CLI) Run(args []string) int {
 	flags.Usage = func() {
 		fmt.Fprint(cli.errStream, helpText)
 	}
-	flags.StringVar(&host, "host", config.DefaultHost, "")
-	flags.StringVar(&host, "H", config.DefaultHost, "")
-	flags.StringVar(&port, "port", config.DefaultPort, "")
-	flags.StringVar(&port, "P", config.DefaultPort, "")
+	flags.StringVar(&host, "host", config.Config.Host, "")
+	flags.StringVar(&host, "H", config.Config.Host, "")
+	flags.StringVar(&port, "port", config.Config.Port, "")
+	flags.StringVar(&port, "P", config.Config.Port, "")
 	flags.BoolVar(&version, "version", false, "")
 	flags.BoolVar(&version, "v", false, "")
 	flags.BoolVar(&debug, "debug", false, "")
@@ -58,11 +63,6 @@ func (cli *CLI) Run(args []string) int {
 	if version {
 		fmt.Fprintf(cli.errStream, "%s version %s, build %s \n", Name, Version, GitCommit)
 		return 0
-	}
-
-	if err := config.Load(); err != nil {
-		log.Printf("Failed to load the config: %s", err)
-		return 2
 	}
 
 	mux := http.NewServeMux()
