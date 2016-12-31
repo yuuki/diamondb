@@ -149,6 +149,33 @@ func averageSeries(seriesList []*model.Metric) *model.Metric {
 	return model.NewMetric(name, points, step)
 }
 
+func doMaxSeries(seriesList []*model.Metric) []*model.Metric {
+	series := maxSeries(seriesList)
+	seriesList = make([]*model.Metric, 1)
+	seriesList[0] = series
+	return seriesList
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.maxSeries
+func maxSeries(seriesList []*model.Metric) *model.Metric {
+	if len(seriesList) == 0 {
+		return model.NewEmptyMetric()
+	}
+	name := fmt.Sprintf("maxSeries(%s)", formatSeries(seriesList))
+
+	seriesList, _, _, step := normalize(seriesList)
+
+	valuesByTimeStamp, maxLen := zipSeriesList(seriesList)
+	points := make([]*model.DataPoint, 0, maxLen)
+	for key, vals := range valuesByTimeStamp {
+		max := mathutil.MaxFloat64(vals)
+		ts, _ := strconv.ParseInt(key, 10, 64)
+		point := model.NewDataPoint(ts, max)
+		points = append(points, point)
+	}
+	return model.NewMetric(name, points, step)
+}
+
 func doMultiplySeries(seriesList []*model.Metric) []*model.Metric {
 	series := multiplySeries(seriesList)
 	seriesList = make([]*model.Metric, 1)

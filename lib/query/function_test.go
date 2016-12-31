@@ -178,6 +178,26 @@ func TestAverageSeries(t *testing.T) {
 	}
 }
 
+func TestMaxSeries(t *testing.T) {
+	series := maxSeries(generateSeriesList())
+
+	points := make([]*model.DataPoint, 100)
+	points[0] = model.NewDataPoint(int64(0), float64(1))
+	for i := 1; i < 100; i++ {
+		points[i] = model.NewDataPoint(int64(i), float64(i+1))
+	}
+	expected := &model.Metric{
+		Name:       "maxSeries(server0.loadavg5,server1.loadavg5,server2.loadavg5)",
+		DataPoints: points,
+		Start:      0,
+		End:        99,
+		Step:       1,
+	}
+	if !reflect.DeepEqual(series, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, series)
+	}
+}
+
 func TestMultiplySeries(t *testing.T) {
 	series := multiplySeries(generateSeriesList())
 
