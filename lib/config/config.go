@@ -8,6 +8,8 @@ import (
 type config struct {
 	Host string
 	Port string
+
+	Debug bool
 }
 
 const (
@@ -26,6 +28,10 @@ func Load() error {
 	Config.Port = os.Getenv("DIAMONDB_PORT")
 	if Config.Port == "" {
 		Config.Port = DefaultPort
+	}
+
+	if os.Getenv("DIAMONDB_DEBUG") != "" {
+		Config.Debug = true
 	}
 
 	return nil

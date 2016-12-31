@@ -52,8 +52,8 @@ func (cli *CLI) Run(args []string) int {
 	flags.StringVar(&port, "P", config.Config.Port, "")
 	flags.BoolVar(&version, "version", false, "")
 	flags.BoolVar(&version, "v", false, "")
-	flags.BoolVar(&debug, "debug", false, "")
-	flags.BoolVar(&debug, "d", false, "")
+	flags.BoolVar(&debug, "debug", config.Config.Debug, "")
+	flags.BoolVar(&debug, "d", config.Config.Debug, "")
 
 	if err := flags.Parse(args[1:]); err != nil {
 		return 1
