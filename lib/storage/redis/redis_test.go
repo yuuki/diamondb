@@ -54,3 +54,26 @@ func TestBatchGet(t *testing.T) {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
 	}
 }
+
+func TestBatchGet_Empty(t *testing.T) {
+	s, err := miniredis.Run()
+	if err != nil {
+		panic(err)
+	}
+	defer s.Close()
+
+	// Set mock
+	c := redis.NewClient(&redis.Options{
+		Addr: s.Addr(),
+	})
+	client = c
+
+	names := []string{"server1.loadavg5", "server2.loadavg5"}
+	metrics, err := batchGet("1m", names, 30)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	if len(metrics) != 0 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 0, len(metrics))
+	}
+}

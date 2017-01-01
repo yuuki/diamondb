@@ -40,6 +40,9 @@ func batchGet(slot string, names []string, step int) ([]*model.Metric, error) {
 				"Failed to redis hmget %s", strings.Join(names, ","),
 			)
 		}
+		if len(tsval) < 1 {
+			continue
+		}
 		metric, err := hGetAllToMap(name, tsval, step)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Failed to batchGetResultToMap %+v", tsval)
