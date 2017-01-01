@@ -1,5 +1,5 @@
-hash: ac1f481779b55092c053ff2a5b8f5f765b03a81da9fc9334c4a8fa529c513a69
-updated: 2016-12-31T03:42:03.6358025+09:00
+hash: ffa08a1cbef7cd35918b4293f98cfeb1883d5840dcfe0ac2d98dae0d4c994179
+updated: 2017-01-01T16:22:05.088663788+09:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 6c577e9e7b08a6d10bad1c9703227cd0403a8dd7
@@ -53,4 +53,12 @@ imports:
   version: f09c4662a0bd6bd8943ac7b4931e185df9471da4
   subpackages:
   - context
+- name: gopkg.in/redis.v5
+  version: 8fcba2ea878201b70c5a63dd416141d4ddbc601a
+  subpackages:
+  - internal
+  - internal/consistenthash
+  - internal/hashtag
+  - internal/pool
+  - internal/proto
 testImports: []
