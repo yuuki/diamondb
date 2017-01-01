@@ -18,3 +18,6 @@
 - github.com/go-redis/redis
   - Copyright (c) 2013 The github.com/go-redis/redis Authors.
   - [BSD LICENSE](https://github.com/go-redis/redis/blob/v5/LICENSE)
+- github.com/alicebob/miniredis
+  - Copyright (c) 2014 Harmen
+  - [MIT LICENSE](https://github.com/alicebob/miniredis/blob/master/LICENSE)
