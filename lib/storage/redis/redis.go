@@ -14,6 +14,20 @@ var (
 	client *redis.Client
 )
 
+func concurrentBatchGet(slot string, names []string, step int, c chan<- interface{}) {
+	go func() {
+		resp, err := batchGet(slot, names, step)
+		if err != nil {
+			c <- errors.Wrapf(err,
+				"Failed to redis batchGet %s %s %d",
+				slot, strings.Join(names, ","), step,
+			)
+		} else {
+			c <- resp
+		}
+	}()
+}
+
 func hGetAllToMap(name string, tsval map[string]string, step int) (*model.Metric, error) {
 	points := make([]*model.DataPoint, 0, len(tsval))
 	for ts, val := range tsval {
