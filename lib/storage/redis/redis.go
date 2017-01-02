@@ -4,10 +4,17 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/yuuki/diamondb/lib/model"
 	redis "gopkg.in/redis.v5"
+)
+
+const (
+	oneYear time.Duration = time.Duration(24*360) * time.Hour
+	oneWeek time.Duration = time.Duration(24*7) * time.Hour
+	oneDay  time.Duration = time.Duration(24*1) * time.Hour
 )
 
 var (
@@ -64,4 +71,26 @@ func batchGet(slot string, names []string, step int) ([]*model.Metric, error) {
 		metrics = append(metrics, metric)
 	}
 	return metrics, nil
+}
+
+func selectTimeSlot(startTime, endTime time.Time) (string, int) {
+	var (
+		step int
+		slot string
+	)
+	diffTime := endTime.Sub(startTime)
+	if oneYear <= diffTime {
+		slot = "1d"
+		step = 60 * 60 * 24
+	} else if oneWeek <= diffTime {
+		slot = "1h"
+		step = 60 * 60
+	} else if oneDay <= diffTime {
+		slot = "5m"
+		step = 5 * 60
+	} else {
+		slot = "1m"
+		step = 60
+	}
+	return slot, step
 }

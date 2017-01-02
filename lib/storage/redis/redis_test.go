@@ -3,6 +3,7 @@ package redis
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/alicebob/miniredis"
 	"github.com/yuuki/diamondb/lib/model"
@@ -123,5 +124,29 @@ func TestConcurrentBatchGet(t *testing.T) {
 	}
 	if !reflect.DeepEqual(metrics, expected) {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	}
+}
+
+var selectTimeSlotTests = []struct {
+	start time.Time
+	end   time.Time
+	slot  string
+	step  int
+}{
+	{time.Unix(100, 0), time.Unix(6000, 0), "1m", 60},
+	{time.Unix(10000, 0), time.Unix(100000, 0), "5m", 300},
+	{time.Unix(100000, 0), time.Unix(1000000, 0), "1h", 3600},
+	{time.Unix(1000000, 0), time.Unix(100000000, 0), "1d", 86400},
+}
+
+func TestSelectTimeSlot(t *testing.T) {
+	for i, lc := range selectTimeSlotTests {
+		slot, step := selectTimeSlot(lc.start, lc.end)
+		if slot != lc.slot {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v (#%d)", lc.slot, slot, i)
+		}
+		if step != lc.step {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v (#%d)", lc.step, step, i)
+		}
 	}
 }
