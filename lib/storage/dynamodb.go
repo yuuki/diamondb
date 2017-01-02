@@ -50,7 +50,7 @@ func SetDynamoDB(client dynamodbiface.DynamoDBAPI) {
 
 func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metric, error) {
 	slots, step := selectTimeSlots(start, end)
-	nameGroups := groupNames(splitName(name), dynamodbBatchLimit)
+	nameGroups := GroupNames(SplitName(name), dynamodbBatchLimit)
 	c := make(chan interface{})
 	for _, slot := range slots {
 		for _, names := range nameGroups {
@@ -69,17 +69,6 @@ func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metri
 	}
 
 	return metrics, nil
-}
-
-func groupNames(names []string, count int) [][]string {
-	nameGroups := make([][]string, 0, (len(names)+count-1)/count)
-	for i, name := range names {
-		if i%count == 0 {
-			nameGroups = append(nameGroups, []string{})
-		}
-		nameGroups[len(nameGroups)-1] = append(nameGroups[len(nameGroups)-1], name)
-	}
-	return nameGroups
 }
 
 func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, step int) []*model.Metric {
@@ -135,24 +124,6 @@ func concurrentBatchGet(slot *timeSlot, names []string, step int, c chan<- inter
 			c <- resp
 		}
 	}()
-}
-
-// roleA.r.{1,2,3,4}.loadavg
-func splitName(name string) []string {
-	open := strings.IndexRune(name, '{')
-	close := strings.IndexRune(name, '}')
-	var names []string
-	if open >= 0 && close >= 0 {
-		prefix := name[0:open]
-		indices := name[open+1 : close]
-		suffix := name[close+1:]
-		for _, i := range strings.Split(indices, ",") {
-			names = append(names, prefix+i+suffix)
-		}
-	} else {
-		names = strings.Split(name, ",")
-	}
-	return names
 }
 
 func selectTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
