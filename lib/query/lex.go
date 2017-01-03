@@ -1,11 +1,10 @@
 package query
 
 import (
+	"fmt"
 	"strings"
 	"text/scanner"
 	"unicode"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -14,13 +13,18 @@ const (
 
 type Lexer struct {
 	scanner.Scanner
-	e      *Error
+	e      *ParserError
 	result Expr
 }
 
-type Error struct {
-	Message string
-	Column  int
+type ParserError struct {
+	Msg    string
+	Column int
+	Target string
+}
+
+func (e *ParserError) Error() string {
+	return fmt.Sprintf("Failed to parse %s %s %d", e.Target, e.Msg, e.Column)
 }
 
 var symTable = map[string]int{
@@ -62,7 +66,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 }
 
 func (l *Lexer) Error(msg string) {
-	l.e = &Error{Message: msg, Column: l.Column}
+	l.e = &ParserError{Msg: msg, Column: l.Column}
 }
 
 func isIdentRune(ch rune, i int) bool {
@@ -76,7 +80,8 @@ func ParseTarget(target string) (Expr, error) {
 	l.IsIdentRune = isIdentRune
 	yyParse(l)
 	if l.e != nil {
-		return l.result, errors.Errorf("Failed to parse %s %s %d", target, l.e.Message, l.e.Column)
+		l.e.Target = target
+		return l.result, l.e
 	} else {
 		return l.result, nil
 	}
