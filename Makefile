@@ -18,7 +18,7 @@ build: deps
 	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o $(NAME)
 
 test:
-	go test -v $(shell go list ./... | grep -v /vendor/)
+	go test -v $$(glide novendor)
 
 fmt:
 	gofmt -s -w $(shell git ls | grep -e '\.go$$' | grep -v /vendor/)
