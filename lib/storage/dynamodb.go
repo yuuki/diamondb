@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
@@ -104,8 +105,14 @@ func batchGet(slot *timeSlot, names []string, step int) ([]*model.Metric, error)
 	}
 	resp, err := dsvc.BatchGetItem(params)
 	if err != nil {
-		return nil, errors.Wrapf(err,
-			"Failed to BatchGetItem %s %d %s",
+		if awsErr, ok := err.(awserr.Error); ok {
+			if awsErr.Code() == "ResourceNotFoundException" {
+				// Don't handle ResourceNotFoundException as error
+				// bacause diamondb web return length 0 series as 200.
+				return []*model.Metric{}, nil
+			}
+		}
+		return nil, errors.Wrapf(err, "Failed to BatchGetItem %s %d %s",
 			slot.tableName, slot.itemEpoch, strings.Join(names, ","),
 		)
 	}
