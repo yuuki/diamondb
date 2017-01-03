@@ -47,7 +47,12 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	for _, target := range targets {
 		mList, err := query.EvalTarget(target, from, until)
 		if err != nil {
-			BadRequest(w, err.Error())
+			switch err.(type) {
+			case *query.ParserError:
+				BadRequest(w, err.Error())
+			default:
+				ServerError(w, err.Error())
+			}
 			return
 		}
 		for _, metric := range mList {
