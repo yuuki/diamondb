@@ -6,17 +6,17 @@ all: build
 deps:
 	go get -d -t -v $(shell go list ./... | grep -v /vendor/)
 
-mock:
-	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination lib/storage/dynamodb_mock.go -package storage
-
-yacc:
-	go tool yacc -o query/parse.go query/parse.go.y
-
 build: deps
 	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o $(NAME)
 
 test:
 	go test -v $$(glide novendor)
+
+mock:
+	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination lib/storage/dynamodb_mock.go -package storage
+
+yacc:
+	go tool yacc -o query/parse.go query/parse.go.y
 
 fmt:
 	gofmt -s -w $(shell git ls | grep -e '\.go$$' | grep -v /vendor/)
@@ -30,4 +30,4 @@ lint:
 vet:
 	go vet -v $$(glide novendor)
 
-.PHONY: all deps build test lint vet
+.PHONY: all deps mock yecc build test fmt imports lint vet
