@@ -1,6 +1,7 @@
 package query
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -8,6 +9,14 @@ import (
 	"github.com/yuuki/diamondb/lib/model"
 	"github.com/yuuki/diamondb/lib/storage"
 )
+
+type UnsupportedFunctionError struct {
+	funcName string
+}
+
+func (e *UnsupportedFunctionError) Error() string {
+	return fmt.Sprintf("Unsupported function %s", e.funcName)
+}
 
 func EvalTarget(target string, startTime, endTime time.Time) ([]*model.Metric, error) {
 	expr, err := ParseTarget(target)
@@ -38,7 +47,7 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 
 			metricList, err = invokeExpr(expr, startTime, endTime)
 			if err != nil {
-				return nil, fmt.Wrapf(err, "Failed to involeExpr %v %d %d", expr, startTime, endTime)
+				return nil, errors.Wrapf(err, "Failed to involeExpr %v %d %d", expr, startTime, endTime)
 			}
 		}
 		if metricList != nil {
@@ -62,7 +71,7 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 				metricList = doMultiplySeries(metricList)
 				return metricList, nil
 			default:
-				return nil, errors.Errorf("Unknown function %s", e.Name)
+				return nil, &UnsupportedFunctionError{funcName: e.Name}
 			}
 		}
 		return metricList, err

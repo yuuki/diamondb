@@ -48,7 +48,7 @@ func Render(w http.ResponseWriter, r *http.Request) {
 		mList, err := query.EvalTarget(target, from, until)
 		if err != nil {
 			switch err.(type) {
-			case *query.ParserError:
+			case *query.ParserError, *query.UnsupportedFunctionError:
 				BadRequest(w, err.Error())
 			default:
 				ServerError(w, err.Error())
