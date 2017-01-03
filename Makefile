@@ -30,6 +30,6 @@ lint:
 	@for dir in $$(glide novendor); do golint $$dir; done
 
 vet:
-	go vet -v $(shell go list ./... | grep -v /vendor/)
+	go vet -v $$(glide novendor)
 
 .PHONY: all deps build test lint vet
