@@ -23,13 +23,24 @@ func EvalTarget(target string, startTime, endTime time.Time) ([]*model.Metric, e
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to ParseTarget %s", target)
 	}
-	return invokeExpr(expr, startTime, endTime)
+	metrics, err := invokeExpr(expr, startTime, endTime)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
+	}
+	return metrics, err
 }
 
 func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error) {
 	switch e := expr.(type) {
 	case SeriesListExpr:
-		return storage.FetchMetric(e.Literal, startTime, endTime)
+		metrics, err := storage.FetchMetric(e.Literal, startTime, endTime)
+		if err != nil {
+			return nil, errors.Wrapf(err,
+				"Failed to storage.FetchMetric %s %d %d",
+				e.Literal, startTime.Unix(), endTime.Unix(),
+			)
+		}
+		return metrics, err
 	case FuncExpr:
 		var (
 			metricList []*model.Metric
@@ -47,7 +58,7 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 
 			metricList, err = invokeExpr(expr, startTime, endTime)
 			if err != nil {
-				return nil, errors.Wrapf(err, "Failed to involeExpr %v %d %d", expr, startTime, endTime)
+				return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
 			}
 		}
 		if metricList != nil {

@@ -65,7 +65,7 @@ func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metri
 		case []*model.Metric:
 			metrics = append(metrics, ret.([]*model.Metric)...)
 		case error:
-			return nil, ret.(error)
+			return nil, errors.WithStack(ret.(error))
 		}
 	}
 
@@ -112,8 +112,8 @@ func batchGet(slot *timeSlot, names []string, step int) ([]*model.Metric, error)
 				return []*model.Metric{}, nil
 			}
 		}
-		return nil, errors.Wrapf(err, "Failed to BatchGetItem %s %d %s",
-			slot.tableName, slot.itemEpoch, strings.Join(names, ","),
+		return nil, errors.Wrapf(err, "Failed to BatchGetItem %s %d %s %d",
+			slot.tableName, slot.itemEpoch, strings.Join(names, ","), step,
 		)
 	}
 	return batchGetResultToMap(resp, step), nil
@@ -123,10 +123,7 @@ func concurrentBatchGet(slot *timeSlot, names []string, step int, c chan<- inter
 	go func() {
 		resp, err := batchGet(slot, names, step)
 		if err != nil {
-			c <- errors.Wrapf(err,
-				"Failed to batchGet %s %d %s %d",
-				slot.tableName, slot.itemEpoch, strings.Join(names, ","), step,
-			)
+			c <- errors.WithStack(err)
 		} else {
 			c <- resp
 		}
