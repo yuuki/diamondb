@@ -89,13 +89,13 @@ func parseTimeOffset(offset string) (time.Duration, error) {
 	for offset != "" {
 		i := 0
 		for i < len(offset) && unicode.IsDigit(rune(offset[i])) {
-			i += 1
+			i++
 		}
 		num := offset[:i]
 		offset = offset[i:]
 		i = 0
 		for i < len(offset) && isAlpha(rune(offset[i])) {
-			i += 1
+			i++
 		}
 		unit := offset[:i]
 		offset = offset[i:]

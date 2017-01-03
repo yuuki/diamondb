@@ -82,7 +82,6 @@ func ParseTarget(target string) (Expr, error) {
 	if l.e != nil {
 		l.e.Target = target
 		return l.result, l.e
-	} else {
-		return l.result, nil
 	}
+	return l.result, nil
 }

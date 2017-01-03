@@ -37,9 +37,9 @@ const (
 )
 
 var (
-	oneYearSeconds int = int(oneYear.Seconds())
-	oneWeekSeconds int = int(oneWeek.Seconds())
-	oneDaySeconds  int = int(oneDay.Seconds())
+	oneYearSeconds = int(oneYear.Seconds())
+	oneWeekSeconds = int(oneWeek.Seconds())
+	oneDaySeconds  = int(oneDay.Seconds())
 
 	dsvc dynamodbiface.DynamoDBAPI = dynamodb.New(session.New(), &aws.Config{Region: aws.String("ap-northeast-1")})
 )
