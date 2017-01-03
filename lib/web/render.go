@@ -23,7 +23,7 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	if v := r.FormValue("from"); v != "" {
 		t, err := timeparser.ParseAtTime(url.QueryEscape(v))
 		if err != nil {
-			log.Println("%+v", err) // Print stack trace by pkg/errors
+			log.Printf("%+v", err) // Print stack trace by pkg/errors
 			BadRequest(w, errors.Cause(err).Error())
 			return
 		}
@@ -32,7 +32,7 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	if v := r.FormValue("until"); v != "" {
 		t, err := timeparser.ParseAtTime(url.QueryEscape(v))
 		if err != nil {
-			log.Println("%+v", err) // Print stack trace by pkg/errors
+			log.Printf("%+v", err) // Print stack trace by pkg/errors
 			BadRequest(w, errors.Cause(err).Error())
 			return
 		}
@@ -50,7 +50,7 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	for _, target := range targets {
 		mList, err := query.EvalTarget(target, from, until)
 		if err != nil {
-			log.Println("%+v", err) // Print stack trace by pkg/errors
+			log.Printf("%+v", err) // Print stack trace by pkg/errors
 			switch err.(type) {
 			case *query.ParserError, *query.UnsupportedFunctionError:
 				BadRequest(w, errors.Cause(err).Error())
