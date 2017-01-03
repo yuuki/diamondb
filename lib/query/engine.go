@@ -38,7 +38,7 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 
 			metricList, err = invokeExpr(expr, startTime, endTime)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Wrapf(err, "Failed to involeExpr %v %d %d", expr, startTime, endTime)
 			}
 		}
 		if metricList != nil {
@@ -46,7 +46,7 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 			case "alias":
 				metricList, err = doAlias(metricList, e.SubExprs[1:])
 				if err != nil {
-					return nil, errors.Wrap(err, "Failed to run `doAlias`")
+					return nil, errors.Wrap(err, "Failed to doAlias")
 				}
 				return metricList, err
 			case "averageSeries", "avg":
