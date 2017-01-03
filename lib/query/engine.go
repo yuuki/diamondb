@@ -1,6 +1,7 @@
 package query
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -9,18 +10,37 @@ import (
 	"github.com/yuuki/diamondb/lib/storage"
 )
 
+type UnsupportedFunctionError struct {
+	funcName string
+}
+
+func (e *UnsupportedFunctionError) Error() string {
+	return fmt.Sprintf("Unsupported function %s", e.funcName)
+}
+
 func EvalTarget(target string, startTime, endTime time.Time) ([]*model.Metric, error) {
 	expr, err := ParseTarget(target)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to ParseTarget %s", target)
 	}
-	return invokeExpr(expr, startTime, endTime)
+	metrics, err := invokeExpr(expr, startTime, endTime)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
+	}
+	return metrics, err
 }
 
 func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error) {
 	switch e := expr.(type) {
 	case SeriesListExpr:
-		return storage.FetchMetric(e.Literal, startTime, endTime)
+		metrics, err := storage.FetchMetric(e.Literal, startTime, endTime)
+		if err != nil {
+			return nil, errors.Wrapf(err,
+				"Failed to storage.FetchMetric %s %d %d",
+				e.Literal, startTime.Unix(), endTime.Unix(),
+			)
+		}
+		return metrics, err
 	case FuncExpr:
 		var (
 			metricList []*model.Metric
@@ -38,7 +58,7 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 
 			metricList, err = invokeExpr(expr, startTime, endTime)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
 			}
 		}
 		if metricList != nil {
@@ -46,7 +66,7 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 			case "alias":
 				metricList, err = doAlias(metricList, e.SubExprs[1:])
 				if err != nil {
-					return nil, errors.Wrap(err, "Failed to run `doAlias`")
+					return nil, errors.Wrap(err, "Failed to doAlias")
 				}
 				return metricList, err
 			case "averageSeries", "avg":
@@ -62,7 +82,7 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 				metricList = doMultiplySeries(metricList)
 				return metricList, nil
 			default:
-				return nil, errors.Errorf("Unknown function %s", e.Name)
+				return nil, &UnsupportedFunctionError{funcName: e.Name}
 			}
 		}
 		return metricList, err

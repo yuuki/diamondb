@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
@@ -64,7 +65,7 @@ func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metri
 		case []*model.Metric:
 			metrics = append(metrics, ret.([]*model.Metric)...)
 		case error:
-			fmt.Println(ret.(error)) //TODO error handling
+			return nil, errors.WithStack(ret.(error))
 		}
 	}
 
@@ -104,9 +105,15 @@ func batchGet(slot *timeSlot, names []string, step int) ([]*model.Metric, error)
 	}
 	resp, err := dsvc.BatchGetItem(params)
 	if err != nil {
-		return nil, errors.Wrapf(err,
-			"Failed to BatchGetItem %s %d %s",
-			slot.tableName, slot.itemEpoch, strings.Join(names, ","),
+		if awsErr, ok := err.(awserr.Error); ok {
+			if awsErr.Code() == "ResourceNotFoundException" {
+				// Don't handle ResourceNotFoundException as error
+				// bacause diamondb web return length 0 series as 200.
+				return []*model.Metric{}, nil
+			}
+		}
+		return nil, errors.Wrapf(err, "Failed to BatchGetItem %s %d %s %d",
+			slot.tableName, slot.itemEpoch, strings.Join(names, ","), step,
 		)
 	}
 	return batchGetResultToMap(resp, step), nil
@@ -116,10 +123,7 @@ func concurrentBatchGet(slot *timeSlot, names []string, step int, c chan<- inter
 	go func() {
 		resp, err := batchGet(slot, names, step)
 		if err != nil {
-			c <- errors.Wrapf(err,
-				"Failed to batchGet %s %d %s %d",
-				slot.tableName, slot.itemEpoch, strings.Join(names, ","), step,
-			)
+			c <- errors.WithStack(err)
 		} else {
 			c <- resp
 		}

@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/yuuki/diamondb/lib/log"
 	"github.com/yuuki/diamondb/lib/model"
 	"github.com/yuuki/diamondb/lib/query"
@@ -22,7 +23,8 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	if v := r.FormValue("from"); v != "" {
 		t, err := timeparser.ParseAtTime(url.QueryEscape(v))
 		if err != nil {
-			BadRequest(w, err.Error())
+			log.Println("%+v", err) // Print stack trace by pkg/errors
+			BadRequest(w, errors.Cause(err).Error())
 			return
 		}
 		from = t
@@ -30,7 +32,8 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	if v := r.FormValue("until"); v != "" {
 		t, err := timeparser.ParseAtTime(url.QueryEscape(v))
 		if err != nil {
-			BadRequest(w, err.Error())
+			log.Println("%+v", err) // Print stack trace by pkg/errors
+			BadRequest(w, errors.Cause(err).Error())
 			return
 		}
 		until = t
@@ -47,7 +50,13 @@ func Render(w http.ResponseWriter, r *http.Request) {
 	for _, target := range targets {
 		mList, err := query.EvalTarget(target, from, until)
 		if err != nil {
-			BadRequest(w, err.Error())
+			log.Println("%+v", err) // Print stack trace by pkg/errors
+			switch err.(type) {
+			case *query.ParserError, *query.UnsupportedFunctionError:
+				BadRequest(w, errors.Cause(err).Error())
+			default:
+				ServerError(w, errors.Cause(err).Error())
+			}
 			return
 		}
 		for _, metric := range mList {

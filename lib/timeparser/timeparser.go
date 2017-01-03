@@ -61,7 +61,7 @@ func ParseAtTime(s string) (time.Time, error) {
 	}
 	o, err := parseTimeOffset(offset)
 	if err != nil {
-		return time.Time{}, errors.Wrapf(err, "Failed to time offset %s", offset)
+		return time.Time{}, errors.Wrapf(err, "Failed to parse time offset %s", offset)
 	}
 	return r.Add(o), nil
 }

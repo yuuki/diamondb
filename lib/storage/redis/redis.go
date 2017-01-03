@@ -38,7 +38,7 @@ func FetchMetrics(name string, start, end time.Time) ([]*model.Metric, error) {
 		case []*model.Metric:
 			metrics = append(metrics, ret.([]*model.Metric)...)
 		case error:
-			fmt.Println(ret.(error)) //TODO error handling
+			return nil, errors.WithStack(ret.(error))
 		}
 	}
 	return metrics, nil
@@ -81,7 +81,7 @@ func batchGet(slot string, names []string, step int) ([]*model.Metric, error) {
 		tsval, err := client.HGetAll(key).Result()
 		if err != nil {
 			return nil, errors.Wrapf(err,
-				"Failed to redis hmget %s", strings.Join(names, ","),
+				"Failed to redis hgetall %s", strings.Join(names, ","),
 			)
 		}
 		if len(tsval) < 1 {
@@ -89,7 +89,7 @@ func batchGet(slot string, names []string, step int) ([]*model.Metric, error) {
 		}
 		metric, err := hGetAllToMap(name, tsval, step)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to batchGetResultToMap %+v", tsval)
+			return nil, errors.Wrapf(err, "Failed to hGetAllToMap %+v", tsval)
 		}
 		metrics = append(metrics, metric)
 	}

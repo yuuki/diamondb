@@ -1,10 +1,14 @@
 package storage
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/golang/mock/gomock"
 	"github.com/yuuki/diamondb/lib/model"
 )
 
@@ -43,6 +47,34 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 	}
 	if !reflect.DeepEqual(metrics, expected) {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	}
+}
+
+func TestFetchMetricsFromDynamoDB_Empty(t *testing.T) {
+	tableName := DynamoDBTableOneHour + "-0"
+
+	ctrl := gomock.NewController(t)
+	dmock := NewMockDynamoDBAPI(ctrl)
+	defer ctrl.Finish()
+
+	responses := make(map[string][]map[string]*dynamodb.AttributeValue)
+	responses[tableName] = []map[string]*dynamodb.AttributeValue{}
+	reqErr := awserr.NewRequestFailure(
+		awserr.New("ResourceNotFoundException", "resource not found", errors.New("dummy")),
+		404, "dummyID",
+	)
+	dmock.EXPECT().BatchGetItem(gomock.Any()).Return(
+		&dynamodb.BatchGetItemOutput{Responses: responses}, reqErr,
+	)
+	SetDynamoDB(dmock)
+
+	name := "roleA.r.{1,2}.loadavg"
+	metrics, err := FetchMetricsFromDynamoDB(name, time.Unix(100, 0), time.Unix(300, 0))
+	if err != nil {
+		t.Fatalf("Should ignore NotFound error: %s", err)
+	}
+	if len(metrics) != 0 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 0, len(metrics))
 	}
 }
 
