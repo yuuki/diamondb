@@ -10,6 +10,52 @@ import (
 	redis "gopkg.in/redis.v5"
 )
 
+func TestFetchMetrics(t *testing.T) {
+	s, err := miniredis.Run()
+	if err != nil {
+		panic(err)
+	}
+	defer s.Close()
+
+	// Set mock
+	c := redis.NewClient(&redis.Options{
+		Addr: s.Addr(),
+	})
+	client = c
+
+	_, err = c.HMSet("1m:server1.loadavg5", map[string]string{
+		"100": "10.0", "160": "10.2", "220": "11.0",
+	}).Result()
+	if err != nil {
+		panic(err)
+	}
+	_, err = c.HMSet("1m:server2.loadavg5", map[string]string{
+		"100": "8.0", "160": "5.0", "220": "6.0",
+	}).Result()
+	if err != nil {
+		panic(err)
+	}
+
+	name := "server{1,2}.loadavg5"
+	metrics, err := FetchMetrics(name, time.Unix(100, 0), time.Unix(1000, 0))
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	expected := []*model.Metric{
+		{
+			Name: "server1.loadavg5", Start: 100, End: 220, Step: 60,
+			DataPoints: []*model.DataPoint{{100, 10.0}, {160, 10.2}, {220, 11.0}},
+		},
+		{
+			Name: "server2.loadavg5", Start: 100, End: 220, Step: 60,
+			DataPoints: []*model.DataPoint{{100, 8.0}, {160, 5.0}, {220, 6.0}},
+		},
+	}
+	if !reflect.DeepEqual(metrics, expected) {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	}
+}
+
 func TestBatchGet(t *testing.T) {
 	s, err := miniredis.Run()
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/yuuki/diamondb/lib/model"
+	"github.com/yuuki/diamondb/lib/storage"
 	redis "gopkg.in/redis.v5"
 )
 
@@ -15,11 +16,33 @@ const (
 	oneYear time.Duration = time.Duration(24*360) * time.Hour
 	oneWeek time.Duration = time.Duration(24*7) * time.Hour
 	oneDay  time.Duration = time.Duration(24*1) * time.Hour
+
+	redisBatchLimit = 50 // TODO need to tweak
 )
 
 var (
 	client *redis.Client
 )
+
+func FetchMetrics(name string, start, end time.Time) ([]*model.Metric, error) {
+	slot, step := selectTimeSlot(start, end)
+	nameGroups := storage.GroupNames(storage.SplitName(name), redisBatchLimit)
+	c := make(chan interface{})
+	for _, names := range nameGroups {
+		concurrentBatchGet(slot, names, step, c)
+	}
+	var metrics []*model.Metric
+	for i := 0; i < len(nameGroups); i++ {
+		ret := <-c
+		switch ret.(type) {
+		case []*model.Metric:
+			metrics = append(metrics, ret.([]*model.Metric)...)
+		case error:
+			fmt.Println(ret.(error)) //TODO error handling
+		}
+	}
+	return metrics, nil
+}
 
 func concurrentBatchGet(slot string, names []string, step int, c chan<- interface{}) {
 	go func() {
