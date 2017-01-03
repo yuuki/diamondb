@@ -6,10 +6,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/yuuki/diamondb/lib/model"
+	"github.com/yuuki/diamondb/lib/storage/dynamo"
 )
 
 func FetchMetric(name string, start, end time.Time) ([]*model.Metric, error) {
-	metrics, err := FetchMetricsFromDynamoDB(name, start, end)
+	metrics, err := dynamo.FetchMetricsFromDynamoDB(name, start, end)
 	if err != nil {
 		return nil, errors.Wrapf(err,
 			"Failed to FetchMetricsFromDynamoDB %s %d %d",

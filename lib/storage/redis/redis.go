@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/yuuki/diamondb/lib/model"
-	"github.com/yuuki/diamondb/lib/storage"
+	"github.com/yuuki/diamondb/lib/util"
 	redis "gopkg.in/redis.v5"
 )
 
@@ -26,7 +26,7 @@ var (
 
 func FetchMetrics(name string, start, end time.Time) ([]*model.Metric, error) {
 	slot, step := selectTimeSlot(start, end)
-	nameGroups := storage.GroupNames(storage.SplitName(name), redisBatchLimit)
+	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)
 	c := make(chan interface{})
 	for _, names := range nameGroups {
 		concurrentBatchGet(slot, names, step, c)

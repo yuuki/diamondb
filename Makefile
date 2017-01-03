@@ -10,7 +10,7 @@ test:
 	go test -v $$(glide novendor)
 
 mock:
-	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination lib/storage/dynamodb_mock.go -package storage
+	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination lib/storage/dynamo/dynamodb_mock.go -package dynamo
 
 yacc:
 	go tool yacc -o query/parse.go query/parse.go.y

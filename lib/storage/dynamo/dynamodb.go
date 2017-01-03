@@ -1,4 +1,4 @@
-package storage
+package dynamo
 
 import (
 	"encoding/binary"
@@ -16,6 +16,7 @@ import (
 
 	"github.com/yuuki/diamondb/lib/mathutil"
 	"github.com/yuuki/diamondb/lib/model"
+	"github.com/yuuki/diamondb/lib/util"
 )
 
 type timeSlot struct {
@@ -51,7 +52,7 @@ func SetDynamoDB(client dynamodbiface.DynamoDBAPI) {
 
 func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metric, error) {
 	slots, step := selectTimeSlots(start, end)
-	nameGroups := GroupNames(SplitName(name), dynamodbBatchLimit)
+	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
 	c := make(chan interface{})
 	for _, slot := range slots {
 		for _, names := range nameGroups {
