@@ -3,10 +3,7 @@ COMMIT = $$(git describe --always)
 
 all: build
 
-deps:
-	go get -d -t -v $(shell go list ./... | grep -v /vendor/)
-
-build: deps
+build:
 	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o $(NAME)
 
 test:
