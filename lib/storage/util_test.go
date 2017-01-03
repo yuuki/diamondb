@@ -11,7 +11,7 @@ func TestGroupNames(t *testing.T) {
 	for i := 1; i <= 5; i++ {
 		names = append(names, fmt.Sprintf("server%d.loadavg5", i))
 	}
-	nameGroups := SroupNames(names, 2)
+	nameGroups := GroupNames(names, 2)
 	expected := [][]string{
 		{"server1.loadavg5", "server2.loadavg5"},
 		{"server3.loadavg5", "server4.loadavg5"},

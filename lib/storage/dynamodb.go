@@ -64,7 +64,7 @@ func FetchMetricsFromDynamoDB(name string, start, end time.Time) ([]*model.Metri
 		case []*model.Metric:
 			metrics = append(metrics, ret.([]*model.Metric)...)
 		case error:
-			return err
+			return nil, ret.(error)
 		}
 	}
 
