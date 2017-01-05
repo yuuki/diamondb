@@ -2,8 +2,9 @@ package util
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
+
+	"github.com/kylelemons/godebug/pretty"
 )
 
 func TestGroupNames(t *testing.T) {
@@ -17,8 +18,8 @@ func TestGroupNames(t *testing.T) {
 		{"server3.loadavg5", "server4.loadavg5"},
 		{"server5.loadavg5"},
 	}
-	if !reflect.DeepEqual(nameGroups, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, nameGroups)
+	if diff := pretty.Compare(nameGroups, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -31,7 +32,7 @@ func TestSplitName(t *testing.T) {
 		"roleA.r.3.loadavg",
 		"roleA.r.4.loadavg",
 	}
-	if !reflect.DeepEqual(names, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, names)
+	if diff := pretty.Compare(names, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }

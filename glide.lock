@@ -1,5 +1,5 @@
-hash: 73dfc59783affebe35c6ea91280d4b41d1e26d9305e844e744cea540dc13a1b4
-updated: 2017-01-01T17:49:17.902114063+09:00
+hash: 7cf22cdc7df99ddecb2667278aca7dced273c3c26ed5d6df4f095bc825a15fcb
+updated: 2017-01-05T23:07:30.115712726+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
@@ -33,10 +33,6 @@ imports:
   - service/dynamodb
   - service/dynamodb/dynamodbiface
   - service/sts
-- name: github.com/bsm/redeo
-  version: 1ce09fc76693fb3c1ca9b529c66f38920beb6fb8
-  subpackages:
-  - info
 - name: github.com/go-ini/ini
   version: 6f66b0e091edb3c7b380f7c4f0f884274d550b67
 - name: github.com/golang/mock
@@ -45,6 +41,8 @@ imports:
   - gomock
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
+- name: github.com/kylelemons/godebug
+  version: d99083b96f422f8fd5a93bc02040acec769e178f
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/rs/cors
@@ -65,4 +63,8 @@ imports:
   - internal/hashtag
   - internal/pool
   - internal/proto
-testImports: []
+testImports:
+- name: github.com/bsm/redeo
+  version: 1ce09fc76693fb3c1ca9b529c66f38920beb6fb8
+  subpackages:
+  - info

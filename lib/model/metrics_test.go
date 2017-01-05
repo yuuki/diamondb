@@ -1,8 +1,9 @@
 package model
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/kylelemons/godebug/pretty"
 )
 
 func TestNewMetric(t *testing.T) {
@@ -25,8 +26,8 @@ func TestNewMetric(t *testing.T) {
 		End:   1060,
 		Step:  30,
 	}
-	if !reflect.DeepEqual(metric, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metric)
+	if diff := pretty.Compare(metric, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -53,8 +54,8 @@ func TestFilledWithNil(t *testing.T) {
 		End:   1060,
 		Step:  15,
 	}
-	if !reflect.DeepEqual(metric, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metric)
+	if diff := pretty.Compare(metric, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -80,7 +81,7 @@ func TestInsertDatapoint(t *testing.T) {
 		End:   1060,
 		Step:  15,
 	}
-	if !reflect.DeepEqual(metric, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metric)
+	if diff := pretty.Compare(metric, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }

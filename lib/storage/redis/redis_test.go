@@ -1,11 +1,11 @@
 package redis
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/alicebob/miniredis"
+	"github.com/kylelemons/godebug/pretty"
 	"github.com/yuuki/diamondb/lib/model"
 	redis "gopkg.in/redis.v5"
 )
@@ -51,8 +51,8 @@ func TestFetchMetrics(t *testing.T) {
 			DataPoints: []*model.DataPoint{{100, 8.0}, {160, 5.0}, {220, 6.0}},
 		},
 	}
-	if !reflect.DeepEqual(metrics, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	if diff := pretty.Compare(metrics, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -97,8 +97,8 @@ func TestBatchGet(t *testing.T) {
 			DataPoints: []*model.DataPoint{{100, 8.0}, {130, 5.0}, {160, 6.0}},
 		},
 	}
-	if !reflect.DeepEqual(metrics, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	if diff := pretty.Compare(metrics, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -168,8 +168,8 @@ func TestConcurrentBatchGet(t *testing.T) {
 			DataPoints: []*model.DataPoint{{100, 8.0}, {130, 5.0}, {160, 6.0}},
 		},
 	}
-	if !reflect.DeepEqual(metrics, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	if diff := pretty.Compare(metrics, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 

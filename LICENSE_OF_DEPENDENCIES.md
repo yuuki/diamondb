@@ -21,3 +21,5 @@
 - github.com/alicebob/miniredis
   - Copyright (c) 2014 Harmen
   - [MIT LICENSE](https://github.com/alicebob/miniredis/blob/master/LICENSE)
+- github.com/kylelemons/godebug
+  - [Apache License Version 2.0](https://github.com/kylelemons/godebug/blob/master/LICENSE)
