@@ -1,8 +1,9 @@
 package series
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/kylelemons/godebug/pretty"
 )
 
 func TestNewSeries(t *testing.T) {
@@ -15,8 +16,8 @@ func TestNewSeries(t *testing.T) {
 	if s.Name() != "server1.loadavg5" {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", name, s.Name())
 	}
-	if !reflect.DeepEqual(s.Values(), values) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", values, s.Values())
+	if diff := pretty.Compare(s.Values(), values); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 	if s.Start() != start {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", start, s.Start())
