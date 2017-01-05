@@ -2,13 +2,13 @@ package dynamo
 
 import (
 	"errors"
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
+	"github.com/kylelemons/godebug/pretty"
 	"github.com/yuuki/diamondb/lib/model"
 )
 
@@ -45,8 +45,8 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	if !reflect.DeepEqual(metrics, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	if diff := pretty.Compare(metrics, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -110,8 +110,8 @@ func TestBatchGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	if !reflect.DeepEqual(metrics, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	if diff := pretty.Compare(metrics, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -149,8 +149,8 @@ func TestConcurrentBatchGet(t *testing.T) {
 	var metrics []*model.Metric
 	ret := <-c
 	metrics = append(metrics, ret.([]*model.Metric)...)
-	if !reflect.DeepEqual(metrics, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	if diff := pretty.Compare(metrics, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -229,8 +229,8 @@ func TestSelectTimeSlots(t *testing.T) {
 		if step != lc.step {
 			t.Fatalf("\nExpected: %+v\nActual:   %+v", lc.step, step)
 		}
-		if !reflect.DeepEqual(slots, lc.timeSlots) {
-			t.Fatalf("\nExpected: %+v\nActual:   %+v", lc.timeSlots, slots)
+		if diff := pretty.Compare(lc.timeSlots, slots); diff != "" {
+			t.Fatalf("diff: (-actual +expected)\n%s", diff)
 		}
 	}
 }

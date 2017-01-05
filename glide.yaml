@@ -11,5 +11,6 @@ import:
 - package: gopkg.in/redis.v5
   version: ~5.1.6
 - package: github.com/alicebob/miniredis
+- package: github.com/kylelemons/godebug
 testImport:
 - package: github.com/golang/mock
