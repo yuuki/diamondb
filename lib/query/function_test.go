@@ -3,9 +3,9 @@ package query
 import (
 	"fmt"
 	"math"
-	"reflect"
 	"testing"
 
+	"github.com/kylelemons/godebug/pretty"
 	"github.com/yuuki/diamondb/lib/model"
 )
 
@@ -154,8 +154,8 @@ func TestSumSeries(t *testing.T) {
 		End:        99,
 		Step:       1,
 	}
-	if !reflect.DeepEqual(series, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, series)
+	if diff := pretty.Compare(series, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -173,8 +173,8 @@ func TestAverageSeries(t *testing.T) {
 		End:        99,
 		Step:       1,
 	}
-	if !reflect.DeepEqual(series, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, series)
+	if diff := pretty.Compare(series, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -193,8 +193,8 @@ func TestMaxSeries(t *testing.T) {
 		End:        99,
 		Step:       1,
 	}
-	if !reflect.DeepEqual(series, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, series)
+	if diff := pretty.Compare(series, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -213,7 +213,7 @@ func TestMultiplySeries(t *testing.T) {
 		End:        99,
 		Step:       1,
 	}
-	if !reflect.DeepEqual(series, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, series)
+	if diff := pretty.Compare(series, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }

@@ -1,10 +1,10 @@
 package query
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/kylelemons/godebug/pretty"
 	"github.com/yuuki/diamondb/lib/model"
 	"github.com/yuuki/diamondb/lib/storage/dynamo"
 )
@@ -39,8 +39,8 @@ func TestEvalTarget_Func(t *testing.T) {
 	expected := []*model.Metric{
 		{Name: "server01.loadavg5", Start: 60, End: 120, Step: 60, DataPoints: points},
 	}
-	if !reflect.DeepEqual(metrics, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	if diff := pretty.Compare(metrics, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -74,7 +74,7 @@ func TestEvalTarget_FuncNest(t *testing.T) {
 	expected := []*model.Metric{
 		{Name: "server001.loadavg5", Start: 60, End: 120, Step: 60, DataPoints: points},
 	}
-	if !reflect.DeepEqual(metrics, expected) {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, metrics)
+	if diff := pretty.Compare(metrics, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
