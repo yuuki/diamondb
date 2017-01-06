@@ -8,7 +8,7 @@ import (
 
 func TestNewSeries(t *testing.T) {
 	name := "server1.loadavg5"
-	values := NewFloat64PointerSlice([]float64{0.1, 0.2, 0.3})
+	values := []float64{0.1, 0.2, 0.3}
 	start, step := int64(10000), 60
 
 	s := NewSeries(name, values, start, step)

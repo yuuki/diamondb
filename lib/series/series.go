@@ -2,7 +2,7 @@ package series
 
 type Series interface {
 	Name() string
-	Values() []*float64
+	Values() []float64
 	Start() int64
 	End() int64
 	Step() int
@@ -11,12 +11,12 @@ type Series interface {
 
 type series struct {
 	name   string
-	values []*float64
+	values []float64
 	start  int64
 	step   int
 }
 
-func NewSeries(name string, values []*float64, start int64, step int) Series {
+func NewSeries(name string, values []float64, start int64, step int) Series {
 	return &series{
 		name:   name,
 		values: values,
@@ -29,7 +29,7 @@ func (s *series) Name() string {
 	return s.name
 }
 
-func (s *series) Values() []*float64 {
+func (s *series) Values() []float64 {
 	return s.values
 }
 

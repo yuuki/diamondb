@@ -1,27 +1,19 @@
 package series
 
-func NewFloat64PointerSlice(vals []float64) []*float64 {
-	p := make([]*float64, 0, len(vals))
-	for _, v := range vals {
-		p = append(p, &v)
-	}
-	return p
-}
-
 func GenerateSeriesSlice() SeriesSlice {
-	values1 := make([]*float64, 0, 100)
+	values1 := make([]float64, 0, 100)
 	for i := 0; i < 100; i++ {
 		v := float64(i + 1)
-		values1 = append(values1, &v)
+		values1 = append(values1, v)
 	}
-	values2 := make([]*float64, 0, 100)
+	values2 := make([]float64, 0, 100)
 	for i := 0; i < 100; i++ {
 		v := float64(i + 1)
-		values2 = append(values2, &v)
+		values2 = append(values2, v)
 	}
-	values3 := make([]*float64, 0, 1)
+	values3 := make([]float64, 0, 1)
 	v := float64(1)
-	values3 = append(values3, &v)
+	values3 = append(values3, v)
 
 	ss := make(SeriesSlice, 3)
 	ss[0] = NewSeries("server0.loadavg5", values1, int64(0), 1)

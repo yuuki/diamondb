@@ -41,7 +41,7 @@ var testNormalizeTests = []struct {
 	{
 		SeriesSlice{NewSeries(
 			"server1.loadavg5",
-			NewFloat64PointerSlice([]float64{0.0, 0.0, 0.0, 0.0, 0.0}),
+			[]float64{0.0, 0.0, 0.0, 0.0, 0.0},
 			int64(1),
 			1,
 		)},
