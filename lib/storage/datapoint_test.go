@@ -36,3 +36,24 @@ func TestDataPointsSort(t *testing.T) {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
+
+func TestDataPointsDeduplicate(t *testing.T) {
+	points := datapoints{
+		newDataPoint(900, 0.5),
+		newDataPoint(900, 0.2),
+		newDataPoint(1000, 0.1),
+		newDataPoint(1060, 0.3),
+		newDataPoint(1120, 0.2),
+		newDataPoint(1120, 0.1),
+	}
+	points = points.Deduplicate()
+	expected := datapoints{
+		newDataPoint(900, 0.2),
+		newDataPoint(1000, 0.1),
+		newDataPoint(1060, 0.3),
+		newDataPoint(1120, 0.1),
+	}
+	if diff := pretty.Compare(points, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}

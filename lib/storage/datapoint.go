@@ -1,6 +1,10 @@
 package storage
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+	"strconv"
+)
 
 type datapoint struct {
 	timestamp int64
@@ -39,4 +43,17 @@ func (ds datapoints) Less(i, j int) bool {
 func (ds datapoints) Sort() datapoints {
 	sort.Sort(ds)
 	return ds
+}
+
+func (ds datapoints) Deduplicate() datapoints {
+	deduplicated := make(map[string]float64, ds.Len())
+	for _, d := range ds {
+		deduplicated[fmt.Sprintf("%d", d.Timestamp())] = d.Value()
+	}
+	points := make(datapoints, 0, len(deduplicated))
+	for ts, v := range deduplicated {
+		t, _ := strconv.ParseInt(ts, 10, 64)
+		points = append(points, newDataPoint(t, v))
+	}
+	return points.Sort()
 }
