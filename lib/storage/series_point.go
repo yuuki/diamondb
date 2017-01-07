@@ -1,5 +1,7 @@
 package storage
 
+import "github.com/yuuki/diamondb/lib/series"
+
 type seriesPoint struct {
 	name   string
 	points datapoints
@@ -44,4 +46,8 @@ func (s *seriesPoint) Step() int {
 
 func (s *seriesPoint) Len() int {
 	return s.Points().Len()
+}
+
+func (s *seriesPoint) ToSeries() series.Series {
+	return series.NewSeries(s.Name(), s.Values(), s.Start(), s.Step())
 }
