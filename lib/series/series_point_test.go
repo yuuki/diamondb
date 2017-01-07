@@ -1,4 +1,4 @@
-package storage
+package series
 
 import (
 	"testing"
@@ -7,19 +7,19 @@ import (
 )
 
 func TestNewSeriesPoint(t *testing.T) {
-	points := datapoints{
-		newDataPoint(1000, 0.1),
-		newDataPoint(1120, 0.3),
-		newDataPoint(1060, 0.2),
+	points := DataPoints{
+		NewDataPoint(1000, 0.1),
+		NewDataPoint(1120, 0.3),
+		NewDataPoint(1060, 0.2),
 	}
-	s := newSeriesPoint("server1.loadavg5", points, 60)
+	s := NewSeriesPoint("server1.loadavg5", points, 60)
 	if s.Name() != "server1.loadavg5" {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", "server1.loadavg5", s.Name())
 	}
-	expected := datapoints{
-		newDataPoint(1000, 0.1),
-		newDataPoint(1060, 0.2),
-		newDataPoint(1120, 0.3),
+	expected := DataPoints{
+		NewDataPoint(1000, 0.1),
+		NewDataPoint(1060, 0.2),
+		NewDataPoint(1120, 0.3),
 	}
 	if diff := pretty.Compare(s.Points(), expected); diff != "" {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
