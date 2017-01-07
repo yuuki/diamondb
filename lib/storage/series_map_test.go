@@ -66,7 +66,6 @@ func TestMergePointsToMap(t *testing.T) {
 		"server1.loadavg5": newSeriesPoint("server1.loadavg5", datapoints{
 			newDataPoint(1000, 0.1),
 			newDataPoint(1060, 0.2),
-			newDataPoint(1120, 0.3), // TODO remove duplicated timestamp
 			newDataPoint(1120, 0.1),
 			newDataPoint(1180, 0.2),
 			newDataPoint(1240, 0.3),
@@ -103,7 +102,7 @@ func TestMergePointsToSlice(t *testing.T) {
 	sl := sm1.MergePointsToSlice(sm2)
 
 	expected := series.SeriesSlice{
-		series.NewSeries("server1.loadavg5", []float64{0.1, 0.2, 0.3, 0.1, 0.2, 0.3}, 1000, 60),
+		series.NewSeries("server1.loadavg5", []float64{0.1, 0.2, 0.1, 0.2, 0.3}, 1000, 60),
 		series.NewSeries("server2.loadavg5", []float64{0.1}, 1120, 60),
 	}
 	if diff := pretty.Compare(sl, expected); diff != "" {
