@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/yuuki/diamondb/lib/model"
+	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/util"
 	redis "gopkg.in/redis.v5"
 )
@@ -24,24 +24,24 @@ var (
 	client *redis.Client
 )
 
-func FetchMetrics(name string, start, end time.Time) ([]*model.Metric, error) {
+func FetchMetrics(name string, start, end time.Time) (series.SeriesMap, error) {
 	slot, step := selectTimeSlot(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)
 	c := make(chan interface{})
 	for _, names := range nameGroups {
 		concurrentBatchGet(slot, names, step, c)
 	}
-	var metrics []*model.Metric
+	sm := make(series.SeriesMap, len(nameGroups))
 	for i := 0; i < len(nameGroups); i++ {
 		ret := <-c
 		switch ret.(type) {
-		case []*model.Metric:
-			metrics = append(metrics, ret.([]*model.Metric)...)
+		case series.SeriesMap:
+			sm.Merge(ret.(series.SeriesMap))
 		case error:
 			return nil, errors.WithStack(ret.(error))
 		}
 	}
-	return metrics, nil
+	return sm, nil
 }
 
 func concurrentBatchGet(slot string, names []string, step int, c chan<- interface{}) {
@@ -58,8 +58,8 @@ func concurrentBatchGet(slot string, names []string, step int, c chan<- interfac
 	}()
 }
 
-func hGetAllToMap(name string, tsval map[string]string, step int) (*model.Metric, error) {
-	points := make([]*model.DataPoint, 0, len(tsval))
+func hGetAllToMap(name string, tsval map[string]string, step int) (*series.SeriesPoint, error) {
+	points := make(series.DataPoints, 0, len(tsval))
 	for ts, val := range tsval {
 		t, err := strconv.ParseInt(ts, 10, 64)
 		if err != nil {
@@ -69,13 +69,13 @@ func hGetAllToMap(name string, tsval map[string]string, step int) (*model.Metric
 		if err != nil {
 			return nil, errors.Wrapf(err, "Failed to ParseFloat value %s", v)
 		}
-		points = append(points, model.NewDataPoint(t, v))
+		points = append(points, series.NewDataPoint(t, v))
 	}
-	return model.NewMetric(name, points, step), nil
+	return series.NewSeriesPoint(name, points, step), nil
 }
 
-func batchGet(slot string, names []string, step int) ([]*model.Metric, error) {
-	metrics := make([]*model.Metric, 0, len(names))
+func batchGet(slot string, names []string, step int) (series.SeriesMap, error) {
+	sm := make(series.SeriesMap, len(names))
 	for _, name := range names {
 		key := fmt.Sprintf("%s:%s", slot, name)
 		tsval, err := client.HGetAll(key).Result()
@@ -87,13 +87,13 @@ func batchGet(slot string, names []string, step int) ([]*model.Metric, error) {
 		if len(tsval) < 1 {
 			continue
 		}
-		metric, err := hGetAllToMap(name, tsval, step)
+		sp, err := hGetAllToMap(name, tsval, step)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Failed to hGetAllToMap %+v", tsval)
 		}
-		metrics = append(metrics, metric)
+		sm[name] = sp
 	}
-	return metrics, nil
+	return sm, nil
 }
 
 func selectTimeSlot(startTime, endTime time.Time) (string, int) {
