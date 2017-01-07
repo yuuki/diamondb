@@ -42,7 +42,7 @@ func (sm1 seriesMap) MergePointsToMap(sm2 seriesMap) seriesMap {
 
 func (sm1 seriesMap) MergePointsToSlice(sm2 seriesMap) series.SeriesSlice {
 	sm := sm1.MergePointsToMap(sm2)
-	ss := make(series.SeriesSlice, 0, len(sm1))
+	ss := make(series.SeriesSlice, 0, len(sm))
 	for _, name := range sm.SortedNames() {
 		ss = append(ss, sm[name].ToSeries())
 	}
