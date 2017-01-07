@@ -32,3 +32,14 @@ func TestNewSeries(t *testing.T) {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", 3, s.Len())
 	}
 }
+
+func TestSeriesAlias(t *testing.T) {
+	s := NewSeries("server1.loadavg5", []float64{}, 100, 60)
+	if s.Alias() != "server1.loadavg5" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "server1.loadavg5", s.Alias())
+	}
+	s.SetAlias("func(server1.loadavg5)")
+	if s.Alias() != "func(server1.loadavg5)" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "func(server1.loadavg5)", s.Alias())
+	}
+}

@@ -7,6 +7,8 @@ type Series interface {
 	End() int64
 	Step() int
 	Len() int
+	SetAlias(s string)
+	Alias() string
 }
 
 type series struct {
@@ -14,6 +16,7 @@ type series struct {
 	values []float64
 	start  int64
 	step   int
+	alias  string
 }
 
 func NewSeries(name string, values []float64, start int64, step int) Series {
@@ -47,4 +50,15 @@ func (s *series) Step() int {
 
 func (s *series) Len() int {
 	return len(s.Values())
+}
+
+func (s *series) SetAlias(a string) {
+	s.alias = a
+}
+
+func (s *series) Alias() string {
+	if s.alias == "" {
+		return s.Name()
+	}
+	return s.alias
 }
