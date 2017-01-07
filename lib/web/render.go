@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/yuuki/diamondb/lib/log"
-	"github.com/yuuki/diamondb/lib/model"
 	"github.com/yuuki/diamondb/lib/query"
+	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/timeparser"
 )
 
@@ -46,9 +46,9 @@ func Render(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vmList := make([]*model.ViewMetric, 0, len(targets))
+	seriesResps := make([]*series.SeriesResp, 0, len(targets))
 	for _, target := range targets {
-		mList, err := query.EvalTarget(target, from, until)
+		seriesSlice, err := query.EvalTarget(target, from, until)
 		if err != nil {
 			log.Printf("%+v", err) // Print stack trace by pkg/errors
 			switch err.(type) {
@@ -59,11 +59,11 @@ func Render(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-		for _, metric := range mList {
-			vmList = append(vmList, metric.AsResponse())
+		for _, series := range seriesSlice {
+			seriesResps = append(seriesResps, series.AsResp())
 		}
 	}
-	JSON(w, http.StatusOK, vmList)
+	JSON(w, http.StatusOK, seriesResps)
 
 	return
 }
