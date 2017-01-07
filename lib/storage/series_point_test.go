@@ -24,6 +24,9 @@ func TestNewSeriesPoint(t *testing.T) {
 	if diff := pretty.Compare(s.Points(), expected); diff != "" {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
+	if diff := pretty.Compare(s.Values(), []float64{0.1, 0.2, 0.3}); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
 	if s.Step() != 60 {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", 60, s.Step())
 	}

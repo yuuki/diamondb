@@ -1,6 +1,10 @@
 package storage
 
-import "github.com/yuuki/diamondb/lib/series"
+import (
+	"math"
+
+	"github.com/yuuki/diamondb/lib/series"
+)
 
 type seriesPoint struct {
 	name   string
@@ -25,9 +29,14 @@ func (s *seriesPoint) Points() datapoints {
 }
 
 func (s *seriesPoint) Values() []float64 {
-	vals := make([]float64, s.Len())
+	vals := make([]float64, s.Points().Len())
+	for i, _ := range vals {
+		vals[i] = math.NaN() // NaN reprensents 'lack of data point'
+	}
 	for i, p := range s.Points() {
-		vals[i] = p.value
+		if p.Timestamp() == (s.Start() + int64(s.Step()*i)) {
+			vals[i] = p.Value()
+		}
 	}
 	return vals
 }
