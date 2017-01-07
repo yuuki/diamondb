@@ -15,7 +15,7 @@ type seriesPoint struct {
 func newSeriesPoint(name string, points datapoints, step int) *seriesPoint {
 	return &seriesPoint{
 		name:   name,
-		points: points.Sort(),
+		points: points.Sort().Deduplicate(),
 		step:   step,
 	}
 }
@@ -29,7 +29,7 @@ func (s *seriesPoint) Points() datapoints {
 }
 
 func (s *seriesPoint) Values() []float64 {
-	points := s.Points().Deduplicate()
+	points := s.Points()
 	vals := make([]float64, points.Len())
 	for i, _ := range vals {
 		vals[i] = math.NaN() // NaN reprensents 'lack of data point'
