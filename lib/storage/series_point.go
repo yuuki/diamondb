@@ -29,11 +29,12 @@ func (s *seriesPoint) Points() datapoints {
 }
 
 func (s *seriesPoint) Values() []float64 {
-	vals := make([]float64, s.Points().Len())
+	points := s.Points().Deduplicate()
+	vals := make([]float64, points.Len())
 	for i, _ := range vals {
 		vals[i] = math.NaN() // NaN reprensents 'lack of data point'
 	}
-	for i, p := range s.Points() {
+	for i, p := range points {
 		if p.Timestamp() == (s.Start() + int64(s.Step()*i)) {
 			vals[i] = p.Value()
 		}
