@@ -11,15 +11,9 @@ func GenerateSeriesSlice() SeriesSlice {
 		v := float64(i + 1)
 		values2 = append(values2, v)
 	}
-	values3 := make([]float64, 0, 1)
-	v := float64(1)
-	values3 = append(values3, v)
-
 	ss := SeriesSlice{
 		NewSeries("server0.loadavg5", values1, int64(0), 1),
 		NewSeries("server1.loadavg5", values2, int64(0), 1),
-		NewSeries("server2.loadavg5", values3, int64(0), 1),
 	}
-
 	return ss
 }
