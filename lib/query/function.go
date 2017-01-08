@@ -2,81 +2,14 @@ package query
 
 import (
 	"fmt"
-	"sort"
-	"strconv"
-	"strings"
 
 	"github.com/pkg/errors"
 
 	"github.com/yuuki/diamondb/lib/mathutil"
-	"github.com/yuuki/diamondb/lib/model"
+	"github.com/yuuki/diamondb/lib/series"
 )
 
-func zipSeriesList(seriesList []*model.Metric) (map[string][]float64, int) {
-	if len(seriesList) < 1 {
-		return nil, 0
-	}
-
-	maxLen := 0
-	for _, series := range seriesList {
-		size := len(series.DataPoints)
-		if maxLen < size {
-			maxLen = size
-		}
-	}
-
-	valuesByTimeStamp := make(map[string][]float64)
-	for i := 0; i < maxLen; i++ {
-		values := make([]float64, 0, len(seriesList))
-		for _, series := range seriesList {
-			if i >= len(series.DataPoints) {
-				continue
-			}
-			if series.DataPoints[i] == nil {
-				continue
-			}
-			values = append(values, series.DataPoints[i].Value)
-			ts := series.DataPoints[i].Timestamp
-			// use type string as map index because cannot use type int64 as type int32 in map index
-			valuesByTimeStamp[fmt.Sprintf("%d", ts)] = values
-		}
-	}
-	return valuesByTimeStamp, maxLen
-}
-
-func formatSeries(seriesList []*model.Metric) string {
-	// Unique & Sort
-	set := make(map[string]struct{})
-	for _, s := range seriesList {
-		set[s.Name] = struct{}{}
-	}
-	series := make([]string, 0, len(seriesList))
-	for name := range set {
-		series = append(series, name)
-	}
-	sort.Strings(series)
-	return strings.Join(series, ",")
-}
-
-func normalize(seriesList []*model.Metric) ([]*model.Metric, int64, int64, int) {
-	if len(seriesList) < 1 {
-		return seriesList, 0, 0, 0
-	}
-	var (
-		step  = seriesList[0].Step
-		start = seriesList[0].Start
-		end   = seriesList[0].End
-	)
-	for _, series := range seriesList {
-		step = mathutil.Lcm(step, series.Step)
-		start = mathutil.MinInt64(start, series.Start)
-		end = mathutil.MaxInt64(end, series.Start)
-	}
-	end -= (end - start) % int64(step)
-	return seriesList, start, end, step
-}
-
-func doAlias(seriesList []*model.Metric, args []Expr) ([]*model.Metric, error) {
+func doAlias(ss series.SeriesSlice, args []Expr) (series.SeriesSlice, error) {
 	if len(args) != 1 {
 		return nil, errors.New("too few arguments to function `alias`")
 	}
@@ -84,121 +17,88 @@ func doAlias(seriesList []*model.Metric, args []Expr) ([]*model.Metric, error) {
 	if !ok {
 		return nil, errors.New("Invalid argument type `newName` to function `alias`. `newName` must be string.")
 	}
-	return alias(seriesList, newNameExpr.Literal), nil
+	return alias(ss, newNameExpr.Literal), nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.alias
-func alias(seriesList []*model.Metric, newName string) []*model.Metric {
-	for _, series := range seriesList {
-		series.Name = newName
+func alias(ss series.SeriesSlice, newName string) series.SeriesSlice {
+	for _, series := range ss {
+		series.SetAlias(newName)
 	}
-	return seriesList
+	return ss
 }
 
-func doSumSeries(seriesList []*model.Metric) []*model.Metric {
-	series := sumSeries(seriesList)
-	seriesList = make([]*model.Metric, 1)
-	seriesList[0] = series
-	return seriesList
+func doSumSeries(ss series.SeriesSlice) series.SeriesSlice {
+	slice := make(series.SeriesSlice, 1)
+	slice[0] = sumSeries(ss)
+	return slice
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeries
-func sumSeries(seriesList []*model.Metric) *model.Metric {
-	if len(seriesList) == 0 {
-		return model.NewEmptyMetric()
+func sumSeries(ss series.SeriesSlice) series.Series {
+	start, _, step := ss.Normalize()
+	vals := make([]float64, 0, len(ss))
+	iter := ss.Zip()
+	for row := iter(); row != nil; row = iter() {
+		vals = append(vals, mathutil.SumFloat64(row))
 	}
-	name := fmt.Sprintf("sumSeries(%s)", formatSeries(seriesList))
-
-	seriesList, _, _, step := normalize(seriesList)
-
-	valuesByTimeStamp, maxLen := zipSeriesList(seriesList)
-	points := make([]*model.DataPoint, 0, maxLen)
-	for key, vals := range valuesByTimeStamp {
-		avg := mathutil.SumFloat64(vals)
-		ts, _ := strconv.ParseInt(key, 10, 64)
-		point := model.NewDataPoint(ts, avg)
-		points = append(points, point)
-	}
-	return model.NewMetric(name, points, step)
+	name := fmt.Sprintf("sumSeries(%s)", ss.FormatedName())
+	return series.NewSeries(name, vals, start, step)
 }
 
-func doAverageSeries(seriesList []*model.Metric) []*model.Metric {
-	series := averageSeries(seriesList)
-	seriesList = make([]*model.Metric, 1)
-	seriesList[0] = series
-	return seriesList
+func doAverageSeries(ss series.SeriesSlice) series.SeriesSlice {
+	slice := make(series.SeriesSlice, 1)
+	slice[0] = averageSeries(ss)
+	return slice
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.averageSeries
-func averageSeries(seriesList []*model.Metric) *model.Metric {
-	if len(seriesList) == 0 {
-		return model.NewEmptyMetric()
+func averageSeries(ss series.SeriesSlice) series.Series {
+	start, _, step := ss.Normalize()
+	vals := make([]float64, 0, len(ss))
+	iter := ss.Zip()
+	for row := iter(); row != nil; row = iter() {
+		avg := mathutil.SumFloat64(row) / float64(len(row))
+		vals = append(vals, avg)
 	}
-	name := fmt.Sprintf("averageSeries(%s)", formatSeries(seriesList))
-
-	seriesList, _, _, step := normalize(seriesList)
-
-	valuesByTimeStamp, maxLen := zipSeriesList(seriesList)
-	points := make([]*model.DataPoint, 0, maxLen)
-	for key, vals := range valuesByTimeStamp {
-		avg := mathutil.SumFloat64(vals) / float64(len(vals))
-		ts, _ := strconv.ParseInt(key, 10, 64)
-		point := model.NewDataPoint(ts, avg)
-		points = append(points, point)
-	}
-	return model.NewMetric(name, points, step)
+	name := fmt.Sprintf("averageSeries(%s)", ss.FormatedName())
+	return series.NewSeries(name, vals, start, step)
 }
 
-func doMaxSeries(seriesList []*model.Metric) []*model.Metric {
-	series := maxSeries(seriesList)
-	seriesList = make([]*model.Metric, 1)
-	seriesList[0] = series
-	return seriesList
+func doMaxSeries(ss series.SeriesSlice) series.SeriesSlice {
+	slice := make(series.SeriesSlice, 1)
+	slice[0] = averageSeries(ss)
+	return slice
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.maxSeries
-func maxSeries(seriesList []*model.Metric) *model.Metric {
-	if len(seriesList) == 0 {
-		return model.NewEmptyMetric()
+func maxSeries(ss series.SeriesSlice) series.Series {
+	start, _, step := ss.Normalize()
+	vals := make([]float64, 0, len(ss))
+	iter := ss.Zip()
+	for row := iter(); row != nil; row = iter() {
+		avg := mathutil.MaxFloat64(row)
+		vals = append(vals, avg)
 	}
-	name := fmt.Sprintf("maxSeries(%s)", formatSeries(seriesList))
-
-	seriesList, _, _, step := normalize(seriesList)
-
-	valuesByTimeStamp, maxLen := zipSeriesList(seriesList)
-	points := make([]*model.DataPoint, 0, maxLen)
-	for key, vals := range valuesByTimeStamp {
-		max := mathutil.MaxFloat64(vals)
-		ts, _ := strconv.ParseInt(key, 10, 64)
-		point := model.NewDataPoint(ts, max)
-		points = append(points, point)
-	}
-	return model.NewMetric(name, points, step)
+	name := fmt.Sprintf("maxSeries(%s)", ss.FormatedName())
+	return series.NewSeries(name, vals, start, step)
 }
 
-func doMultiplySeries(seriesList []*model.Metric) []*model.Metric {
-	series := multiplySeries(seriesList)
-	seriesList = make([]*model.Metric, 1)
-	seriesList[0] = series
-	return seriesList
+func doMultiplySeries(ss series.SeriesSlice) series.SeriesSlice {
+	slice := make(series.SeriesSlice, 1)
+	slice[0] = multiplySeries(ss)
+	return slice
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.multiplySeries
-func multiplySeries(seriesList []*model.Metric) *model.Metric {
-	if len(seriesList) == 0 {
-		return model.NewEmptyMetric()
+func multiplySeries(ss series.SeriesSlice) series.Series {
+	start, _, step := ss.Normalize()
+	vals := make([]float64, 0, len(ss))
+	iter := ss.Zip()
+	for row := iter(); row != nil; row = iter() {
+		avg := mathutil.MultiplyFloat64(row)
+		vals = append(vals, avg)
 	}
-	name := fmt.Sprintf("multiplySeries(%s)", formatSeries(seriesList))
-
-	seriesList, _, _, step := normalize(seriesList)
-
-	valuesByTimeStamp, maxLen := zipSeriesList(seriesList)
-	points := make([]*model.DataPoint, 0, maxLen)
-	for key, vals := range valuesByTimeStamp {
-		multiplies := mathutil.MultiplyFloat64(vals)
-		ts, _ := strconv.ParseInt(key, 10, 64)
-		point := model.NewDataPoint(ts, multiplies)
-		points = append(points, point)
-	}
-	return model.NewMetric(name, points, step)
+	name := fmt.Sprintf("multiplySeries(%s)", ss.FormatedName())
+	return series.NewSeries(name, vals, start, step)
 }
