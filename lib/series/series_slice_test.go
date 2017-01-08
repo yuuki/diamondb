@@ -1,6 +1,10 @@
 package series
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/kylelemons/godebug/pretty"
+)
 
 func TestFormatedName_Uniq(t *testing.T) {
 	ss := SeriesSlice{
@@ -64,6 +68,44 @@ func TestNormalize(t *testing.T) {
 		}
 		if step != nt.step {
 			t.Fatalf("\nExpected: %+v\nActual:   %+v (#%d)", nt.step, step, i)
+		}
+	}
+}
+
+var testSeriesSliceZipTests = []struct {
+	desc string
+	ss   SeriesSlice
+	rows [][]float64
+}{
+	{
+		"each of series's length is the same",
+		SeriesSlice{
+			NewSeries("server1.cpu.system", []float64{0.1, 0.2}, 1000, 60),
+			NewSeries("server2.cpu.system", []float64{0.1, 0.2}, 1000, 60),
+			NewSeries("server3.cpu.system", []float64{0.1, 0.2}, 1000, 60),
+		},
+		[][]float64{{0.1, 0.1, 0.1}, {0.2, 0.2, 0.2}},
+	},
+	{
+		"each of series's length is different",
+		SeriesSlice{
+			NewSeries("server1.cpu.system", []float64{0.1, 0.2}, 1000, 60),
+			NewSeries("server2.cpu.system", []float64{0.1, 0.2, 0.3}, 1000, 60),
+			NewSeries("server3.cpu.system", []float64{0.1, 0.2}, 1000, 60),
+		},
+		[][]float64{{0.1, 0.1, 0.1}, {0.2, 0.2, 0.2}},
+	},
+}
+
+func TestSeriesSliceZip(t *testing.T) {
+	for _, tc := range testSeriesSliceZipTests {
+		iter := tc.ss.Zip()
+		i := 0
+		for row := iter(); row != nil; row = iter() {
+			if diff := pretty.Compare(row, tc.rows[i]); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			i++
 		}
 	}
 }

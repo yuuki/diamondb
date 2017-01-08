@@ -40,3 +40,18 @@ func (ss SeriesSlice) Normalize() (int64, int64, int) {
 	end -= (end - start) % int64(step)
 	return start, end, step
 }
+
+func (ss SeriesSlice) Zip() func() []float64 {
+	zip := make([]float64, len(ss))
+	i := 0
+	return func() []float64 {
+		for j, series := range ss {
+			if i >= series.Len() {
+				return nil
+			}
+			zip[j] = series.Values()[i]
+		}
+		i++
+		return zip
+	}
+}
