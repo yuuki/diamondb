@@ -45,6 +45,10 @@ func TestSeriesAlias(t *testing.T) {
 	if s.Alias() != "func(server1.loadavg5)" {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", "func(server1.loadavg5)", s.Alias())
 	}
+	s = NewSeries("server1.loadavg5", []float64{}, 100, 60).SetAliasWith("func2(server1.loadavg5)")
+	if s.Alias() != "func2(server1.loadavg5)" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "func2(server1.loadavg5)", s.Alias())
+	}
 }
 
 func TestSeriesAsResp(t *testing.T) {

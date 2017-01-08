@@ -10,6 +10,7 @@ type Series interface {
 	Step() int
 	Len() int
 	SetAlias(s string)
+	SetAliasWith(s string) Series
 	Alias() string
 	AsResp() *SeriesResp
 }
@@ -57,6 +58,11 @@ func (s *series) Len() int {
 
 func (s *series) SetAlias(a string) {
 	s.alias = a
+}
+
+func (s *series) SetAliasWith(a string) Series {
+	s.alias = a
+	return s
 }
 
 func (s *series) Alias() string {
