@@ -5,64 +5,48 @@ import (
 	"time"
 
 	"github.com/kylelemons/godebug/pretty"
-	"github.com/yuuki/diamondb/lib/model"
-	"github.com/yuuki/diamondb/lib/storage/dynamo"
+	. "github.com/yuuki/diamondb/lib/series"
+	"github.com/yuuki/diamondb/lib/storage"
 )
 
 func TestEvalTarget_Func(t *testing.T) {
-	points := []*model.DataPoint{
-		{60, 10.0},
-		{120, 11.0},
-	}
-	ctrl := dynamo.SetMockDynamoDB(t, &dynamo.MockDynamoDBParam{
-		TableName: dynamo.DynamoDBTableOneHour + "-0",
-		ItemEpoch: 0,
-		Metrics: []*model.Metric{
-			model.NewMetric(
-				"server1.loadavg5",
-				points,
-				60,
-			),
+	fakefetcher := &storage.FakeFetcher{
+		FakeFetchSeriesSlice: func(name string, start, end time.Time) (SeriesSlice, error) {
+			return SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
+			}, nil
 		},
-	})
-	defer ctrl.Finish()
+	}
 
-	metrics, err := EvalTarget(
+	seriesSlice, err := EvalTarget(
+		fakefetcher,
 		"alias(server1.loadavg5,\"server01.loadavg5\")",
 		time.Unix(0, 0),
 		time.Unix(120, 0),
 	)
-
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	expected := []*model.Metric{
-		{Name: "server01.loadavg5", Start: 60, End: 120, Step: 60, DataPoints: points},
-	}
-	if diff := pretty.Compare(metrics, expected); diff != "" {
+	s1 := NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60).SetAliasWith(
+		"server01.loadavg5",
+	)
+	expected := SeriesSlice{s1}
+	if diff := pretty.Compare(seriesSlice, expected); diff != "" {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
 func TestEvalTarget_FuncNest(t *testing.T) {
-	points := []*model.DataPoint{
-		{60, 10.0},
-		{120, 11.0},
-	}
-	ctrl := dynamo.SetMockDynamoDB(t, &dynamo.MockDynamoDBParam{
-		TableName: dynamo.DynamoDBTableOneHour + "-0",
-		ItemEpoch: 0,
-		Metrics: []*model.Metric{
-			model.NewMetric(
-				"server1.loadavg5",
-				points,
-				60,
-			),
+	fakefetcher := &storage.FakeFetcher{
+		FakeFetchSeriesSlice: func(name string, start, end time.Time) (SeriesSlice, error) {
+			return SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
+			}, nil
 		},
-	})
-	defer ctrl.Finish()
+	}
 
-	metrics, err := EvalTarget(
+	seriesSlice, err := EvalTarget(
+		fakefetcher,
 		"alias(alias(server1.loadavg5,\"server01.loadavg5\"),\"server001.loadavg5\")",
 		time.Unix(0, 0),
 		time.Unix(120, 0),
@@ -71,10 +55,11 @@ func TestEvalTarget_FuncNest(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	expected := []*model.Metric{
-		{Name: "server001.loadavg5", Start: 60, End: 120, Step: 60, DataPoints: points},
-	}
-	if diff := pretty.Compare(metrics, expected); diff != "" {
+	s1 := NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60).SetAliasWith(
+		"server001.loadavg5",
+	)
+	expected := SeriesSlice{s1}
+	if diff := pretty.Compare(seriesSlice, expected); diff != "" {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }

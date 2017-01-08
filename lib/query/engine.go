@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/diamondb/lib/model"
+	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/storage"
 )
 
@@ -18,33 +18,33 @@ func (e *UnsupportedFunctionError) Error() string {
 	return fmt.Sprintf("Unsupported function %s", e.funcName)
 }
 
-func EvalTarget(target string, startTime, endTime time.Time) ([]*model.Metric, error) {
+func EvalTarget(fetcher storage.Fetcher, target string, startTime, endTime time.Time) (series.SeriesSlice, error) {
 	expr, err := ParseTarget(target)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to ParseTarget %s", target)
 	}
-	metrics, err := invokeExpr(expr, startTime, endTime)
+	ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
 	}
-	return metrics, err
+	return ss, err
 }
 
-func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error) {
+func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time) (series.SeriesSlice, error) {
 	switch e := expr.(type) {
 	case SeriesListExpr:
-		metrics, err := storage.FetchMetric(e.Literal, startTime, endTime)
+		ss, err := fetcher.FetchSeriesSlice(e.Literal, startTime, endTime)
 		if err != nil {
 			return nil, errors.Wrapf(err,
-				"Failed to storage.FetchMetric %s %d %d",
+				"Failed to FetchSeriesSlice %s %d %d",
 				e.Literal, startTime.Unix(), endTime.Unix(),
 			)
 		}
-		return metrics, err
+		return ss, nil
 	case FuncExpr:
 		var (
-			metricList []*model.Metric
-			err        error
+			ss  series.SeriesSlice
+			err error
 		)
 		for _, expr := range e.SubExprs {
 			switch expr.(type) {
@@ -56,36 +56,36 @@ func invokeExpr(expr Expr, startTime, endTime time.Time) ([]*model.Metric, error
 				continue
 			}
 
-			metricList, err = invokeExpr(expr, startTime, endTime)
+			ss, err = invokeExpr(fetcher, expr, startTime, endTime)
 			if err != nil {
 				return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
 			}
 		}
-		if metricList != nil {
+		if ss != nil {
 			switch e.Name {
 			case "alias":
-				metricList, err = doAlias(metricList, e.SubExprs[1:])
+				ss, err = doAlias(ss, e.SubExprs[1:])
 				if err != nil {
 					return nil, errors.Wrap(err, "Failed to doAlias")
 				}
-				return metricList, err
+				return ss, err
 			case "averageSeries", "avg":
-				metricList = doAverageSeries(metricList)
-				return metricList, nil
+				ss = doAverageSeries(ss)
+				return ss, nil
 			case "sumSeries", "sum":
-				metricList = doSumSeries(metricList)
-				return metricList, nil
+				ss = doSumSeries(ss)
+				return ss, nil
 			case "maxSeries":
-				metricList = doMaxSeries(metricList)
-				return metricList, nil
+				ss = doMaxSeries(ss)
+				return ss, nil
 			case "multiplySeries":
-				metricList = doMultiplySeries(metricList)
-				return metricList, nil
+				ss = doMultiplySeries(ss)
+				return ss, nil
 			default:
 				return nil, &UnsupportedFunctionError{funcName: e.Name}
 			}
 		}
-		return metricList, err
+		return ss, err
 	default:
 		return nil, errors.Errorf("Unknown expression %+v", expr)
 	}

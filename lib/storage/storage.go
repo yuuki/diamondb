@@ -5,21 +5,37 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/diamondb/lib/model"
+	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/storage/dynamo"
+	"github.com/yuuki/diamondb/lib/storage/redis"
 )
 
-func FetchMetric(name string, start, end time.Time) ([]*model.Metric, error) {
-	metrics, err := dynamo.FetchMetricsFromDynamoDB(name, start, end)
+type Fetcher interface {
+	FetchSeriesSlice(string, time.Time, time.Time) (series.SeriesSlice, error)
+}
+
+type Store struct {
+	// redis client
+	// dynamodb client
+	// s3 client
+}
+
+func (s *Store) FetchSeriesSlice(name string, start, end time.Time) (series.SeriesSlice, error) {
+	sm1, err := redis.FetchMetrics(name, start, end)
+	if err != nil {
+		return nil, errors.Wrapf(err,
+			"Failed to redis.FetchMetrics %s %d %d",
+			name, start.Unix(), end.Unix(),
+		)
+	}
+	sm2, err := dynamo.FetchMetricsFromDynamoDB(name, start, end)
 	if err != nil {
 		return nil, errors.Wrapf(err,
 			"Failed to FetchMetricsFromDynamoDB %s %d %d",
 			name, start.Unix(), end.Unix(),
 		)
 	}
-	for _, m := range metrics {
-		m.FilledWithNil()
-	}
-
-	return metrics, nil
+	sm := sm1.MergePointsToSlice(sm2)
+	// TODO S3
+	return sm, nil
 }

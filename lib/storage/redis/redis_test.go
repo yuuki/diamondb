@@ -6,7 +6,7 @@ import (
 
 	"github.com/alicebob/miniredis"
 	"github.com/kylelemons/godebug/pretty"
-	"github.com/yuuki/diamondb/lib/model"
+	"github.com/yuuki/diamondb/lib/series"
 	redis "gopkg.in/redis.v5"
 )
 
@@ -37,21 +37,23 @@ func TestFetchMetrics(t *testing.T) {
 	}
 
 	name := "server{1,2}.loadavg5"
-	metrics, err := FetchMetrics(name, time.Unix(100, 0), time.Unix(1000, 0))
+	sm, err := FetchMetrics(name, time.Unix(100, 0), time.Unix(1000, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	expected := []*model.Metric{
-		{
-			Name: "server1.loadavg5", Start: 100, End: 220, Step: 60,
-			DataPoints: []*model.DataPoint{{100, 10.0}, {160, 10.2}, {220, 11.0}},
-		},
-		{
-			Name: "server2.loadavg5", Start: 100, End: 220, Step: 60,
-			DataPoints: []*model.DataPoint{{100, 8.0}, {160, 5.0}, {220, 6.0}},
-		},
+	expected := series.SeriesMap{
+		"server1.loadavg5": series.NewSeriesPoint("server1.loadavg5", series.DataPoints{
+			series.NewDataPoint(100, 10.0),
+			series.NewDataPoint(160, 10.2),
+			series.NewDataPoint(220, 11.0),
+		}, 60),
+		"server2.loadavg5": series.NewSeriesPoint("server2.loadavg5", series.DataPoints{
+			series.NewDataPoint(100, 8.0),
+			series.NewDataPoint(160, 5.0),
+			series.NewDataPoint(220, 6.0),
+		}, 60),
 	}
-	if diff := pretty.Compare(metrics, expected); diff != "" {
+	if diff := pretty.Compare(sm, expected); diff != "" {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
@@ -87,15 +89,17 @@ func TestBatchGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	expected := []*model.Metric{
-		{
-			Name: "server1.loadavg5", Start: 100, End: 160, Step: 30,
-			DataPoints: []*model.DataPoint{{100, 10.0}, {130, 10.2}, {160, 11.0}},
-		},
-		{
-			Name: "server2.loadavg5", Start: 100, End: 160, Step: 30,
-			DataPoints: []*model.DataPoint{{100, 8.0}, {130, 5.0}, {160, 6.0}},
-		},
+	expected := series.SeriesMap{
+		"server1.loadavg5": series.NewSeriesPoint("server1.loadavg5", series.DataPoints{
+			series.NewDataPoint(100, 10.0),
+			series.NewDataPoint(130, 10.2),
+			series.NewDataPoint(160, 11.0),
+		}, 30),
+		"server2.loadavg5": series.NewSeriesPoint("server2.loadavg5", series.DataPoints{
+			series.NewDataPoint(100, 8.0),
+			series.NewDataPoint(130, 5.0),
+			series.NewDataPoint(160, 6.0),
+		}, 30),
 	}
 	if diff := pretty.Compare(metrics, expected); diff != "" {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
@@ -157,18 +161,20 @@ func TestConcurrentBatchGet(t *testing.T) {
 	concurrentBatchGet("1m", names, 30, ch)
 
 	ret := <-ch
-	metrics := ret.([]*model.Metric)
-	expected := []*model.Metric{
-		{
-			Name: "server1.loadavg5", Start: 100, End: 160, Step: 30,
-			DataPoints: []*model.DataPoint{{100, 10.0}, {130, 10.2}, {160, 11.0}},
-		},
-		{
-			Name: "server2.loadavg5", Start: 100, End: 160, Step: 30,
-			DataPoints: []*model.DataPoint{{100, 8.0}, {130, 5.0}, {160, 6.0}},
-		},
+	sm := ret.(series.SeriesMap)
+	expected := series.SeriesMap{
+		"server1.loadavg5": series.NewSeriesPoint("server1.loadavg5", series.DataPoints{
+			series.NewDataPoint(100, 10.0),
+			series.NewDataPoint(130, 10.2),
+			series.NewDataPoint(160, 11.0),
+		}, 30),
+		"server2.loadavg5": series.NewSeriesPoint("server2.loadavg5", series.DataPoints{
+			series.NewDataPoint(100, 8.0),
+			series.NewDataPoint(130, 5.0),
+			series.NewDataPoint(160, 6.0),
+		}, 30),
 	}
-	if diff := pretty.Compare(metrics, expected); diff != "" {
+	if diff := pretty.Compare(sm, expected); diff != "" {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
