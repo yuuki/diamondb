@@ -12,6 +12,7 @@ import (
 
 	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/log"
+	"github.com/yuuki/diamondb/lib/storage"
 	"github.com/yuuki/diamondb/lib/web"
 )
 
@@ -20,6 +21,10 @@ type CLI struct {
 	// outStream and errStream are the stdout and stderr
 	// to write message from the CLI.
 	outStream, errStream io.Writer
+}
+
+type Env struct {
+	fetcher storage.Fetcher
 }
 
 func main() {
@@ -65,8 +70,11 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 
+	fetcher := config.NewFetcher()
+	env := &config.Env{Fetcher: fetcher}
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("/render", web.Render)
+	mux.Handle("/render", web.Render(env))
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
