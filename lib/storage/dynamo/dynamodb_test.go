@@ -12,7 +12,7 @@ import (
 	"github.com/yuuki/diamondb/lib/series"
 )
 
-func TestFetchMetricsFromDynamoDB(t *testing.T) {
+func TestFetchSeriesMap(t *testing.T) {
 	name := "roleA.r.{1,2}.loadavg"
 	expected := series.SeriesMap{
 		"roleA.r.1.loadavg": series.NewSeriesPoint(
@@ -41,7 +41,7 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 	})
 	defer ctrl.Finish()
 
-	sm, err := FetchMetricsFromDynamoDB(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -50,7 +50,7 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 	}
 }
 
-func TestFetchMetricsFromDynamoDB_Empty(t *testing.T) {
+func TestFetchSeriesMap_Empty(t *testing.T) {
 	tableName := DynamoDBTableOneHour + "-0"
 
 	ctrl := gomock.NewController(t)
@@ -69,7 +69,7 @@ func TestFetchMetricsFromDynamoDB_Empty(t *testing.T) {
 	SetDynamoDB(dmock)
 
 	name := "roleA.r.{1,2}.loadavg"
-	sm, err := FetchMetricsFromDynamoDB(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("Should ignore NotFound error: %s", err)
 	}

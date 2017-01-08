@@ -50,7 +50,7 @@ func SetDynamoDB(client dynamodbiface.DynamoDBAPI) {
 	dsvc = client
 }
 
-func FetchMetricsFromDynamoDB(name string, start, end time.Time) (series.SeriesMap, error) {
+func FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
 	slots, step := selectTimeSlots(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
 	c := make(chan interface{})

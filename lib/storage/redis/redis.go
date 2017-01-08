@@ -24,7 +24,7 @@ var (
 	client *redis.Client
 )
 
-func FetchMetrics(name string, start, end time.Time) (series.SeriesMap, error) {
+func FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
 	slot, step := selectTimeSlot(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)
 	c := make(chan interface{})

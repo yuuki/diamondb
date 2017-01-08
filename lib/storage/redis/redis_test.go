@@ -10,7 +10,7 @@ import (
 	redis "gopkg.in/redis.v5"
 )
 
-func TestFetchMetrics(t *testing.T) {
+func TestFetchSeriesMap(t *testing.T) {
 	s, err := miniredis.Run()
 	if err != nil {
 		panic(err)
@@ -37,7 +37,7 @@ func TestFetchMetrics(t *testing.T) {
 	}
 
 	name := "server{1,2}.loadavg5"
-	sm, err := FetchMetrics(name, time.Unix(100, 0), time.Unix(1000, 0))
+	sm, err := FetchSeriesMap(name, time.Unix(100, 0), time.Unix(1000, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}

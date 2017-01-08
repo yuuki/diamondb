@@ -21,14 +21,14 @@ type Store struct {
 }
 
 func (s *Store) FetchSeriesSlice(name string, start, end time.Time) (series.SeriesSlice, error) {
-	sm1, err := redis.FetchMetrics(name, start, end)
+	sm1, err := redis.FetchSeriesMap(name, start, end)
 	if err != nil {
 		return nil, errors.Wrapf(err,
 			"Failed to redis.FetchMetrics %s %d %d",
 			name, start.Unix(), end.Unix(),
 		)
 	}
-	sm2, err := dynamo.FetchMetricsFromDynamoDB(name, start, end)
+	sm2, err := dynamo.FetchSeriesMap(name, start, end)
 	if err != nil {
 		return nil, errors.Wrapf(err,
 			"Failed to FetchMetricsFromDynamoDB %s %d %d",
