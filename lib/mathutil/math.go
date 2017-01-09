@@ -14,6 +14,13 @@ func MaxInt64(x, y int64) int64 {
 	return y
 }
 
+func minFloat64(x, y float64) float64 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
 func maxFloat64(x, y float64) float64 {
 	if x > y {
 		return x
@@ -35,6 +42,14 @@ func MultiplyFloat64(vals []float64) float64 {
 		multiplies *= v
 	}
 	return multiplies
+}
+
+func MinFloat64(vals []float64) float64 {
+	var min float64
+	for _, v := range vals {
+		min = maxFloat64(min, v)
+	}
+	return min
 }
 
 func MaxFloat64(vals []float64) float64 {

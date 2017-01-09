@@ -40,6 +40,7 @@ var (
 		"averageSeries":         FUNC,
 		"sum":                   FUNC,
 		"sumSeries":             FUNC,
+		"minSeries":             FUNC,
 		"maxSeries":             FUNC,
 		"multiplySeries":        FUNC,
 		"summarize":             FUNC,

@@ -52,6 +52,21 @@ func TestAverageSeries(t *testing.T) {
 	}
 }
 
+func TestMinSeries(t *testing.T) {
+	series := minSeries(GenerateSeriesSlice())
+	vals := make([]float64, 100)
+	for i := 0; i < 100; i++ {
+		vals[i] = float64(i + 1)
+	}
+	expected := NewSeries(
+		"minSeries(server0.loadavg5,server1.loadavg5)",
+		vals, 0, 1,
+	)
+	if diff := pretty.Compare(series, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}
+
 func TestMaxSeries(t *testing.T) {
 	series := maxSeries(GenerateSeriesSlice())
 	vals := make([]float64, 100)

@@ -70,17 +70,13 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 				}
 				return ss, err
 			case "averageSeries", "avg":
-				ss = doAverageSeries(ss)
-				return ss, nil
+				return series.SeriesSlice{averageSeries(ss)}, nil
 			case "sumSeries", "sum":
-				ss = doSumSeries(ss)
-				return ss, nil
+				return series.SeriesSlice{sumSeries(ss)}, nil
 			case "maxSeries":
-				ss = doMaxSeries(ss)
-				return ss, nil
+				return series.SeriesSlice{maxSeries(ss)}, nil
 			case "multiplySeries":
-				ss = doMultiplySeries(ss)
-				return ss, nil
+				return series.SeriesSlice{multiplySeries(ss)}, nil
 			default:
 				return nil, &UnsupportedFunctionError{funcName: e.Name}
 			}
