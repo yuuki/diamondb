@@ -97,3 +97,27 @@ func TestMultiplySeries(t *testing.T) {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
+
+func TestDivideSeries(t *testing.T) {
+	vals1 := make([]float64, 100)
+	vals1[0] = 0.0
+	for i := 1; i < 100; i++ {
+		vals1[i] = 2.0
+	}
+	divisorSeries := NewSeries("server10.loadavg5", vals1, 0, 1)
+
+	ss := divideSeries(GenerateSeriesSlice(), divisorSeries)
+
+	vals2 := make([]float64, 100)
+	vals2[0] = math.NaN()
+	for i := 1; i < 100; i++ {
+		vals2[i] = float64(i+1) / 2.0
+	}
+	expected := SeriesSlice{
+		NewSeries("divideSeries(server0.loadavg5,server10.loadavg5)", vals2, 0, 1),
+		NewSeries("divideSeries(server1.loadavg5,server10.loadavg5)", vals2, 0, 1),
+	}
+	if diff := pretty.Compare(ss, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}
