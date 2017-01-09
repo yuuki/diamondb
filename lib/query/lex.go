@@ -27,23 +27,25 @@ func (e *ParserError) Error() string {
 	return fmt.Sprintf("Failed to parse %s %s %d", e.Target, e.Msg, e.Column)
 }
 
-var symTable = map[string]int{
-	"(": LBRACK,
-	")": RBRACK,
+var (
+	symTable = map[string]int{
+		"(": LBRACK,
+		")": RBRACK,
 
-	"true":  TRUE,
-	"false": FALSE,
+		"true":  TRUE,
+		"false": FALSE,
 
-	"alias":                 FUNC,
-	"avg":                   FUNC,
-	"averageSeries":         FUNC,
-	"sum":                   FUNC,
-	"sumSeries":             FUNC,
-	"maxSeries":             FUNC,
-	"multiplySeries":        FUNC,
-	"summarize":             FUNC,
-	"nonNegativeDerivative": FUNC,
-}
+		"alias":                 FUNC,
+		"avg":                   FUNC,
+		"averageSeries":         FUNC,
+		"sum":                   FUNC,
+		"sumSeries":             FUNC,
+		"maxSeries":             FUNC,
+		"multiplySeries":        FUNC,
+		"summarize":             FUNC,
+		"nonNegativeDerivative": FUNC,
+	}
+)
 
 func (l *Lexer) Lex(lval *yySymType) int {
 	token := int(l.Scan())
