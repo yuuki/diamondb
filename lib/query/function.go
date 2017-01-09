@@ -90,3 +90,20 @@ func multiplySeries(ss series.SeriesSlice) series.Series {
 	name := fmt.Sprintf("multiplySeries(%s)", ss.FormatedName())
 	return series.NewSeries(name, vals, start, step)
 }
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.divideSeries
+func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.Series) series.SeriesSlice {
+	result := make(series.SeriesSlice, 0, len(dividendSeriesSlice))
+	for _, s := range dividendSeriesSlice {
+		bothSeriesSlice := series.SeriesSlice{s, divisorSeries}
+		start, _, step := bothSeriesSlice.Normalize()
+		vals := make([]float64, 0, len(bothSeriesSlice))
+		iter := bothSeriesSlice.Zip()
+		for row := iter(); row != nil; row = iter() {
+			vals = append(vals, mathutil.DivideFloat64(row[0], row[1]))
+		}
+		name := fmt.Sprintf("divideSeries(%s,%s)", s.Name(), divisorSeries.Name())
+		result = append(result, series.NewSeries(name, vals, start, step))
+	}
+	return result
+}

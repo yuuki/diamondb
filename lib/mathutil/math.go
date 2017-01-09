@@ -1,5 +1,7 @@
 package mathutil
 
+import "math"
+
 func MinInt64(x, y int64) int64 {
 	if x < y {
 		return x
@@ -42,6 +44,13 @@ func MultiplyFloat64(vals []float64) float64 {
 		multiplies *= v
 	}
 	return multiplies
+}
+
+func DivideFloat64(x float64, y float64) float64 {
+	if math.IsNaN(x) || math.IsNaN(y) || y == 0.0 {
+		return math.NaN()
+	}
+	return x / y
 }
 
 func MinFloat64(vals []float64) float64 {
