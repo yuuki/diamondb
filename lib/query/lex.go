@@ -37,6 +37,10 @@ var symTable = map[string]int{
 	"alias":                 FUNC,
 	"avg":                   FUNC,
 	"averageSeries":         FUNC,
+	"sum":                   FUNC,
+	"sumSeries":             FUNC,
+	"maxSeries":             FUNC,
+	"multiplySeries":        FUNC,
 	"summarize":             FUNC,
 	"nonNegativeDerivative": FUNC,
 }
