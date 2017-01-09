@@ -15,14 +15,16 @@ type Fetcher interface {
 }
 
 type Store struct {
-	Redis *redis.Redis
+	Redis    *redis.Redis
+	DynamoDB *dynamo.DynamoDB
 	// dynamodb client
 	// s3 client
 }
 
 func NewStore() Fetcher {
 	return &Store{
-		Redis: redis.NewRedis(),
+		Redis:    redis.NewRedis(),
+		DynamoDB: dynamo.NewDynamoDB(),
 	}
 }
 
@@ -34,7 +36,7 @@ func (s *Store) FetchSeriesSlice(name string, start, end time.Time) (series.Seri
 			name, start.Unix(), end.Unix(),
 		)
 	}
-	sm2, err := dynamo.FetchSeriesMap(name, start, end)
+	sm2, err := s.DynamoDB.FetchSeriesMap(name, start, end)
 	if err != nil {
 		return nil, errors.Wrapf(err,
 			"Failed to FetchMetricsFromDynamoDB %s %d %d",

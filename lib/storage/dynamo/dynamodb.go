@@ -14,10 +14,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/pkg/errors"
 
+	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/mathutil"
 	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/util"
 )
+
+type DynamoDB struct {
+	svc dynamodbiface.DynamoDBAPI
+}
 
 type timeSlot struct {
 	tableName string
@@ -41,22 +46,24 @@ var (
 	oneYearSeconds = int(oneYear.Seconds())
 	oneWeekSeconds = int(oneWeek.Seconds())
 	oneDaySeconds  = int(oneDay.Seconds())
-
-	dsvc dynamodbiface.DynamoDBAPI = dynamodb.New(session.New(), &aws.Config{Region: aws.String("ap-northeast-1")})
 )
 
-// SetClient replace svc to mock dynamodb client
-func SetDynamoDB(client dynamodbiface.DynamoDBAPI) {
-	dsvc = client
+func NewDynamoDB() *DynamoDB {
+	return &DynamoDB{
+		svc: dynamodb.New(
+			session.New(),
+			aws.NewConfig().WithRegion(config.Config.DynamoDBRegion),
+		),
+	}
 }
 
-func FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
+func (d *DynamoDB) FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
 	slots, step := selectTimeSlots(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
 	c := make(chan interface{})
 	for _, slot := range slots {
 		for _, names := range nameGroups {
-			concurrentBatchGet(slot, names, step, c)
+			d.concurrentBatchGet(slot, names, step, c)
 		}
 	}
 	sm := make(series.SeriesMap, len(nameGroups))
@@ -89,7 +96,7 @@ func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, step int) series.Ser
 	return sm
 }
 
-func batchGet(slot *timeSlot, names []string, step int) (series.SeriesMap, error) {
+func (d *DynamoDB) batchGet(slot *timeSlot, names []string, step int) (series.SeriesMap, error) {
 	var keys []map[string]*dynamodb.AttributeValue
 	for _, name := range names {
 		keys = append(keys, map[string]*dynamodb.AttributeValue{
@@ -103,7 +110,7 @@ func batchGet(slot *timeSlot, names []string, step int) (series.SeriesMap, error
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
 	}
-	resp, err := dsvc.BatchGetItem(params)
+	resp, err := d.svc.BatchGetItem(params)
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok {
 			if awsErr.Code() == "ResourceNotFoundException" {
@@ -119,9 +126,9 @@ func batchGet(slot *timeSlot, names []string, step int) (series.SeriesMap, error
 	return batchGetResultToMap(resp, step), nil
 }
 
-func concurrentBatchGet(slot *timeSlot, names []string, step int, c chan<- interface{}) {
+func (d *DynamoDB) concurrentBatchGet(slot *timeSlot, names []string, step int, c chan<- interface{}) {
 	go func() {
-		resp, err := batchGet(slot, names, step)
+		resp, err := d.batchGet(slot, names, step)
 		if err != nil {
 			c <- errors.WithStack(err)
 		} else {
