@@ -98,7 +98,7 @@ func (cli *CLI) Run(args []string) int {
 var helpText = `
 Usage: diamondb [options]
 
-  diamondb is the DynamoDB-based TSDB API server.
+  A Reliable, Scalable, Cloud-Based Time Series Database.
 
 Options:
   --host, -H           Bind host
