@@ -34,7 +34,7 @@ func TestFetchSeriesMap(t *testing.T) {
 			60,
 		),
 	}
-	ctrl, d := SetMockDynamoDB(t, &MockDynamoDBParam{
+	ctrl, d := createMockDynamoDBDynamoDB(t, &mockdynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 0,
 		SeriesMap: expected,
@@ -95,7 +95,7 @@ func TestBatchGet(t *testing.T) {
 			60,
 		),
 	}
-	ctrl, d := SetMockDynamoDB(t, &MockDynamoDBParam{
+	ctrl, d := createMockDynamoDBDynamoDB(t, &mockdynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 1000,
 		SeriesMap: expected,
@@ -132,7 +132,7 @@ func TestConcurrentBatchGet(t *testing.T) {
 			60,
 		),
 	}
-	ctrl, d := SetMockDynamoDB(t, &MockDynamoDBParam{
+	ctrl, d := createMockDynamoDBDynamoDB(t, &mockdynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 1000,
 		SeriesMap: expected,
