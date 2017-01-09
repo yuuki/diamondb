@@ -17,7 +17,7 @@ const (
 	DAYTIME = time.Duration(24*60*60) * time.Second
 )
 
-func Render(env *env.Env) http.Handler {
+func RenderHandler(env *env.Env) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		until := time.Now().Round(time.Second)
 		from := until.Add(-DAYTIME)

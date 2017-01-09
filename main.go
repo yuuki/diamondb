@@ -74,7 +74,7 @@ func (cli *CLI) Run(args []string) int {
 	e := &env.Env{Fetcher: storage.NewStore()}
 
 	mux := http.NewServeMux()
-	mux.Handle("/render", web.Render(e))
+	mux.Handle("/render", web.RenderHandler(e))
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
