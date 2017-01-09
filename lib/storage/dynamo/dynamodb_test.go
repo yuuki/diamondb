@@ -12,7 +12,7 @@ import (
 	"github.com/yuuki/diamondb/lib/series"
 )
 
-func TestFetchMetricsFromDynamoDB(t *testing.T) {
+func TestFetchSeriesMap(t *testing.T) {
 	name := "roleA.r.{1,2}.loadavg"
 	expected := series.SeriesMap{
 		"roleA.r.1.loadavg": series.NewSeriesPoint(
@@ -34,14 +34,14 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 			60,
 		),
 	}
-	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
+	ctrl, d := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 0,
 		SeriesMap: expected,
 	})
 	defer ctrl.Finish()
 
-	sm, err := FetchMetricsFromDynamoDB(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := d.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -50,7 +50,7 @@ func TestFetchMetricsFromDynamoDB(t *testing.T) {
 	}
 }
 
-func TestFetchMetricsFromDynamoDB_Empty(t *testing.T) {
+func TestFetchSeriesMap_Empty(t *testing.T) {
 	tableName := DynamoDBTableOneHour + "-0"
 
 	ctrl := gomock.NewController(t)
@@ -66,10 +66,10 @@ func TestFetchMetricsFromDynamoDB_Empty(t *testing.T) {
 	dmock.EXPECT().BatchGetItem(gomock.Any()).Return(
 		&dynamodb.BatchGetItemOutput{Responses: responses}, reqErr,
 	)
-	SetDynamoDB(dmock)
+	d := &DynamoDB{svc: dmock}
 
 	name := "roleA.r.{1,2}.loadavg"
-	sm, err := FetchMetricsFromDynamoDB(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := d.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("Should ignore NotFound error: %s", err)
 	}
@@ -95,14 +95,14 @@ func TestBatchGet(t *testing.T) {
 			60,
 		),
 	}
-	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
+	ctrl, d := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 1000,
 		SeriesMap: expected,
 	})
 	defer ctrl.Finish()
 
-	sm, err := batchGet(
+	sm, err := d.batchGet(
 		&timeSlot{DynamoDBTableOneHour + "-0", 1000},
 		[]string{"server1.loadavg5", "server2.loadavg5"},
 		60,
@@ -132,7 +132,7 @@ func TestConcurrentBatchGet(t *testing.T) {
 			60,
 		),
 	}
-	ctrl := SetMockDynamoDB(t, &MockDynamoDBParam{
+	ctrl, d := SetMockDynamoDB(t, &MockDynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 1000,
 		SeriesMap: expected,
@@ -140,7 +140,7 @@ func TestConcurrentBatchGet(t *testing.T) {
 	defer ctrl.Finish()
 
 	c := make(chan interface{})
-	concurrentBatchGet(
+	d.concurrentBatchGet(
 		&timeSlot{DynamoDBTableOneHour + "-0", 1000},
 		[]string{"server1.loadavg5", "server2.loadavg5"},
 		60,

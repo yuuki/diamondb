@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/yuuki/diamondb/lib/config"
+	"github.com/yuuki/diamondb/lib/env"
 	"github.com/yuuki/diamondb/lib/log"
 	"github.com/yuuki/diamondb/lib/query"
 	"github.com/yuuki/diamondb/lib/series"
@@ -17,7 +17,7 @@ const (
 	DAYTIME = time.Duration(24*60*60) * time.Second
 )
 
-func Render(env *config.Env) http.Handler {
+func Render(env *env.Env) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		until := time.Now().Round(time.Second)
 		from := until.Add(-DAYTIME)

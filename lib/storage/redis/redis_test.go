@@ -6,11 +6,11 @@ import (
 
 	"github.com/alicebob/miniredis"
 	"github.com/kylelemons/godebug/pretty"
+	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/series"
-	redis "gopkg.in/redis.v5"
 )
 
-func TestFetchMetrics(t *testing.T) {
+func TestFetchSeriesMap(t *testing.T) {
 	s, err := miniredis.Run()
 	if err != nil {
 		panic(err)
@@ -18,18 +18,16 @@ func TestFetchMetrics(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	c := redis.NewClient(&redis.Options{
-		Addr: s.Addr(),
-	})
-	client = c
+	config.Config.RedisAddr = s.Addr()
+	r := NewRedis()
 
-	_, err = c.HMSet("1m:server1.loadavg5", map[string]string{
+	_, err = r.client.HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "160": "10.2", "220": "11.0",
 	}).Result()
 	if err != nil {
 		panic(err)
 	}
-	_, err = c.HMSet("1m:server2.loadavg5", map[string]string{
+	_, err = r.client.HMSet("1m:server2.loadavg5", map[string]string{
 		"100": "8.0", "160": "5.0", "220": "6.0",
 	}).Result()
 	if err != nil {
@@ -37,7 +35,7 @@ func TestFetchMetrics(t *testing.T) {
 	}
 
 	name := "server{1,2}.loadavg5"
-	sm, err := FetchMetrics(name, time.Unix(100, 0), time.Unix(1000, 0))
+	sm, err := r.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(1000, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -66,18 +64,16 @@ func TestBatchGet(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	c := redis.NewClient(&redis.Options{
-		Addr: s.Addr(),
-	})
-	client = c
+	config.Config.RedisAddr = s.Addr()
+	r := NewRedis()
 
-	_, err = c.HMSet("1m:server1.loadavg5", map[string]string{
+	_, err = r.client.HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "130": "10.2", "160": "11.0",
 	}).Result()
 	if err != nil {
 		panic(err)
 	}
-	_, err = c.HMSet("1m:server2.loadavg5", map[string]string{
+	_, err = r.client.HMSet("1m:server2.loadavg5", map[string]string{
 		"100": "8.0", "130": "5.0", "160": "6.0",
 	}).Result()
 	if err != nil {
@@ -85,7 +81,7 @@ func TestBatchGet(t *testing.T) {
 	}
 
 	names := []string{"server1.loadavg5", "server2.loadavg5"}
-	metrics, err := batchGet("1m", names, 30)
+	metrics, err := r.batchGet("1m", names, 30)
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -114,13 +110,11 @@ func TestBatchGet_Empty(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	c := redis.NewClient(&redis.Options{
-		Addr: s.Addr(),
-	})
-	client = c
+	config.Config.RedisAddr = s.Addr()
+	r := NewRedis()
 
 	names := []string{"server1.loadavg5", "server2.loadavg5"}
-	metrics, err := batchGet("1m", names, 30)
+	metrics, err := r.batchGet("1m", names, 30)
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -137,18 +131,16 @@ func TestConcurrentBatchGet(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	c := redis.NewClient(&redis.Options{
-		Addr: s.Addr(),
-	})
-	client = c
+	config.Config.RedisAddr = s.Addr()
+	r := NewRedis()
 
-	_, err = c.HMSet("1m:server1.loadavg5", map[string]string{
+	_, err = r.client.HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "130": "10.2", "160": "11.0",
 	}).Result()
 	if err != nil {
 		panic(err)
 	}
-	_, err = c.HMSet("1m:server2.loadavg5", map[string]string{
+	_, err = r.client.HMSet("1m:server2.loadavg5", map[string]string{
 		"100": "8.0", "130": "5.0", "160": "6.0",
 	}).Result()
 	if err != nil {
@@ -158,7 +150,7 @@ func TestConcurrentBatchGet(t *testing.T) {
 	names := []string{"server1.loadavg5", "server2.loadavg5"}
 	ch := make(chan interface{})
 
-	concurrentBatchGet("1m", names, 30, ch)
+	r.concurrentBatchGet("1m", names, 30, ch)
 
 	ret := <-ch
 	sm := ret.(series.SeriesMap)

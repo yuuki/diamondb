@@ -19,7 +19,7 @@ type MockDynamoDBParam struct {
 	SeriesMap series.SeriesMap
 }
 
-func SetMockDynamoDB(t *testing.T, m *MockDynamoDBParam) *gomock.Controller {
+func SetMockDynamoDB(t *testing.T, m *MockDynamoDBParam) (*gomock.Controller, *DynamoDB) {
 	ctrl := gomock.NewController(t)
 	dmock := NewMockDynamoDBAPI(ctrl)
 
@@ -59,7 +59,5 @@ func SetMockDynamoDB(t *testing.T, m *MockDynamoDBParam) *gomock.Controller {
 	expect.Return(&dynamodb.BatchGetItemOutput{
 		Responses: responses,
 	}, nil)
-	SetDynamoDB(dmock)
-
-	return ctrl
+	return ctrl, &DynamoDB{svc: dmock}
 }

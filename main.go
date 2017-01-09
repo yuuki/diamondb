@@ -11,6 +11,7 @@ import (
 	"github.com/urfave/negroni"
 
 	"github.com/yuuki/diamondb/lib/config"
+	"github.com/yuuki/diamondb/lib/env"
 	"github.com/yuuki/diamondb/lib/log"
 	"github.com/yuuki/diamondb/lib/storage"
 	"github.com/yuuki/diamondb/lib/web"
@@ -70,11 +71,10 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 
-	fetcher := config.NewFetcher()
-	env := &config.Env{Fetcher: fetcher}
+	e := &env.Env{Fetcher: storage.NewStore()}
 
 	mux := http.NewServeMux()
-	mux.Handle("/render", web.Render(env))
+	mux.Handle("/render", web.Render(e))
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
