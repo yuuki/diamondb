@@ -15,13 +15,19 @@ type Fetcher interface {
 }
 
 type Store struct {
-	// redis client
+	Redis *redis.Redis
 	// dynamodb client
 	// s3 client
 }
 
+func NewStore() Fetcher {
+	return &Store{
+		Redis: redis.NewRedis(),
+	}
+}
+
 func (s *Store) FetchSeriesSlice(name string, start, end time.Time) (series.SeriesSlice, error) {
-	sm1, err := redis.FetchSeriesMap(name, start, end)
+	sm1, err := s.Redis.FetchSeriesMap(name, start, end)
 	if err != nil {
 		return nil, errors.Wrapf(err,
 			"Failed to redis.FetchMetrics %s %d %d",
