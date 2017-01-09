@@ -1,4 +1,4 @@
-package config
+package env
 
 import (
 	"github.com/yuuki/diamondb/lib/storage"
@@ -6,8 +6,4 @@ import (
 
 type Env struct {
 	Fetcher storage.Fetcher
-}
-
-func NewFetcher() storage.Fetcher {
-	return &storage.Store{}
 }
