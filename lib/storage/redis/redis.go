@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/util"
 	redis "gopkg.in/redis.v5"
@@ -20,16 +21,26 @@ const (
 	redisBatchLimit = 50 // TODO need to tweak
 )
 
-var (
+type Redis struct {
 	client *redis.Client
-)
+}
 
-func FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
+func NewRedis() *Redis {
+	return &Redis{
+		client: redis.NewClient(&redis.Options{
+			Addr:     config.Config.RedisAddr,
+			Password: config.Config.RedisPassword,
+			DB:       config.Config.RedisDB,
+		}),
+	}
+}
+
+func (r *Redis) FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
 	slot, step := selectTimeSlot(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)
 	c := make(chan interface{})
 	for _, names := range nameGroups {
-		concurrentBatchGet(slot, names, step, c)
+		r.concurrentBatchGet(slot, names, step, c)
 	}
 	sm := make(series.SeriesMap, len(nameGroups))
 	for i := 0; i < len(nameGroups); i++ {
@@ -44,9 +55,9 @@ func FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error)
 	return sm, nil
 }
 
-func concurrentBatchGet(slot string, names []string, step int, c chan<- interface{}) {
+func (r *Redis) concurrentBatchGet(slot string, names []string, step int, c chan<- interface{}) {
 	go func() {
-		resp, err := batchGet(slot, names, step)
+		resp, err := r.batchGet(slot, names, step)
 		if err != nil {
 			c <- errors.Wrapf(err,
 				"Failed to redis batchGet %s %s %d",
@@ -74,11 +85,11 @@ func hGetAllToMap(name string, tsval map[string]string, step int) (*series.Serie
 	return series.NewSeriesPoint(name, points, step), nil
 }
 
-func batchGet(slot string, names []string, step int) (series.SeriesMap, error) {
+func (r *Redis) batchGet(slot string, names []string, step int) (series.SeriesMap, error) {
 	sm := make(series.SeriesMap, len(names))
 	for _, name := range names {
 		key := fmt.Sprintf("%s:%s", slot, name)
-		tsval, err := client.HGetAll(key).Result()
+		tsval, err := r.client.HGetAll(key).Result()
 		if err != nil {
 			return nil, errors.Wrapf(err,
 				"Failed to redis hgetall %s", strings.Join(names, ","),
