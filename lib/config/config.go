@@ -8,21 +8,23 @@ import (
 )
 
 type config struct {
-	Host          string
-	Port          string
-	RedisAddr     string
-	RedisPassword string
-	RedisDB       int
+	Host           string
+	Port           string
+	RedisAddr      string
+	RedisPassword  string
+	RedisDB        int
+	DynamoDBRegion string
 
 	Debug bool
 }
 
 const (
-	DefaultHost          = "localhost"
-	DefaultPort          = "8000"
-	DefaultRedisAddr     = "localhost:6379"
-	DefaultRedisPassword = ""
-	DefaultRedisDB       = 0
+	DefaultHost           = "localhost"
+	DefaultPort           = "8000"
+	DefaultRedisAddr      = "localhost:6379"
+	DefaultRedisPassword  = ""
+	DefaultRedisDB        = 0
+	DefaultDynamoDBRegion = "ap-northeast-1"
 )
 
 // Config is set from the environment variables
@@ -54,6 +56,10 @@ func Load() error {
 			return errors.New("DIAMONDB_REDIS_DB must be an integer")
 		}
 		Config.RedisDB = v
+	}
+	Config.DynamoDBRegion = os.Getenv("DIAMONDB_DYNAMODB_REGION")
+	if Config.DynamoDBRegion == "" {
+		Config.DynamoDBRegion = DefaultDynamoDBRegion
 	}
 
 	if os.Getenv("DIAMONDB_DEBUG") != "" {
