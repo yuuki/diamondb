@@ -1,14 +1,11 @@
-//line lib/query/parse.go.y:2
 package query
 
 import __yyfmt__ "fmt"
 
-//line lib/query/parse.go.y:2
 import (
 	"strconv"
 )
 
-//line lib/query/parse.go.y:9
 type yySymType struct {
 	yys    int
 	token  Token
@@ -46,9 +43,6 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line lib/query/parse.go.y:67
-
-//line yacctab:1
 var yyExca = [...]int{
 	-1, 1,
 	1, -1,
@@ -61,22 +55,21 @@ const yyPrivate = 57344
 var yyTokenNames []string
 var yyStates []string
 
-const yyLast = 21
+const yyLast = 15
 
 var yyAct = [...]int{
 
-	5, 6, 3, 4, 7, 8, 10, 13, 12, 13,
-	9, 11, 2, 1, 0, 0, 0, 0, 0, 0,
-	14,
+	2, 5, 6, 3, 4, 7, 8, 12, 13, 9,
+	11, 10, 1, 0, 14,
 }
 var yyPact = [...]int{
 
-	-4, -1000, -1000, -1000, -1000, -1000, -1000, -1000, 0, -4,
-	-3, -1000, -1000, -4, -5,
+	-3, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1, -3,
+	-4, -1000, -1000, -3, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 13, 11, 6,
+	0, 12, 0, 11,
 }
 var yyR1 = [...]int{
 
@@ -89,7 +82,7 @@ var yyR2 = [...]int{
 var yyChk = [...]int{
 
 	-1000, -1, -2, 6, 7, 4, 5, 8, 9, 10,
-	-3, -2, 11, 12, -3,
+	-3, -2, 11, 12, -2,
 }
 var yyDef = [...]int{
 
@@ -117,8 +110,6 @@ var yyErrorMessages = [...]struct {
 	token int
 	msg   string
 }{}
-
-//line yaccpar:1
 
 /*	parser for yacc output	*/
 
@@ -451,59 +442,50 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line lib/query/parse.go.y:25
 		{
 			yyVAL.target = yyDollar[1].expr
 			yylex.(*Lexer).result = yyVAL.target
 		}
 	case 2:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line lib/query/parse.go.y:32
 		{
 			yyVAL.expr = BoolExpr{Literal: true}
 		}
 	case 3:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line lib/query/parse.go.y:36
 		{
 			yyVAL.expr = BoolExpr{Literal: false}
 		}
 	case 4:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line lib/query/parse.go.y:40
 		{
 			n, _ := strconv.Atoi(yyDollar[1].token.Literal)
 			yyVAL.expr = NumberExpr{Literal: n}
 		}
 	case 5:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line lib/query/parse.go.y:45
 		{
 			yyVAL.expr = StringExpr{Literal: yyDollar[1].token.Literal}
 		}
 	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line lib/query/parse.go.y:49
 		{
 			yyVAL.expr = SeriesListExpr{Literal: yyDollar[1].token.Literal}
 		}
 	case 7:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line lib/query/parse.go.y:53
 		{
 			yyVAL.expr = FuncExpr{Name: yyDollar[1].token.Literal, SubExprs: yyDollar[3].exprs}
 		}
 	case 8:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line lib/query/parse.go.y:59
 		{
 			yyVAL.exprs = []Expr{yyDollar[1].expr}
 		}
 	case 9:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line lib/query/parse.go.y:63
 		{
-			yyVAL.exprs = append(yyDollar[1].exprs, yyDollar[3].exprs...)
+			yyVAL.exprs = append(yyDollar[1].exprs, yyDollar[3].expr)
 		}
 	}
 	goto yystack /* stack new state and value */

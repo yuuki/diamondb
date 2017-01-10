@@ -59,9 +59,9 @@ exprs :
 	{
 		$$ = []Expr{$1}
 	}
-	| exprs ',' exprs
+	| exprs ',' expr
 	{
-		$$ = append($1, $3...)
+		$$ = append($1, $3)
 	}
 
 %%
