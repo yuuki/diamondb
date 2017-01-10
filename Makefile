@@ -3,7 +3,7 @@ COMMIT = $$(git describe --always)
 
 all: build
 
-build:
+build: yacc mock
 	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o $(NAME)
 
 test:
