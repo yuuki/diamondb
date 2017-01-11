@@ -13,13 +13,13 @@ import (
 	"github.com/yuuki/diamondb/lib/series"
 )
 
-type mockdynamoDBParam struct {
+type mockDynamoDBParam struct {
 	TableName string
 	ItemEpoch int64
 	SeriesMap series.SeriesMap
 }
 
-func createMockDynamoDBDynamoDB(t *testing.T, m *mockdynamoDBParam) (*gomock.Controller, *DynamoDB) {
+func createMockDynamoDBDynamoDB(t *testing.T, m *mockDynamoDBParam) (*gomock.Controller, *DynamoDB) {
 	ctrl := gomock.NewController(t)
 	dmock := NewMockDynamoDBAPI(ctrl)
 
