@@ -54,11 +54,13 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 				continue
 			case StringExpr:
 				continue
-			}
-
-			ss, err = invokeExpr(fetcher, expr, startTime, endTime)
-			if err != nil {
-				return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
+			case SeriesListExpr:
+				ss, err = invokeExpr(fetcher, expr, startTime, endTime)
+				if err != nil {
+					return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
+				}
+			default:
+				return nil, errors.Errorf("invalid expression %+v", expr)
 			}
 		}
 		if ss != nil {
