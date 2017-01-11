@@ -24,10 +24,6 @@ type CLI struct {
 	outStream, errStream io.Writer
 }
 
-type Env struct {
-	fetcher storage.Fetcher
-}
-
 func main() {
 	cli := &CLI{outStream: os.Stdout, errStream: os.Stderr}
 	os.Exit(cli.Run(os.Args))
