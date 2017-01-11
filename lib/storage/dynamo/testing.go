@@ -19,7 +19,7 @@ type mockDynamoDBParam struct {
 	SeriesMap series.SeriesMap
 }
 
-func createMockDynamoDBDynamoDB(t *testing.T, m *mockDynamoDBParam) (*gomock.Controller, *DynamoDB) {
+func createMockDynamoDB(t *testing.T, m *mockDynamoDBParam) (*gomock.Controller, *DynamoDB) {
 	ctrl := gomock.NewController(t)
 	dmock := NewMockDynamoDBAPI(ctrl)
 
