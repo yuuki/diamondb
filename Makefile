@@ -3,6 +3,10 @@ COMMIT = $$(git describe --always)
 
 all: build
 
+deps:
+	glide install
+	go get github.com/golang/mock/mockgen
+
 build: yacc mock
 	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o $(NAME)
 
