@@ -43,6 +43,7 @@ var (
 		"minSeries":             FUNC,
 		"maxSeries":             FUNC,
 		"multiplySeries":        FUNC,
+		"divideSeries":          FUNC,
 		"summarize":             FUNC,
 		"nonNegativeDerivative": FUNC,
 	}

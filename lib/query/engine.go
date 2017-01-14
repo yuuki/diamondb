@@ -105,6 +105,12 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 				return nil, errors.WithStack(err)
 			}
 			return ss, err
+		case "divideSeries":
+			ss, err := doDivideSeries(args)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			return ss, err
 		default:
 			return nil, &UnsupportedFunctionError{funcName: e.Name}
 		}

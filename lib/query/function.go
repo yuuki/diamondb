@@ -150,6 +150,19 @@ func multiplySeries(ss series.SeriesSlice) series.Series {
 	return series.NewSeries(name, vals, start, step)
 }
 
+func doDivideSeries(args funcArgs) (series.SeriesSlice, error) {
+	if len(args) != 2 {
+		return nil, errors.New("too few arguments to function `divideSeries`")
+	}
+	for i := 0; i < 2; i++ {
+		_, ok := args[i].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `divideSeries`.")
+		}
+	}
+	return divideSeries(args[0].seriesSlice, args[1].seriesSlice[0]), nil
+}
+
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.divideSeries
 func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.Series) series.SeriesSlice {
 	result := make(series.SeriesSlice, 0, len(dividendSeriesSlice))
