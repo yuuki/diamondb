@@ -23,3 +23,5 @@
   - [MIT LICENSE](https://github.com/alicebob/miniredis/blob/master/LICENSE)
 - github.com/kylelemons/godebug
   - [Apache License Version 2.0](https://github.com/kylelemons/godebug/blob/master/LICENSE)
+- github.com/golang/mock
+  - [Apache License Version 2.0](https://github.com/golang/mock/blob/master/LICENSE)

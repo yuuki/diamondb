@@ -38,11 +38,11 @@ const (
 	oneYear              time.Duration = time.Duration(24*360) * time.Hour
 	oneWeek              time.Duration = time.Duration(24*7) * time.Hour
 	oneDay               time.Duration = time.Duration(24*1) * time.Hour
-
-	dynamodbBatchLimit = 100
 )
 
 var (
+	dynamodbBatchLimit = 100
+
 	oneYearSeconds = int(oneYear.Seconds())
 	oneWeekSeconds = int(oneWeek.Seconds())
 	oneDaySeconds  = int(oneDay.Seconds())
@@ -71,7 +71,7 @@ func (d *DynamoDB) FetchSeriesMap(name string, start, end time.Time) (series.Ser
 		ret := <-c
 		switch ret.(type) {
 		case series.SeriesMap:
-			sm.Merge(ret.(series.SeriesMap))
+			sm.MergePointsToMap(ret.(series.SeriesMap))
 		case error:
 			return nil, errors.WithStack(ret.(error))
 		}
