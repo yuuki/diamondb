@@ -238,12 +238,16 @@ func TestBatchGet(t *testing.T) {
 			60,
 		),
 	}
-	ctrl, d := createMockDynamoDB(t, &mockDynamoDBParam{
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := NewMockDynamoDBAPI(ctrl)
+	param := &mockDynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 1000,
 		SeriesMap: expected,
-	})
-	defer ctrl.Finish()
+	}
+	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
+	d := &DynamoDB{svc: mock}
 
 	sm, err := d.batchGet(
 		&timeSlot{DynamoDBTableOneHour + "-0", 1000},
@@ -277,12 +281,16 @@ func TestConcurrentBatchGet(t *testing.T) {
 			60,
 		),
 	}
-	ctrl, d := createMockDynamoDB(t, &mockDynamoDBParam{
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := NewMockDynamoDBAPI(ctrl)
+	param := &mockDynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 1000,
 		SeriesMap: expected,
-	})
-	defer ctrl.Finish()
+	}
+	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
+	d := &DynamoDB{svc: mock}
 
 	c := make(chan interface{})
 	d.concurrentBatchGet(
