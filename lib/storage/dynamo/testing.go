@@ -20,7 +20,7 @@ type mockDynamoDBParam struct {
 
 func mockExpectBatchGetItem(mock *MockDynamoDBAPI, m *mockDynamoDBParam) *gomock.Call {
 	var keys []map[string]*dynamodb.AttributeValue
-	for name, _ := range m.SeriesMap {
+	for _, name := range m.SeriesMap.SortedNames() {
 		keys = append(keys, map[string]*dynamodb.AttributeValue{
 			"MetricName": {S: aws.String(name)},
 			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
