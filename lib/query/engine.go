@@ -18,6 +18,13 @@ func (e *UnsupportedFunctionError) Error() string {
 	return fmt.Sprintf("Unsupported function %s", e.funcName)
 }
 
+type funcArg struct {
+	expr        Expr
+	seriesSlice series.SeriesSlice
+}
+
+type funcArgs []*funcArg
+
 func EvalTarget(fetcher storage.Fetcher, target string, startTime, endTime time.Time) (series.SeriesSlice, error) {
 	expr, err := ParseTarget(target)
 	if err != nil {
@@ -42,48 +49,59 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 		}
 		return ss, nil
 	case FuncExpr:
-		var (
-			ss  series.SeriesSlice
-			err error
-		)
+		args := funcArgs{}
 		for _, expr := range e.SubExprs {
 			switch expr.(type) {
 			case BoolExpr:
-				continue
+				args = append(args, &funcArg{expr: expr})
 			case NumberExpr:
-				continue
+				args = append(args, &funcArg{expr: expr})
 			case StringExpr:
-				continue
-			case SeriesListExpr:
-				ss, err = invokeExpr(fetcher, expr, startTime, endTime)
+				args = append(args, &funcArg{expr: expr})
+			case SeriesListExpr, FuncExpr:
+				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 				if err != nil {
 					return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
 				}
+				args = append(args, &funcArg{expr: expr, seriesSlice: ss})
 			default:
-				return nil, errors.Errorf("invalid expression %+v", expr)
+				return nil, errors.Errorf("Unknown expression %+v", expr)
 			}
 		}
-		if ss != nil {
-			switch e.Name {
-			case "alias":
-				ss, err = doAlias(ss, e.SubExprs[1:])
-				if err != nil {
-					return nil, errors.Wrap(err, "Failed to doAlias")
-				}
-				return ss, err
-			case "averageSeries", "avg":
-				return series.SeriesSlice{averageSeries(ss)}, nil
-			case "sumSeries", "sum":
-				return series.SeriesSlice{sumSeries(ss)}, nil
-			case "maxSeries":
-				return series.SeriesSlice{maxSeries(ss)}, nil
-			case "multiplySeries":
-				return series.SeriesSlice{multiplySeries(ss)}, nil
-			default:
-				return nil, &UnsupportedFunctionError{funcName: e.Name}
+		switch e.Name {
+		case "alias":
+			ss, err := doAlias(args)
+			if err != nil {
+				return nil, errors.WithStack(err)
 			}
+			return ss, err
+		case "averageSeries", "avg":
+			ss, err := doAverageSeries(args)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			return ss, err
+		case "sumSeries", "sum":
+			ss, err := doSumSeries(args)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			return ss, err
+		case "maxSeries":
+			ss, err := doMaxSeries(args)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			return ss, err
+		case "multiplySeries":
+			ss, err := doMultiplySeries(args)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			return ss, err
+		default:
+			return nil, &UnsupportedFunctionError{funcName: e.Name}
 		}
-		return ss, err
 	default:
 		return nil, errors.Errorf("Unknown expression %+v", expr)
 	}
