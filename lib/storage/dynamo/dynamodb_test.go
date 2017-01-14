@@ -21,8 +21,7 @@ func TestFetchSeriesMap(t *testing.T) {
 				series.NewDataPoint(120, 10.0),
 				series.NewDataPoint(180, 11.2),
 				series.NewDataPoint(240, 13.1),
-			},
-			60,
+			}, 60,
 		),
 		"roleA.r.2.loadavg": series.NewSeriesPoint(
 			"roleA.r.2.loadavg",
@@ -30,20 +29,96 @@ func TestFetchSeriesMap(t *testing.T) {
 				series.NewDataPoint(120, 1.0),
 				series.NewDataPoint(180, 1.2),
 				series.NewDataPoint(240, 1.1),
-			},
-			60,
+			}, 60,
 		),
 	}
-	ctrl, d := createMockDynamoDB(t, &mockDynamoDBParam{
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := NewMockDynamoDBAPI(ctrl)
+	param := &mockDynamoDBParam{
 		TableName: DynamoDBTableOneHour + "-0",
 		ItemEpoch: 0,
 		SeriesMap: expected,
-	})
-	defer ctrl.Finish()
+	}
+	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
 
+	d := &DynamoDB{svc: mock}
 	sm, err := d.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
+	}
+	if diff := pretty.Compare(sm, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}
+
+func TestFetchSeriesMap_Concurrent(t *testing.T) {
+	tmp := dynamodbBatchLimit
+	dynamodbBatchLimit = 1
+	defer func() { dynamodbBatchLimit = tmp }()
+	name := "roleA.r.{1,2}.loadavg"
+	expected1 := series.SeriesMap{
+		"roleA.r.1.loadavg": series.NewSeriesPoint(
+			"roleA.r.1.loadavg",
+			series.DataPoints{
+				series.NewDataPoint(120, 10.0),
+				series.NewDataPoint(180, 11.2),
+				series.NewDataPoint(240, 13.1),
+			}, 60,
+		),
+	}
+	expected2 := series.SeriesMap{
+		"roleA.r.2.loadavg": series.NewSeriesPoint(
+			"roleA.r.2.loadavg",
+			series.DataPoints{
+				series.NewDataPoint(120, 1.0),
+				series.NewDataPoint(180, 1.2),
+				series.NewDataPoint(240, 1.1),
+			}, 60,
+		),
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := NewMockDynamoDBAPI(ctrl)
+
+	param1 := &mockDynamoDBParam{
+		TableName: DynamoDBTableOneHour + "-0",
+		ItemEpoch: 0,
+		SeriesMap: expected1,
+	}
+	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param1), param1)
+
+	param2 := &mockDynamoDBParam{
+		TableName: DynamoDBTableOneHour + "-0",
+		ItemEpoch: 0,
+		SeriesMap: expected2,
+	}
+	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
+
+	d := &DynamoDB{svc: mock}
+	sm, err := d.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	expected := series.SeriesMap{
+		"roleA.r.1.loadavg": series.NewSeriesPoint(
+			"roleA.r.1.loadavg",
+			series.DataPoints{
+				series.NewDataPoint(120, 10.0),
+				series.NewDataPoint(180, 11.2),
+				series.NewDataPoint(240, 13.1),
+			}, 60,
+		),
+		"roleA.r.2.loadavg": series.NewSeriesPoint(
+			"roleA.r.2.loadavg",
+			series.DataPoints{
+				series.NewDataPoint(120, 1.0),
+				series.NewDataPoint(180, 1.2),
+				series.NewDataPoint(240, 1.1),
+			}, 60,
+		),
 	}
 	if diff := pretty.Compare(sm, expected); diff != "" {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
