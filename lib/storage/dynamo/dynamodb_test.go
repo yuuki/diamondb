@@ -185,8 +185,10 @@ func TestBatchGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	if diff := pretty.Compare(sm, expected); diff != "" {
-		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	for name, series := range sm {
+		if diff := pretty.Compare(series, expected[name]); diff != "" {
+			t.Fatalf("diff: (-actual +expected)\n%s", diff)
+		}
 	}
 }
 
