@@ -125,6 +125,74 @@ func TestFetchSeriesMap_Concurrent(t *testing.T) {
 	}
 }
 
+func TestFetchSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T) {
+	tmp := dynamodbBatchLimit
+	dynamodbBatchLimit = 1
+	defer func() { dynamodbBatchLimit = tmp }()
+	expected1 := series.SeriesMap{
+		"roleA.r.1.loadavg": series.NewSeriesPoint(
+			"roleA.r.1.loadavg",
+			series.DataPoints{
+				series.NewDataPoint(120, 10.0),
+				series.NewDataPoint(180, 11.2),
+				series.NewDataPoint(240, 13.1),
+			}, 60,
+		),
+	}
+	expected2 := series.SeriesMap{
+		"roleA.r.1.loadavg": series.NewSeriesPoint(
+			"roleA.r.1.loadavg",
+			series.DataPoints{
+				series.NewDataPoint(3600, 1.0),
+				series.NewDataPoint(3660, 1.2),
+				series.NewDataPoint(3720, 1.1),
+				series.NewDataPoint(3780, 1.1),
+			}, 60,
+		),
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := NewMockDynamoDBAPI(ctrl)
+
+	param1 := &mockDynamoDBParam{
+		TableName: DynamoDBTableOneHour + "-0",
+		ItemEpoch: 0,
+		SeriesMap: expected1,
+	}
+	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param1), param1)
+
+	param2 := &mockDynamoDBParam{
+		TableName: DynamoDBTableOneHour + "-0",
+		ItemEpoch: 3600,
+		SeriesMap: expected2,
+	}
+	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
+
+	d := &DynamoDB{svc: mock}
+	sm, err := d.FetchSeriesMap("roleA.r.1.loadavg", time.Unix(100, 0), time.Unix(4000, 0))
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	expected := series.SeriesMap{
+		"roleA.r.1.loadavg": series.NewSeriesPoint(
+			"roleA.r.1.loadavg",
+			series.DataPoints{
+				series.NewDataPoint(120, 10.0),
+				series.NewDataPoint(180, 11.2),
+				series.NewDataPoint(240, 13.1),
+				series.NewDataPoint(3600, 1.0),
+				series.NewDataPoint(3660, 1.2),
+				series.NewDataPoint(3720, 1.1),
+				series.NewDataPoint(3780, 1.1),
+			}, 60,
+		),
+	}
+	if diff := pretty.Compare(sm, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}
+
 func TestFetchSeriesMap_Empty(t *testing.T) {
 	tableName := DynamoDBTableOneHour + "-0"
 
