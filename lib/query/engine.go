@@ -87,6 +87,12 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 				return nil, errors.WithStack(err)
 			}
 			return ss, err
+		case "minSeries":
+			ss, err := doMinSeries(args)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			return ss, err
 		case "maxSeries":
 			ss, err := doMaxSeries(args)
 			if err != nil {
