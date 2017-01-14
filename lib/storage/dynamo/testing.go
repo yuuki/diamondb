@@ -13,9 +13,23 @@ import (
 )
 
 type mockDynamoDBParam struct {
-	TableName string
-	ItemEpoch int64
-	SeriesMap series.SeriesMap
+	Resolution string
+	TableEpoch int64
+	ItemEpoch  int64
+	SeriesMap  series.SeriesMap
+}
+
+var testTableNamePrefix = "diamondb_datapoints_test"
+
+func newTestDynamoDB(mock *MockDynamoDBAPI) *DynamoDB {
+	return &DynamoDB{
+		svc:         mock,
+		tablePrefix: testTableNamePrefix,
+	}
+}
+
+func mockTableName(resolution string, tableEpoch int64) string {
+	return fmt.Sprintf("%s-%s-%d", testTableNamePrefix, resolution, tableEpoch)
 }
 
 func mockExpectBatchGetItem(mock *MockDynamoDBAPI, m *mockDynamoDBParam) *gomock.Call {
@@ -27,7 +41,7 @@ func mockExpectBatchGetItem(mock *MockDynamoDBAPI, m *mockDynamoDBParam) *gomock
 		})
 	}
 	items := make(map[string]*dynamodb.KeysAndAttributes)
-	items[m.TableName] = &dynamodb.KeysAndAttributes{Keys: keys}
+	items[mockTableName(m.Resolution, m.TableEpoch)] = &dynamodb.KeysAndAttributes{Keys: keys}
 	params := &dynamodb.BatchGetItemInput{
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
@@ -50,7 +64,8 @@ func mockReturnBatchGetItem(expect *gomock.Call, m *mockDynamoDBParam) *gomock.C
 			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
 			"Values":     {BS: vals},
 		}
-		responses[m.TableName] = append(responses[m.TableName], attribute)
+		table := mockTableName(m.Resolution, m.TableEpoch)
+		responses[table] = append(responses[table], attribute)
 	}
 
 	expect.Return(&dynamodb.BatchGetItemOutput{

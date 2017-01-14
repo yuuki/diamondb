@@ -21,7 +21,8 @@ import (
 )
 
 type DynamoDB struct {
-	svc dynamodbiface.DynamoDBAPI
+	svc         dynamodbiface.DynamoDBAPI
+	tablePrefix string
 }
 
 type timeSlot struct {
@@ -30,14 +31,9 @@ type timeSlot struct {
 }
 
 const (
-	dynamoDBTablePrefix  string        = "SeriesTestRange"
-	DynamoDBTableOneYear string        = dynamoDBTablePrefix + "-1d360d"
-	DynamoDBTableOneWeek string        = dynamoDBTablePrefix + "-1h7d"
-	DynamoDBTableOneDay  string        = dynamoDBTablePrefix + "-5m1d"
-	DynamoDBTableOneHour string        = dynamoDBTablePrefix + "-1m1h"
-	oneYear              time.Duration = time.Duration(24*360) * time.Hour
-	oneWeek              time.Duration = time.Duration(24*7) * time.Hour
-	oneDay               time.Duration = time.Duration(24*1) * time.Hour
+	oneYear time.Duration = time.Duration(24*360) * time.Hour
+	oneWeek time.Duration = time.Duration(24*7) * time.Hour
+	oneDay  time.Duration = time.Duration(24*1) * time.Hour
 )
 
 var (
@@ -54,11 +50,12 @@ func NewDynamoDB() *DynamoDB {
 			session.New(),
 			aws.NewConfig().WithRegion(config.Config.DynamoDBRegion),
 		),
+		tablePrefix: config.Config.DynamoDBTablePrefix,
 	}
 }
 
 func (d *DynamoDB) FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
-	slots, step := selectTimeSlots(start, end)
+	slots, step := selectTimeSlots(start, end, d.tablePrefix)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
 	c := make(chan interface{})
 	for _, slot := range slots {
@@ -137,7 +134,7 @@ func (d *DynamoDB) concurrentBatchGet(slot *timeSlot, names []string, step int, 
 	}()
 }
 
-func selectTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
+func selectTimeSlots(startTime, endTime time.Time, tablePrefix string) ([]*timeSlot, int) {
 	var (
 		tableName      string
 		step           int
@@ -146,22 +143,22 @@ func selectTimeSlots(startTime, endTime time.Time) ([]*timeSlot, int) {
 	)
 	diffTime := endTime.Sub(startTime)
 	if oneYear <= diffTime {
-		tableName = DynamoDBTableOneYear
+		tableName = tablePrefix + "-1d360d"
 		tableEpochStep = oneYearSeconds
 		itemEpochStep = tableEpochStep
 		step = 60 * 60 * 24
 	} else if oneWeek <= diffTime {
-		tableName = DynamoDBTableOneWeek
+		tableName = tablePrefix + "-1h7d"
 		tableEpochStep = 60 * 60 * 24 * 7
 		itemEpochStep = tableEpochStep
 		step = 60 * 60
 	} else if oneDay <= diffTime {
-		tableName = DynamoDBTableOneDay
+		tableName = tablePrefix + "-5m1d"
 		tableEpochStep = 60 * 60 * 24
 		itemEpochStep = tableEpochStep
 		step = 5 * 60
 	} else {
-		tableName = DynamoDBTableOneHour
+		tableName = tablePrefix + "-1m1h"
 		tableEpochStep = 60 * 60 * 24
 		itemEpochStep = 60 * 60
 		step = 60
