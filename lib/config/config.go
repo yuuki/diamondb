@@ -8,23 +8,25 @@ import (
 )
 
 type config struct {
-	Host           string
-	Port           string
-	RedisAddr      string
-	RedisPassword  string
-	RedisDB        int
-	DynamoDBRegion string
+	Host                string
+	Port                string
+	RedisAddr           string
+	RedisPassword       string
+	RedisDB             int
+	DynamoDBRegion      string
+	DynamoDBTablePrefix string
 
 	Debug bool
 }
 
 const (
-	DefaultHost           = "localhost"
-	DefaultPort           = "8000"
-	DefaultRedisAddr      = "localhost:6379"
-	DefaultRedisPassword  = ""
-	DefaultRedisDB        = 0
-	DefaultDynamoDBRegion = "ap-northeast-1"
+	DefaultHost                = "localhost"
+	DefaultPort                = "8000"
+	DefaultRedisAddr           = "localhost:6379"
+	DefaultRedisPassword       = ""
+	DefaultRedisDB             = 0
+	DefaultDynamoDBRegion      = "ap-northeast-1"
+	DefaultDynamoDBTablePrefix = "diamondb_datapoints"
 )
 
 // Config is set from the environment variables
@@ -60,6 +62,10 @@ func Load() error {
 	Config.DynamoDBRegion = os.Getenv("DIAMONDB_DYNAMODB_REGION")
 	if Config.DynamoDBRegion == "" {
 		Config.DynamoDBRegion = DefaultDynamoDBRegion
+	}
+	Config.DynamoDBTablePrefix = os.Getenv("DIAMONDB_DYNAMODB_TABLE_PREFIX")
+	if Config.DynamoDBTablePrefix == "" {
+		Config.DynamoDBTablePrefix = DefaultDynamoDBRegion
 	}
 
 	if os.Getenv("DIAMONDB_DEBUG") != "" {
