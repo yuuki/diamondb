@@ -51,19 +51,28 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 	case FuncExpr:
 		args := funcArgs{}
 		for _, expr := range e.SubExprs {
-			switch expr.(type) {
+			switch e2 := expr.(type) {
 			case BoolExpr:
 				args = append(args, &funcArg{expr: expr})
 			case NumberExpr:
 				args = append(args, &funcArg{expr: expr})
 			case StringExpr:
 				args = append(args, &funcArg{expr: expr})
-			case SeriesListExpr, FuncExpr:
+			case SeriesListExpr:
 				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 				if err != nil {
 					return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
 				}
-				args = append(args, &funcArg{expr: expr, seriesSlice: ss})
+				ex := SeriesListExpr{Literal: ss.FormatedName()}
+				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
+			case FuncExpr:
+				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
+				if err != nil {
+					return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
+				}
+				// Regard FuncExpr as SeriesListExpr after process function
+				ex := SeriesListExpr{Literal: fmt.Sprintf("%s(%s)", e2.Name, ss.FormatedName())}
+				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
 			default:
 				return nil, errors.Errorf("Unknown expression %+v", expr)
 			}
