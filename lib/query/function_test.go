@@ -121,3 +121,84 @@ func TestDivideSeries(t *testing.T) {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
+
+var testSummarizeTests = []struct {
+	desc                string
+	inputSeriesSlice    SeriesSlice
+	interval            string
+	function            string
+	expectedSeriesSlice SeriesSlice
+}{
+	{
+		"case1: function is sum",
+		GenerateSeriesSlice(),
+		"20s",
+		"sum",
+		SeriesSlice{
+			NewSeries("summarize(server0.loadavg5, \"20s\", \"sum\")",
+				[]float64{210, 610, 1010, 1410, 1810, math.NaN()}, 0, 20),
+			NewSeries("summarize(server1.loadavg5, \"20s\", \"sum\")",
+				[]float64{210, 610, 1010, 1410, 1810, math.NaN()}, 0, 20),
+		},
+	},
+	{
+		"case2: function is avg",
+		GenerateSeriesSlice(),
+		"20s",
+		"avg",
+		SeriesSlice{
+			NewSeries("summarize(server0.loadavg5, \"20s\", \"avg\")",
+				[]float64{10.5, 30.5, 50.5, 70.5, 90.5, math.NaN()}, 0, 20),
+			NewSeries("summarize(server1.loadavg5, \"20s\", \"avg\")",
+				[]float64{10.5, 30.5, 50.5, 70.5, 90.5, math.NaN()}, 0, 20),
+		},
+	},
+	{
+		"case3: function is last",
+		GenerateSeriesSlice(),
+		"20s",
+		"last",
+		SeriesSlice{
+			NewSeries("summarize(server0.loadavg5, \"20s\", \"last\")",
+				[]float64{20, 40, 60, 80, 100, math.NaN()}, 0, 20),
+			NewSeries("summarize(server1.loadavg5, \"20s\", \"last\")",
+				[]float64{20, 40, 60, 80, 100, math.NaN()}, 0, 20),
+		},
+	},
+	{
+		"case4: function is max",
+		GenerateSeriesSlice(),
+		"20s",
+		"max",
+		SeriesSlice{
+			NewSeries("summarize(server0.loadavg5, \"20s\", \"max\")",
+				[]float64{20, 40, 60, 80, 100, math.NaN()}, 0, 20),
+			NewSeries("summarize(server1.loadavg5, \"20s\", \"max\")",
+				[]float64{20, 40, 60, 80, 100, math.NaN()}, 0, 20),
+		},
+	},
+	{
+		"case5: function is min",
+		GenerateSeriesSlice(),
+		"20s",
+		"min",
+		SeriesSlice{
+			NewSeries("summarize(server0.loadavg5, \"20s\", \"min\")",
+				[]float64{1, 21, 41, 61, 81, math.NaN()}, 0, 20),
+			NewSeries("summarize(server1.loadavg5, \"20s\", \"min\")",
+				[]float64{1, 21, 41, 61, 81, math.NaN()}, 0, 20),
+		},
+	},
+}
+
+func TestSummarize(t *testing.T) {
+	for _, tc := range testSummarizeTests {
+		got, err := summarize(tc.inputSeriesSlice, tc.interval, tc.function)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+		if diff := pretty.Compare(got, tc.expectedSeriesSlice); diff != "" {
+			t.Fatalf("desc: %s, diff: (-actual +expected)\n%s", tc.desc, diff)
+		}
+	}
+}
