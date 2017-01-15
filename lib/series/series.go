@@ -13,6 +13,7 @@ type Series interface {
 	SetAliasWith(s string) Series
 	Alias() string
 	AsResp() *SeriesResp
+	Points() DataPoints
 }
 
 type series struct {
@@ -70,6 +71,18 @@ func (s *series) Alias() string {
 		return s.Name()
 	}
 	return s.alias
+}
+
+func (s *series) Points() DataPoints {
+	points := make(DataPoints, 0, s.Len())
+	end := s.End()
+	vals := s.Values()
+	i := 0
+	for t := s.Start(); t <= end; t += int64(s.Step()) {
+		points = append(points, NewDataPoint(t, vals[i]))
+		i += 1
+	}
+	return points
 }
 
 /*
