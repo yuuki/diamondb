@@ -64,3 +64,18 @@ func TestSeriesAsResp(t *testing.T) {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, j)
 	}
 }
+
+func TestSeriesPoints(t *testing.T) {
+	s := NewSeries("server1.loadavg5", []float64{0.1, 0.2, 0.3, 0.4, 0.5}, 0, 60)
+	got := s.Points()
+	expected := DataPoints{
+		NewDataPoint(0, 0.1),
+		NewDataPoint(60, 0.2),
+		NewDataPoint(120, 0.3),
+		NewDataPoint(180, 0.4),
+		NewDataPoint(240, 0.5),
+	}
+	if diff := pretty.Compare(got, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}

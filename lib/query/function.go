@@ -2,11 +2,13 @@ package query
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/pkg/errors"
 
 	"github.com/yuuki/diamondb/lib/mathutil"
 	"github.com/yuuki/diamondb/lib/series"
+	"github.com/yuuki/diamondb/lib/timeparser"
 )
 
 func doAlias(args funcArgs) (series.SeriesSlice, error) {
@@ -178,4 +180,59 @@ func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.S
 		result = append(result, series.NewSeries(name, vals, start, step))
 	}
 	return result
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.summarize
+func summarize(ss series.SeriesSlice, interval string, function string) (series.SeriesSlice, error) {
+	result := make(series.SeriesSlice, 0, len(ss))
+	delta, err := timeparser.ParseTimeOffset(interval)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	step := int64(delta.Seconds())
+	for _, s := range ss {
+		bucketNum := int(math.Ceil(float64((s.End() - s.Start()) / step)))
+		buckets := make(map[string][]float64, bucketNum)
+		for _, p := range s.Points() {
+			t, val := p.Timestamp(), p.Value()
+			bucketTime := t - (t % step)
+			key := fmt.Sprintf("%d", bucketTime)
+			if _, ok := buckets[key]; !ok {
+				buckets[key] = []float64{}
+			}
+			if !math.IsNaN(val) {
+				buckets[key] = append(buckets[key], val)
+			}
+		}
+		newStart := s.Start() - (s.Start() % step)
+		newEnd := s.End() - (s.End() % step) + step
+		newValues := make([]float64, 0, bucketNum)
+		for t := newStart; t <= newEnd; t += step {
+			bucketTime := t - (t % step)
+			key := fmt.Sprintf("%d", bucketTime)
+			if bucketVals, ok := buckets[key]; !ok {
+				newValues = append(newValues, math.NaN())
+			} else {
+				switch function {
+				case "avg":
+					avg := mathutil.SumFloat64(bucketVals) / float64(len(bucketVals))
+					newValues = append(newValues, avg)
+				case "last":
+					newValues = append(newValues, bucketVals[len(bucketVals)-1])
+				case "max":
+					newValues = append(newValues, mathutil.MaxFloat64(bucketVals))
+				case "min":
+					newValues = append(newValues, mathutil.MinFloat64(bucketVals))
+				case "sum":
+					newValues = append(newValues, mathutil.SumFloat64(bucketVals))
+				default:
+					return nil, errors.Errorf("unsupported summarize function %s", function)
+				}
+			}
+		}
+		newName := fmt.Sprintf("summarize(%s, \"%s\", \"%s\")", s.Name(), interval, function)
+		newSeries := series.NewSeries(newName, newValues, newStart, int(step))
+		result = append(result, newSeries)
+	}
+	return result, nil
 }

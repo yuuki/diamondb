@@ -86,7 +86,7 @@ var parseOffsetTests = []struct {
 
 func TestParseTimeOffset(t *testing.T) {
 	for i, tc := range parseOffsetTests {
-		got, err := parseTimeOffset(tc.offset)
+		got, err := ParseTimeOffset(tc.offset)
 		if err != nil {
 			t.Fatalf("err: %s", err)
 		}

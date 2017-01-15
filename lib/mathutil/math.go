@@ -54,9 +54,9 @@ func DivideFloat64(x float64, y float64) float64 {
 }
 
 func MinFloat64(vals []float64) float64 {
-	var min float64
-	for _, v := range vals {
-		min = maxFloat64(min, v)
+	min := vals[0]
+	for _, v := range vals[1:] {
+		min = minFloat64(min, v)
 	}
 	return min
 }
