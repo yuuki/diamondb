@@ -189,6 +189,18 @@ var testSummarizeTests = []struct {
 				[]float64{1, 21, 41, 61, 81, math.NaN()}, 0, 20),
 		},
 	},
+	{
+		"case6: interval is not divisible",
+		GenerateSeriesSlice(),
+		"21s",
+		"max",
+		SeriesSlice{
+			NewSeries("summarize(server0.loadavg5, \"21s\", \"max\")",
+				[]float64{21, 42, 63, 84, 100, math.NaN()}, 0, 21),
+			NewSeries("summarize(server1.loadavg5, \"21s\", \"max\")",
+				[]float64{21, 42, 63, 84, 100, math.NaN()}, 0, 21),
+		},
+	},
 }
 
 func TestSummarize(t *testing.T) {
