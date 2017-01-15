@@ -59,14 +59,14 @@ func ParseAtTime(s string) (time.Time, error) {
 	} else {
 		return time.Time{}, errors.Errorf("Unknown day reference %s", s)
 	}
-	o, err := parseTimeOffset(offset)
+	o, err := ParseTimeOffset(offset)
 	if err != nil {
 		return time.Time{}, errors.Wrapf(err, "Failed to parse time offset %s", offset)
 	}
 	return r.Add(o), nil
 }
 
-func parseTimeOffset(offset string) (time.Duration, error) {
+func ParseTimeOffset(offset string) (time.Duration, error) {
 	t := time.Duration(0)
 
 	if offset == "" {
