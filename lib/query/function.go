@@ -182,6 +182,28 @@ func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.S
 	return result
 }
 
+func doSummarize(args funcArgs) (series.SeriesSlice, error) {
+	if len(args) != 2 && len(args) != 3 {
+		return nil, errors.New("too few arguments to function `summarize`")
+	}
+	_, ok := args[0].expr.(SeriesListExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `seriesList` to function `summarize`.")
+	}
+	intervalExpr, ok := args[1].expr.(StringExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `interval` to function `summarize`.")
+	}
+	if len(args) == 3 {
+		functionExpr, ok := args[2].expr.(StringExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `function` to function `summarize`.")
+		}
+		return summarize(args[0].seriesSlice, intervalExpr.Literal, functionExpr.Literal)
+	}
+	return summarize(args[0].seriesSlice, intervalExpr.Literal, "sum")
+}
+
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.summarize
 func summarize(ss series.SeriesSlice, interval string, function string) (series.SeriesSlice, error) {
 	result := make(series.SeriesSlice, 0, len(ss))

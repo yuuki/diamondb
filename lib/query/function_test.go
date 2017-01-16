@@ -122,6 +122,51 @@ func TestDivideSeries(t *testing.T) {
 	}
 }
 
+var testDoSummarizeTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"case1: correct two arguments",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1, 0.2}, 0, 1),
+				},
+			},
+			&funcArg{
+				expr: StringExpr{Literal: "20s"},
+			},
+		},
+		nil,
+	},
+	{
+		"case2: correct three arguments",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1, 0.2}, 0, 1),
+				},
+			},
+			&funcArg{expr: StringExpr{Literal: "20s"}},
+			&funcArg{expr: StringExpr{Literal: "avg"}},
+		},
+		nil,
+	},
+}
+
+func TestDoSummarize(t *testing.T) {
+	for _, tc := range testDoSummarizeTests {
+		_, err := doSummarize(tc.args)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+	}
+}
+
 var testSummarizeTests = []struct {
 	desc                string
 	inputSeriesSlice    SeriesSlice
