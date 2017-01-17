@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"time"
@@ -71,6 +72,16 @@ func RenderHandler(env *env.Env) http.Handler {
 
 func WriteHandler(env *env.Env) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		JSON(w, http.StatusOK, struct{ msg string }{msg: "dummy"})
+		var wr WriteRequest
+		if r.Body == nil {
+			BadRequest(w, "No request body")
+			return
+		}
+		if err := json.NewDecoder(r.Body).Decode(&wr); err != nil {
+			BadRequest(w, err.Error())
+			return
+		}
+		w.WriteHeader(204)
+		return
 	})
 }

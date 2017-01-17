@@ -1,6 +1,8 @@
 package web
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -41,5 +43,32 @@ func TestRenderHandler(t *testing.T) {
 		}
 	} else {
 		t.Fatalf("response code should be 200")
+	}
+}
+
+func TestWriteHandler(t *testing.T) {
+	wr := &WriteRequest{
+		Metric: &Metric{
+			Name:       "server1.loadavg5",
+			Datapoints: []*Datapoint{&Datapoint{100, 0.1}},
+		},
+	}
+	b := new(bytes.Buffer)
+	json.NewEncoder(b).Encode(wr)
+
+	r := httptest.NewRecorder()
+	req, err := http.NewRequest("POST", "/datapoints", b)
+	if err != nil {
+		panic(err)
+	}
+
+	WriteHandler(&env.Env{}).ServeHTTP(r, req)
+
+	_, err = ioutil.ReadAll(r.Body)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	if r.Code != 204 {
+		t.Fatalf("/datapoints response code should be 204")
 	}
 }
