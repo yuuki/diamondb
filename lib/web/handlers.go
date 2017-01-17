@@ -68,3 +68,9 @@ func RenderHandler(env *env.Env) http.Handler {
 		JSON(w, http.StatusOK, seriesResps)
 	})
 }
+
+func WriteHandler(env *env.Env) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		JSON(w, http.StatusOK, struct{ msg string }{msg: "dummy"})
+	})
+}

@@ -71,6 +71,7 @@ func (cli *CLI) Run(args []string) int {
 
 	mux := http.NewServeMux()
 	mux.Handle("/render", web.RenderHandler(e))
+	mux.Handle("/datapoints", web.WriteHandler(e))
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
