@@ -1,8 +1,4 @@
-package web
-
-type WriteRequest struct {
-	Metric *Metric `json:"metric"`
-}
+package metric
 
 type Metric struct {
 	Name       string       `json:"name"`

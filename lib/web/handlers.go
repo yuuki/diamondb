@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/yuuki/diamondb/lib/env"
 	"github.com/yuuki/diamondb/lib/log"
+	"github.com/yuuki/diamondb/lib/metric"
 	"github.com/yuuki/diamondb/lib/query"
 	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/timeparser"
@@ -68,6 +69,10 @@ func RenderHandler(env *env.Env) http.Handler {
 		}
 		JSON(w, http.StatusOK, seriesResps)
 	})
+}
+
+type WriteRequest struct {
+	Metric *metric.Metric `json:"metric"`
 }
 
 func WriteHandler(env *env.Env) http.Handler {
