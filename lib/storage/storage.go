@@ -26,7 +26,7 @@ type Store struct {
 	// s3 client
 }
 
-func NewStore() Fetcher {
+func NewFetcher() Fetcher {
 	return &Store{
 		Redis:    redis.NewRedis(),
 		DynamoDB: dynamo.NewDynamoDB(),

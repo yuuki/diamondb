@@ -68,7 +68,7 @@ func (cli *CLI) Run(args []string) int {
 	}
 
 	e := &env.Env{
-		Fetcher: storage.NewStore(),
+		Fetcher: storage.NewFetcher(),
 		Writer:  storage.NewWriter(),
 	}
 
