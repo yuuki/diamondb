@@ -6,4 +6,5 @@ import (
 
 type Env struct {
 	Fetcher storage.Fetcher
+	Writer  storage.Writer
 }

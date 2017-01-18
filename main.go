@@ -67,7 +67,10 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 
-	e := &env.Env{Fetcher: storage.NewStore()}
+	e := &env.Env{
+		Fetcher: storage.NewStore(),
+		Writer:  storage.NewWriter(),
+	}
 
 	mux := http.NewServeMux()
 	mux.Handle("/render", web.RenderHandler(e))
