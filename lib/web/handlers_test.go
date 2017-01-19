@@ -48,6 +48,11 @@ func TestRenderHandler(t *testing.T) {
 }
 
 func TestWriteHandler(t *testing.T) {
+	fakewriter := &storage.FakeWriter{
+		FakeInsertMetric: func(*metric.Metric) error {
+			return nil
+		},
+	}
 	wr := &WriteRequest{
 		Metric: &metric.Metric{
 			Name:       "server1.loadavg5",
@@ -63,7 +68,7 @@ func TestWriteHandler(t *testing.T) {
 		panic(err)
 	}
 
-	WriteHandler(&env.Env{}).ServeHTTP(r, req)
+	WriteHandler(&env.Env{Writer: fakewriter}).ServeHTTP(r, req)
 
 	_, err = ioutil.ReadAll(r.Body)
 	if err != nil {
