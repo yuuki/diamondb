@@ -12,6 +12,7 @@ import (
 
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/yuuki/diamondb/lib/env"
+	"github.com/yuuki/diamondb/lib/metric"
 	. "github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/storage"
 )
@@ -48,9 +49,9 @@ func TestRenderHandler(t *testing.T) {
 
 func TestWriteHandler(t *testing.T) {
 	wr := &WriteRequest{
-		Metric: &Metric{
+		Metric: &metric.Metric{
 			Name:       "server1.loadavg5",
-			Datapoints: []*Datapoint{&Datapoint{100, 0.1}},
+			Datapoints: []*metric.Datapoint{&metric.Datapoint{100, 0.1}},
 		},
 	}
 	b := new(bytes.Buffer)
