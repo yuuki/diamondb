@@ -12,6 +12,7 @@ func notNaNVals(vals []float64) []float64 {
 	return newVals
 }
 
+// MinInt64 returns the smaller of x or y.
 func MinInt64(x, y int64) int64 {
 	if x < y {
 		return x
@@ -19,6 +20,7 @@ func MinInt64(x, y int64) int64 {
 	return y
 }
 
+// MaxInt64 returns the larger of x or y.
 func MaxInt64(x, y int64) int64 {
 	if x > y {
 		return x
@@ -26,6 +28,7 @@ func MaxInt64(x, y int64) int64 {
 	return y
 }
 
+// SumFloat64 returns the sum of vals.
 func SumFloat64(vals []float64) float64 {
 	vals = notNaNVals(vals)
 	if len(vals) < 1 {
@@ -39,6 +42,7 @@ func SumFloat64(vals []float64) float64 {
 	return sum
 }
 
+// MultiplyFloat64 returns the multiplied value by vals.
 func MultiplyFloat64(vals []float64) float64 {
 	vals = notNaNVals(vals)
 	if len(vals) < 1 {
@@ -52,6 +56,7 @@ func MultiplyFloat64(vals []float64) float64 {
 	return multiplies
 }
 
+// DivideFloat64 returns the value obtained by dividing x by y.
 func DivideFloat64(x float64, y float64) float64 {
 	if math.IsNaN(x) || math.IsNaN(y) || y == 0.0 {
 		return math.NaN()
@@ -59,6 +64,7 @@ func DivideFloat64(x float64, y float64) float64 {
 	return x / y
 }
 
+// MinFloat64 returns the smallest of vals.
 func MinFloat64(vals []float64) float64 {
 	vals = notNaNVals(vals)
 	if len(vals) < 1 {
@@ -72,6 +78,7 @@ func MinFloat64(vals []float64) float64 {
 	return min
 }
 
+// MaxFloat64 returns the largest of vals.
 func MaxFloat64(vals []float64) float64 {
 	vals = notNaNVals(vals)
 	if len(vals) < 1 {
@@ -85,6 +92,7 @@ func MaxFloat64(vals []float64) float64 {
 	return max
 }
 
+// AvgFloat64 returns the average value of vals.
 func AvgFloat64(vals []float64) float64 {
 	vals = notNaNVals(vals)
 	if len(vals) < 1 {
@@ -97,7 +105,7 @@ func AvgFloat64(vals []float64) float64 {
 	return sum / float64(len(vals))
 }
 
-// gcd is Greatest common divisor
+// Gcd is Greatest common divisor
 func Gcd(a, b int) int {
 	if b == 0 {
 		return a
@@ -105,7 +113,7 @@ func Gcd(a, b int) int {
 	return Gcd(b, a%b)
 }
 
-// lcm is Least common multiple
+// Lcm is Least common multiple
 func Lcm(a, b int) int {
 	if a == b {
 		return a
