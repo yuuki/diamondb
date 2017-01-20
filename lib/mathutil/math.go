@@ -2,6 +2,16 @@ package mathutil
 
 import "math"
 
+func notNaNVals(vals []float64) []float64 {
+	newVals := make([]float64, 0, len(vals))
+	for _, v := range vals {
+		if !math.IsNaN(v) {
+			newVals = append(newVals, v)
+		}
+	}
+	return newVals
+}
+
 func MinInt64(x, y int64) int64 {
 	if x < y {
 		return x
@@ -16,21 +26,12 @@ func MaxInt64(x, y int64) int64 {
 	return y
 }
 
-func minFloat64(x, y float64) float64 {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-func maxFloat64(x, y float64) float64 {
-	if x > y {
-		return x
-	}
-	return y
-}
-
 func SumFloat64(vals []float64) float64 {
+	vals = notNaNVals(vals)
+	if len(vals) < 1 {
+		return math.NaN()
+	}
+
 	var sum float64
 	for _, v := range vals {
 		sum += v
@@ -54,19 +55,41 @@ func DivideFloat64(x float64, y float64) float64 {
 }
 
 func MinFloat64(vals []float64) float64 {
-	min := vals[0]
-	for _, v := range vals[1:] {
-		min = minFloat64(min, v)
+	vals = notNaNVals(vals)
+	if len(vals) < 1 {
+		return math.NaN()
+	}
+
+	min := math.MaxFloat64
+	for _, v := range vals {
+		min = math.Min(min, v)
 	}
 	return min
 }
 
 func MaxFloat64(vals []float64) float64 {
+	vals = notNaNVals(vals)
+	if len(vals) < 1 {
+		return math.NaN()
+	}
+
 	var max float64
 	for _, v := range vals {
-		max = maxFloat64(max, v)
+		max = math.Max(max, v)
 	}
 	return max
+}
+
+func AvgFloat64(vals []float64) float64 {
+	vals = notNaNVals(vals)
+	if len(vals) < 1 {
+		return math.NaN()
+	}
+	sum := SumFloat64(vals)
+	if math.IsNaN(sum) {
+		return math.NaN()
+	}
+	return sum / float64(len(vals))
 }
 
 // gcd is Greatest common divisor
