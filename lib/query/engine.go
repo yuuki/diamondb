@@ -10,10 +10,13 @@ import (
 	"github.com/yuuki/diamondb/lib/storage"
 )
 
+// UnsupportedFunctionError represents the error of unsupported query function.
 type UnsupportedFunctionError struct {
 	funcName string
 }
 
+// Error returns the error message for UnsupportedFunctionError.
+// UnsupportedFunctionError satisfies error interface.
 func (e *UnsupportedFunctionError) Error() string {
 	return fmt.Sprintf("Unsupported function %s", e.funcName)
 }
@@ -25,6 +28,9 @@ type funcArg struct {
 
 type funcArgs []*funcArg
 
+// EvalTarget evaluates the target. It parses the target into AST structure and fetches datapoints from storage.
+//
+// ex. target: "alias(sumSeries(server1.loadavg5,server2.loadavg5),\"server_loadavg5\")"
 func EvalTarget(fetcher storage.Fetcher, target string, startTime, endTime time.Time) (series.SeriesSlice, error) {
 	expr, err := ParseTarget(target)
 	if err != nil {
