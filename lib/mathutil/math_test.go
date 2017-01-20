@@ -89,6 +89,35 @@ func TestMultiplyFloat64(t *testing.T) {
 	}
 }
 
+var divideFloat64Tests = []struct {
+	desc     string
+	x        float64
+	y        float64
+	expected float64
+}{
+	{
+		"no NaN values", 1.0, 2.0, 0.5,
+	},
+	{
+		"x is NaN value", math.NaN(), 2.0, math.NaN(),
+	},
+	{
+		"y is NaN value", 1.0, math.NaN(), math.NaN(),
+	},
+	{
+		"x and y are NaN", math.NaN(), math.NaN(), math.NaN(),
+	},
+}
+
+func TestDivideFloat64(t *testing.T) {
+	for _, tc := range divideFloat64Tests {
+		got := DivideFloat64(tc.x, tc.y)
+		if diff := pretty.Compare(got, tc.expected); diff != "" {
+			t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+		}
+	}
+}
+
 var minFloat64Tests = []struct {
 	desc     string
 	vals     []float64
