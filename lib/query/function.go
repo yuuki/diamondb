@@ -74,8 +74,7 @@ func averageSeries(ss series.SeriesSlice) series.Series {
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
 	for row := iter(); row != nil; row = iter() {
-		avg := mathutil.SumFloat64(row) / float64(len(row))
-		vals = append(vals, avg)
+		vals = append(vals, mathutil.AvgFloat64(row))
 	}
 	name := fmt.Sprintf("averageSeries(%s)", ss.FormatedName())
 	return series.NewSeries(name, vals, start, step)
