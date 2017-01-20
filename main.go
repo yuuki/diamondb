@@ -17,7 +17,7 @@ import (
 	"github.com/yuuki/diamondb/lib/web"
 )
 
-// CLI is the command line object
+// CLI is the command line object.
 type CLI struct {
 	// outStream and errStream are the stdout and stderr
 	// to write message from the CLI.

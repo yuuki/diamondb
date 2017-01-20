@@ -20,24 +20,24 @@ type config struct {
 }
 
 const (
-	// DefaultPort is a default listening port
+	// DefaultPort is the default listening port.
 	DefaultPort = "8000"
-	// DefaultRedisAddr is a port to connect to redis-server process
+	// DefaultRedisAddr is the port to connect to redis-server process.
 	DefaultRedisAddr = "localhost:6379"
-	// DefaultRedisPassword is a password to connect to redis-server process
+	// DefaultRedisPassword is the password to connect to redis-server process.
 	DefaultRedisPassword = ""
-	// DefaultRedisDB is a redis db number
+	// DefaultRedisDB is the redis db number.
 	DefaultRedisDB = 0
-	// DefaultDynamoDBRegion is a DynamoDB region
+	// DefaultDynamoDBRegion is the DynamoDB region.
 	DefaultDynamoDBRegion = "ap-northeast-1"
-	// DefaultDynamoDBTablePrefix is a prefix of DynamoDB table name
+	// DefaultDynamoDBTablePrefix is the prefix of DynamoDB table name.
 	DefaultDynamoDBTablePrefix = "diamondb_datapoints"
 )
 
-// Config is set from the environment variables
+// Config is set from the environment variables.
 var Config = &config{}
 
-// Load loads into Config from environment values
+// Load loads into Config from environment values.
 func Load() error {
 	Config.Port = os.Getenv("DIAMONDB_PORT")
 	if Config.Port == "" {
