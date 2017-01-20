@@ -17,7 +17,6 @@ type Fetcher interface {
 type Store struct {
 	Redis    *redis.Redis
 	DynamoDB *dynamo.DynamoDB
-	// dynamodb client
 	// s3 client
 }
 
