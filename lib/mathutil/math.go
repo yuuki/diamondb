@@ -40,7 +40,12 @@ func SumFloat64(vals []float64) float64 {
 }
 
 func MultiplyFloat64(vals []float64) float64 {
-	multiplies := 1.0
+	vals = notNaNVals(vals)
+	if len(vals) < 1 {
+		return math.NaN()
+	}
+
+	multiplies := float64(1.0)
 	for _, v := range vals {
 		multiplies *= v
 	}

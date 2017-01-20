@@ -48,6 +48,47 @@ func TestSumFloat64(t *testing.T) {
 	}
 }
 
+var multiplyFloat64Tests = []struct {
+	desc     string
+	vals     []float64
+	expected float64
+}{
+	{
+		"no NaN values",
+		[]float64{1.0, 2.0, 3.0},
+		6.0,
+	},
+	{
+		"one NaN value",
+		[]float64{1.0, 2.0, math.NaN(), 3.0},
+		6.0,
+	},
+	{
+		"the head value is a NaN",
+		[]float64{math.NaN(), math.NaN(), 1.0, 2.0, 3.0},
+		6.0,
+	},
+	{
+		"all values are NaN",
+		[]float64{math.NaN(), math.NaN(), math.NaN()},
+		math.NaN(),
+	},
+	{
+		"empty slices",
+		[]float64{},
+		math.NaN(),
+	},
+}
+
+func TestMultiplyFloat64(t *testing.T) {
+	for _, tc := range multiplyFloat64Tests {
+		got := MultiplyFloat64(tc.vals)
+		if diff := pretty.Compare(got, tc.expected); diff != "" {
+			t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+		}
+	}
+}
+
 var minFloat64Tests = []struct {
 	desc     string
 	vals     []float64
