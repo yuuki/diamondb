@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/yuuki/diamondb/lib/config"
+	"github.com/yuuki/diamondb/lib/metric"
 	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/util"
 	redis "gopkg.in/redis.v5"
@@ -21,11 +22,25 @@ const (
 	redisBatchLimit = 50 // TODO need to tweak
 )
 
+type Writer interface {
+	InsertDatapoint(string, string, *metric.Datapoint) error
+}
+
 type Redis struct {
 	client *redis.Client
 }
 
 func NewRedis() *Redis {
+	return &Redis{
+		client: redis.NewClient(&redis.Options{
+			Addr:     config.Config.RedisAddr,
+			Password: config.Config.RedisPassword,
+			DB:       config.Config.RedisDB,
+		}),
+	}
+}
+
+func NewWriter() Writer {
 	return &Redis{
 		client: redis.NewClient(&redis.Options{
 			Addr:     config.Config.RedisAddr,
@@ -105,6 +120,14 @@ func (r *Redis) batchGet(slot string, names []string, step int) (series.SeriesMa
 		sm[name] = sp
 	}
 	return sm, nil
+}
+
+func (r *Redis) InsertDatapoint(slot string, name string, p *metric.Datapoint) error {
+	err := r.client.HSet(slot+":"+name, fmt.Sprintf("%s", p.Timestamp), p.Value).Err()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
 }
 
 func selectTimeSlot(startTime, endTime time.Time) (string, int) {

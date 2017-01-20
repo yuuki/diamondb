@@ -33,9 +33,16 @@ func NewFetcher() Fetcher {
 	}
 }
 
+type WriterStore struct {
+	Redis    redis.Writer
+	DynamoDB *dynamo.DynamoDB
+	// dynamodb client
+	// s3 client
+}
+
 func NewWriter() Writer {
-	return &Store{
-		Redis:    redis.NewRedis(),
+	return &WriterStore{
+		Redis:    redis.NewWriter(),
 		DynamoDB: dynamo.NewDynamoDB(),
 	}
 }
@@ -60,6 +67,11 @@ func (s *Store) FetchSeriesSlice(name string, start, end time.Time) (series.Seri
 	return sm, nil
 }
 
-func (s *Store) InsertMetric(m *metric.Metric) error {
+func (s *WriterStore) InsertMetric(m *metric.Metric) error {
+	for _, p := range m.Datapoints {
+		if err := s.Redis.InsertDatapoint("1m", m.Name, p); err != nil {
+			return errors.WithStack(err)
+		}
+	}
 	return nil
 }
