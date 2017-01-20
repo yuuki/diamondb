@@ -236,7 +236,7 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 			} else {
 				switch function {
 				case "avg":
-					avg := mathutil.SumFloat64(bucketVals) / float64(len(bucketVals))
+					avg := mathutil.AvgFloat64(bucketVals)
 					newValues = append(newValues, avg)
 				case "last":
 					newValues = append(newValues, bucketVals[len(bucketVals)-1])
