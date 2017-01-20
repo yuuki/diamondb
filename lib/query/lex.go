@@ -8,21 +8,25 @@ import (
 )
 
 const (
+	// EOF is End Of File.
 	EOF = -1
 )
 
+// Lexer provides the argument of yyParse.
 type Lexer struct {
 	scanner.Scanner
 	e      *ParserError
 	result Expr
 }
 
+// ParserError represents the error of query parser.
 type ParserError struct {
 	Msg    string
 	Column int
 	Target string
 }
 
+// Error returns the error message for ParserError.
 func (e *ParserError) Error() string {
 	return fmt.Sprintf("Failed to parse %s %s %d", e.Target, e.Msg, e.Column)
 }
@@ -49,6 +53,7 @@ var (
 	}
 )
 
+// Lex returns the token number for the yacc parser.
 func (l *Lexer) Lex(lval *yySymType) int {
 	token := int(l.Scan())
 	tokstr := l.TokenText()
@@ -73,6 +78,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	return token
 }
 
+// Error returns the error message of parser.
 func (l *Lexer) Error(msg string) {
 	l.e = &ParserError{Msg: msg, Column: l.Column}
 }
@@ -81,6 +87,7 @@ func isIdentRune(ch rune, i int) bool {
 	return ch == '_' || ch == '.' || ch == ':' || ch == '-' || ch == '*' || ch == '[' || ch == ']' || ch == '{' || ch == '}' || ch == '%' || unicode.IsLetter(ch) || unicode.IsDigit(ch)
 }
 
+// ParseTarget parses target string into the AST structure.
 func ParseTarget(target string) (Expr, error) {
 	l := &Lexer{}
 	l.Init(strings.NewReader(target))
