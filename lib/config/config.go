@@ -20,7 +20,6 @@ type config struct {
 }
 
 const (
-	DefaultHost                = "localhost"
 	DefaultPort                = "8000"
 	DefaultRedisAddr           = "localhost:6379"
 	DefaultRedisPassword       = ""
@@ -33,10 +32,6 @@ const (
 var Config = &config{}
 
 func Load() error {
-	Config.Host = os.Getenv("DIAMONDB_HOST")
-	if Config.Host == "" {
-		Config.Host = DefaultHost
-	}
 	Config.Port = os.Getenv("DIAMONDB_PORT")
 	if Config.Port == "" {
 		Config.Port = DefaultPort

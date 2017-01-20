@@ -37,7 +37,6 @@ func (cli *CLI) Run(args []string) int {
 	}
 
 	var (
-		host    string
 		port    string
 		version bool
 		debug   bool
@@ -48,8 +47,6 @@ func (cli *CLI) Run(args []string) int {
 	flags.Usage = func() {
 		fmt.Fprint(cli.errStream, helpText)
 	}
-	flags.StringVar(&host, "host", config.Config.Host, "")
-	flags.StringVar(&host, "H", config.Config.Host, "")
 	flags.StringVar(&port, "port", config.Config.Port, "")
 	flags.StringVar(&port, "P", config.Config.Port, "")
 	flags.BoolVar(&version, "version", false, "")
@@ -82,7 +79,7 @@ func (cli *CLI) Run(args []string) int {
 	}))
 	n.UseHandler(mux)
 
-	log.Printf("Listening %s:%s ...", host, port)
+	log.Printf("Listening :%s ...", port)
 	if err := http.ListenAndServe(":"+port, n); err != nil {
 		log.Println(err)
 		return 3
@@ -97,8 +94,6 @@ Usage: diamondb [options]
   A Reliable, Scalable, Cloud-Based Time Series Database.
 
 Options:
-  --host, -H           Bind host
-
   --port, -P           Listen port
 
   --debug, -d          Run with debug print
