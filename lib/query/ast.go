@@ -1,33 +1,35 @@
 package query
 
+// Token represents the token of the query expression.
 type Token struct {
 	Token   int
 	Literal string
 }
 
+// Expr represents each of query expression.
 type Expr interface{}
 
-// BoolExpr provide Number expression.
+// BoolExpr provides Number expression.
 type BoolExpr struct {
 	Literal bool
 }
 
-// NumberExpr provide Number expression.
+// NumberExpr provides Number expression.
 type NumberExpr struct {
 	Literal int
 }
 
-// StringExpr provide String expression.
+// StringExpr provides String expression.
 type StringExpr struct {
 	Literal string
 }
 
-// SeriesListExpr provide SeriesList expression.
+// SeriesListExpr provides SeriesList expression.
 type SeriesListExpr struct {
 	Literal string
 }
 
-// FunctionExpr provide function expression.
+// FuncExpr provides function expression.
 type FuncExpr struct {
 	Name     string
 	SubExprs []Expr
