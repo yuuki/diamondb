@@ -17,11 +17,11 @@ func doAlias(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `alias`.")
+		return nil, errors.New("invalid argument type `seriesList` to function `alias`")
 	}
 	newNameExpr, ok := args[1].expr.(StringExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `newName` to function `alias`. `newName` must be string.")
+		return nil, errors.New("invalid argument type `newName` to function `alias`. `newName` must be string")
 	}
 	return alias(args[0].seriesSlice, newNameExpr.Literal), nil
 }
@@ -40,7 +40,7 @@ func doSumSeries(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `sumSeries`.")
+		return nil, errors.New("invalid argument type `seriesList` to function `sumSeries`")
 	}
 	return series.SeriesSlice{sumSeries(args[0].seriesSlice)}, nil
 }
@@ -63,7 +63,7 @@ func doAverageSeries(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `averageSeries`.")
+		return nil, errors.New("invalid argument type `seriesList` to function `averageSeries`")
 	}
 	return series.SeriesSlice{averageSeries(args[0].seriesSlice)}, nil
 }
@@ -86,7 +86,7 @@ func doMinSeries(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `minSeries`.")
+		return nil, errors.New("invalid argument type `seriesList` to function `minSeries`")
 	}
 	return series.SeriesSlice{minSeries(args[0].seriesSlice)}, nil
 }
@@ -109,7 +109,7 @@ func doMaxSeries(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `maxSeries`.")
+		return nil, errors.New("invalid argument type `seriesList` to function `maxSeries`")
 	}
 	return series.SeriesSlice{maxSeries(args[0].seriesSlice)}, nil
 }
@@ -133,7 +133,7 @@ func doMultiplySeries(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `multiplySeries`.")
+		return nil, errors.New("invalid argument type `seriesList` to function `multiplySeries`")
 	}
 	return series.SeriesSlice{multiplySeries(args[0].seriesSlice)}, nil
 }
@@ -158,7 +158,7 @@ func doDivideSeries(args funcArgs) (series.SeriesSlice, error) {
 	for i := 0; i < 2; i++ {
 		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `seriesList` to function `divideSeries`.")
+			return nil, errors.New("invalid argument type `seriesList` to function `divideSeries`")
 		}
 	}
 	return divideSeries(args[0].seriesSlice, args[1].seriesSlice[0]), nil
@@ -187,16 +187,16 @@ func doSummarize(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `summarize`.")
+		return nil, errors.New("invalid argument type `seriesList` to function `summarize`")
 	}
 	intervalExpr, ok := args[1].expr.(StringExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `interval` to function `summarize`.")
+		return nil, errors.New("invalid argument type `interval` to function `summarize`")
 	}
 	if len(args) == 3 {
 		functionExpr, ok := args[2].expr.(StringExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `function` to function `summarize`.")
+			return nil, errors.New("invalid argument type `function` to function `summarize`")
 		}
 		return summarize(args[0].seriesSlice, intervalExpr.Literal, functionExpr.Literal)
 	}
