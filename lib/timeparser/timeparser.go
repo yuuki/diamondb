@@ -13,6 +13,10 @@ const (
 	timeFormat = "15:0420060102"
 )
 
+// graphite-web can parse various time formats,
+// but epoch and string representations are currently supported.
+// (graphite-web supports "any other at(1)-compatible time format.")
+
 // ParseAtTime parses parameters that specify the relative or absolute time period.
 // eg. '1444508126', 'now', 'now-24h'
 func ParseAtTime(s string) (time.Time, error) {
