@@ -93,7 +93,7 @@ func (s *series) Points() DataPoints {
 	i := 0
 	for t := s.Start(); t <= end; t += int64(s.Step()) {
 		points = append(points, NewDataPoint(t, vals[i]))
-		i += 1
+		i++
 	}
 	return points
 }
