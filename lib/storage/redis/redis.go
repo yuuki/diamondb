@@ -21,10 +21,12 @@ const (
 	redisBatchLimit = 50 // TODO need to tweak
 )
 
+// Redis provides a redis client.
 type Redis struct {
 	client *redis.Client
 }
 
+// NewRedis creates a Redis.
 func NewRedis() *Redis {
 	return &Redis{
 		client: redis.NewClient(&redis.Options{
@@ -35,6 +37,7 @@ func NewRedis() *Redis {
 	}
 }
 
+// FetchSeriesMap fetches datapoints by name from start until end.
 func (r *Redis) FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
 	slot, step := selectTimeSlot(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)

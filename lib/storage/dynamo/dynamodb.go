@@ -20,6 +20,7 @@ import (
 	"github.com/yuuki/diamondb/lib/util"
 )
 
+// DynamoDB provides a dynamodb client.
 type DynamoDB struct {
 	svc         dynamodbiface.DynamoDBAPI
 	tablePrefix string
@@ -44,6 +45,7 @@ var (
 	oneDaySeconds  = int(oneDay.Seconds())
 )
 
+// NewDynamoDB creates a new DynamoDB.
 func NewDynamoDB() *DynamoDB {
 	return &DynamoDB{
 		svc: dynamodb.New(
@@ -54,6 +56,7 @@ func NewDynamoDB() *DynamoDB {
 	}
 }
 
+// FetchSeriesMap fetches datapoints by name from start until end.
 func (d *DynamoDB) FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
 	slots, step := selectTimeSlots(start, end, d.tablePrefix)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)

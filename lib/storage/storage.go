@@ -10,16 +10,19 @@ import (
 	"github.com/yuuki/diamondb/lib/storage/redis"
 )
 
+// Fetcher defines the interface for data store reader.
 type Fetcher interface {
 	FetchSeriesSlice(string, time.Time, time.Time) (series.SeriesSlice, error)
 }
 
+// Store provides each data store client.
 type Store struct {
 	Redis    *redis.Redis
 	DynamoDB *dynamo.DynamoDB
 	// s3 client
 }
 
+// NewStore create a new Store wrapped by Fetcher.
 func NewStore() Fetcher {
 	return &Store{
 		Redis:    redis.NewRedis(),
@@ -27,6 +30,7 @@ func NewStore() Fetcher {
 	}
 }
 
+// FetchSeriesSlice fetches series from Redis, DynamoDB and S3.
 func (s *Store) FetchSeriesSlice(name string, start, end time.Time) (series.SeriesSlice, error) {
 	sm1, err := s.Redis.FetchSeriesMap(name, start, end)
 	if err != nil {
