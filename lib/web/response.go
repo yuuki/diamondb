@@ -7,10 +7,10 @@ import (
 	"github.com/yuuki/diamondb/lib/log"
 )
 
-func JSON(w http.ResponseWriter, status int, v interface{}) {
+func renderJSON(w http.ResponseWriter, status int, v interface{}) {
 	res, err := json.Marshal(v)
 	if err != nil {
-		ServerError(w, err.Error())
+		serverError(w, err.Error())
 		return
 	}
 
@@ -19,28 +19,28 @@ func JSON(w http.ResponseWriter, status int, v interface{}) {
 	w.Write(res)
 }
 
-func BadRequest(w http.ResponseWriter, msg string) {
+func badRequest(w http.ResponseWriter, msg string) {
 	log.Println(msg)
 
 	var data struct {
 		Error string `json:"error"`
 	}
 	data.Error = msg
-	JSON(w, http.StatusBadRequest, data)
+	renderJSON(w, http.StatusBadRequest, data)
 	return
 }
 
-func NotFound(w http.ResponseWriter) {
+func notFound(w http.ResponseWriter) {
 	http.Error(w, "404 Not Found", http.StatusNotFound)
 }
 
-func ServerError(w http.ResponseWriter, msg string) {
+func serverError(w http.ResponseWriter, msg string) {
 	log.Println(msg)
 
 	var data struct {
 		Error string `json:"error"`
 	}
 	data.Error = msg
-	JSON(w, http.StatusInternalServerError, data)
+	renderJSON(w, http.StatusInternalServerError, data)
 	return
 }

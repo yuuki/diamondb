@@ -28,7 +28,7 @@ func RenderHandler(env *env.Env) http.Handler {
 			t, err := timeparser.ParseAtTime(url.QueryEscape(v))
 			if err != nil {
 				log.Printf("%+v", err) // Print stack trace by pkg/errors
-				BadRequest(w, errors.Cause(err).Error())
+				badRequest(w, errors.Cause(err).Error())
 				return
 			}
 			from = t
@@ -37,7 +37,7 @@ func RenderHandler(env *env.Env) http.Handler {
 			t, err := timeparser.ParseAtTime(url.QueryEscape(v))
 			if err != nil {
 				log.Printf("%+v", err) // Print stack trace by pkg/errors
-				BadRequest(w, errors.Cause(err).Error())
+				badRequest(w, errors.Cause(err).Error())
 				return
 			}
 			until = t
@@ -46,7 +46,7 @@ func RenderHandler(env *env.Env) http.Handler {
 
 		targets := r.Form["target"]
 		if len(targets) < 1 {
-			BadRequest(w, "no targets requested")
+			badRequest(w, "no targets requested")
 			return
 		}
 
@@ -57,9 +57,9 @@ func RenderHandler(env *env.Env) http.Handler {
 				log.Printf("%+v", err) // Print stack trace by pkg/errors
 				switch err.(type) {
 				case *query.ParserError, *query.UnsupportedFunctionError:
-					BadRequest(w, errors.Cause(err).Error())
+					badRequest(w, errors.Cause(err).Error())
 				default:
-					ServerError(w, errors.Cause(err).Error())
+					serverError(w, errors.Cause(err).Error())
 				}
 				return
 			}
@@ -67,6 +67,6 @@ func RenderHandler(env *env.Env) http.Handler {
 				seriesResps = append(seriesResps, series.AsResp())
 			}
 		}
-		JSON(w, http.StatusOK, seriesResps)
+		renderJSON(w, http.StatusOK, seriesResps)
 	})
 }
