@@ -70,6 +70,8 @@ func ParseAtTime(s string) (time.Time, error) {
 	return r.Add(o), nil
 }
 
+// ParseTimeOffset parses the offset into time.Duration.
+// eg. offset: 1h
 func ParseTimeOffset(offset string) (time.Duration, error) {
 	t := time.Duration(0)
 
