@@ -35,7 +35,7 @@ func (s *SeriesPoint) Points() DataPoints {
 func (s *SeriesPoint) Values() []float64 {
 	points := s.Points()
 	vals := make([]float64, points.Len())
-	for i, _ := range vals {
+	for i := range vals {
 		vals[i] = math.NaN() // NaN reprensents 'lack of data point'
 	}
 	for i, p := range points {

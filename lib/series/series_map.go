@@ -9,7 +9,7 @@ type SeriesMap map[string]*SeriesPoint
 // SortedNames returns the sorted slice of name.
 func (sm SeriesMap) SortedNames() []string {
 	names := make([]string, 0, len(sm))
-	for name, _ := range sm {
+	for name := range sm {
 		names = append(names, name)
 	}
 	slices := sort.StringSlice(names)

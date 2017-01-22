@@ -13,12 +13,12 @@ type SeriesSlice []Series
 // FormatedName returns the joined names in ss.
 func (ss SeriesSlice) FormatedName() string {
 	// Unique & Sort
-	set := make(map[string]bool)
+	set := make(map[string]struct{})
 	for _, s := range ss {
-		set[s.Name()] = true
+		set[s.Name()] = struct{}{}
 	}
 	names := make([]string, 0, len(ss))
-	for name, _ := range set {
+	for name := range set {
 		names = append(names, name)
 	}
 	sort.Strings(names)
