@@ -14,13 +14,15 @@ import (
 )
 
 const (
-	DAYTIME = time.Duration(24*60*60) * time.Second
+	// DayTime is one day period.
+	DayTime = time.Duration(24*60*60) * time.Second
 )
 
+// RenderHandler returns a HTTP handler for the endpoint to read data.
 func RenderHandler(env *env.Env) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		until := time.Now().Round(time.Second)
-		from := until.Add(-DAYTIME)
+		from := until.Add(-DayTime)
 
 		if v := r.FormValue("from"); v != "" {
 			t, err := timeparser.ParseAtTime(url.QueryEscape(v))
