@@ -11,7 +11,7 @@ build: yacc mock
 	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o $(NAME)
 
 test:
-	go test -v $$(glide novendor)
+	go test -race -v $$(glide novendor)
 
 mock:
 	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination lib/storage/dynamo/dynamodb_mock.go -package dynamo
