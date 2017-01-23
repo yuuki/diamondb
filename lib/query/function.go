@@ -53,7 +53,7 @@ func sumSeries(ss series.SeriesSlice) series.Series {
 	for row := iter(); row != nil; row = iter() {
 		vals = append(vals, mathutil.SumFloat64(row))
 	}
-	name := fmt.Sprintf("sumSeries(%s)", ss.FormatedName())
+	name := fmt.Sprintf("sumSeries(%s)", ss.FormattedName())
 	return series.NewSeries(name, vals, start, step)
 }
 
@@ -76,7 +76,7 @@ func averageSeries(ss series.SeriesSlice) series.Series {
 	for row := iter(); row != nil; row = iter() {
 		vals = append(vals, mathutil.AvgFloat64(row))
 	}
-	name := fmt.Sprintf("averageSeries(%s)", ss.FormatedName())
+	name := fmt.Sprintf("averageSeries(%s)", ss.FormattedName())
 	return series.NewSeries(name, vals, start, step)
 }
 
@@ -99,7 +99,7 @@ func minSeries(ss series.SeriesSlice) series.Series {
 	for row := iter(); row != nil; row = iter() {
 		vals = append(vals, mathutil.MinFloat64(row))
 	}
-	name := fmt.Sprintf("minSeries(%s)", ss.FormatedName())
+	name := fmt.Sprintf("minSeries(%s)", ss.FormattedName())
 	return series.NewSeries(name, vals, start, step)
 }
 
@@ -123,7 +123,7 @@ func maxSeries(ss series.SeriesSlice) series.Series {
 		avg := mathutil.MaxFloat64(row)
 		vals = append(vals, avg)
 	}
-	name := fmt.Sprintf("maxSeries(%s)", ss.FormatedName())
+	name := fmt.Sprintf("maxSeries(%s)", ss.FormattedName())
 	return series.NewSeries(name, vals, start, step)
 }
 
@@ -147,7 +147,7 @@ func multiplySeries(ss series.SeriesSlice) series.Series {
 		avg := mathutil.MultiplyFloat64(row)
 		vals = append(vals, avg)
 	}
-	name := fmt.Sprintf("multiplySeries(%s)", ss.FormatedName())
+	name := fmt.Sprintf("multiplySeries(%s)", ss.FormattedName())
 	return series.NewSeries(name, vals, start, step)
 }
 

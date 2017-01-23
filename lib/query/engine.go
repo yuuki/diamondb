@@ -69,7 +69,7 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 				if err != nil {
 					return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
 				}
-				ex := SeriesListExpr{Literal: ss.FormatedName()}
+				ex := SeriesListExpr{Literal: ss.FormattedName()}
 				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
 			case FuncExpr:
 				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
@@ -77,7 +77,7 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 					return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
 				}
 				// Regard FuncExpr as SeriesListExpr after process function
-				ex := SeriesListExpr{Literal: fmt.Sprintf("%s(%s)", e2.Name, ss.FormatedName())}
+				ex := SeriesListExpr{Literal: fmt.Sprintf("%s(%s)", e2.Name, ss.FormattedName())}
 				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
 			default:
 				return nil, errors.Errorf("Unknown expression %+v", expr)

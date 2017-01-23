@@ -10,8 +10,8 @@ import (
 // SeriesSlice represents a slice of Series.
 type SeriesSlice []Series
 
-// FormatedName returns the joined names in ss.
-func (ss SeriesSlice) FormatedName() string {
+// FormattedName returns the joined names in ss.
+func (ss SeriesSlice) FormattedName() string {
 	// Unique & Sort
 	set := make(map[string]struct{})
 	for _, s := range ss {
