@@ -17,6 +17,42 @@ func TestParsetTarget_SeriesListExpr(t *testing.T) {
 	}
 }
 
+var groupSeriesExprTests = []struct {
+	target          string
+	expectedPrefix  string
+	expectedRange   []string
+	expectedPostfix string
+}{
+	{"server.{foo,bar,baz}.loadavg5", "server.", []string{"foo", "bar", "baz"}, ".loadavg5"},
+	{"server.{1,2,3,4}.loadavg5", "server.", []string{"1", "2", "3", "4"}, ".loadavg5"},
+	{"server.cpu.{user,system,iowait}", "server.cpu.", []string{"user", "system", "iowait"}, ""},
+}
+
+func TestParsetTarget_GroupSeriesExpr(t *testing.T) {
+	for _, test := range groupSeriesExprTests {
+		expr, err := ParseTarget(test.target)
+		if err != nil {
+			t.Fatalf("%s", err)
+		}
+
+		v, ok := expr.(GroupSeriesExpr)
+		if !ok {
+			t.Fatalf("expr %#v should be GroupSeriesExpr", v)
+		}
+		if v.Prefix != test.expectedPrefix {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", test.expectedPrefix, v.Prefix)
+		}
+		for i, expected := range test.expectedRange {
+			if v.ValueList[i] != expected {
+				t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, v.ValueList[i])
+			}
+		}
+		if v.Postfix != test.expectedPostfix {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", test.expectedPostfix, v.Postfix)
+		}
+	}
+}
+
 func TestParsetTarget_FuncExpr(t *testing.T) {
 	expr, err := ParseTarget("averageSeries(server1.loadavg5)")
 	if err != nil {

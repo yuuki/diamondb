@@ -72,7 +72,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 		token = v
 	}
 	if token == scanner.Ident {
-		token = SERIESLIST
+		token = IDENTIFIER
 	}
 	lval.token = Token{Token: token, Literal: tokstr}
 	return token
@@ -84,7 +84,7 @@ func (l *Lexer) Error(msg string) {
 }
 
 func isIdentRune(ch rune, i int) bool {
-	return ch == '_' || ch == '.' || ch == ':' || ch == '-' || ch == '*' || ch == '[' || ch == ']' || ch == '{' || ch == '}' || ch == '%' || unicode.IsLetter(ch) || unicode.IsDigit(ch)
+	return ch == '_' || ch == '.' || ch == ':' || ch == '-' || ch == '*' || ch == '[' || ch == ']' || ch == '%' || unicode.IsLetter(ch) || unicode.IsDigit(ch)
 }
 
 // ParseTarget parses target string into the AST structure.
