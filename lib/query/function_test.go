@@ -5,8 +5,295 @@ import (
 	"testing"
 
 	"github.com/kylelemons/godebug/pretty"
+	"github.com/pkg/errors"
+
 	. "github.com/yuuki/diamondb/lib/series"
 )
+
+var testDoSumSeriesTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the number of arguments is two",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server2.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+		errors.New("invalid argument type `seriesList` to function `sumSeries`"),
+	},
+}
+
+func TestDoSumSeries(t *testing.T) {
+	for _, tc := range testDoSumSeriesTests {
+		_, err := doSumSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
+
+var testDoAverageSeriesTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the number of arguments is two",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server2.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+		errors.New("invalid argument type `seriesList` to function `averageSeries`"),
+	},
+}
+
+func TestDoAverageSeries(t *testing.T) {
+	for _, tc := range testDoAverageSeriesTests {
+		_, err := doAverageSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
+
+var testDoMinSeriesTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the number of arguments is two",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server2.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+		errors.New("invalid argument type `seriesList` to function `minSeries`"),
+	},
+}
+
+func TestDoMinSeries(t *testing.T) {
+	for _, tc := range testDoMinSeriesTests {
+		_, err := doMinSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
+
+var testDoMaxSeriesTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the number of arguments is two",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server2.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+		errors.New("invalid argument type `seriesList` to function `maxSeries`"),
+	},
+}
+
+func TestDoMaxSeries(t *testing.T) {
+	for _, tc := range testDoMaxSeriesTests {
+		_, err := doMaxSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
+
+var testDoMultiplySeriesTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the number of arguments is two",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server2.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+		errors.New("invalid argument type `seriesList` to function `multiplySeries`"),
+	},
+}
+
+func TestDoMultiplySeries(t *testing.T) {
+	for _, tc := range testDoMultiplySeriesTests {
+		_, err := doMultiplySeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
 
 func TestAlias(t *testing.T) {
 	ss := SeriesSlice{
