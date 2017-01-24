@@ -34,6 +34,19 @@ func alias(ss series.SeriesSlice, newName string) series.SeriesSlice {
 	return ss
 }
 
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.group
+func doGroup(args funcArgs) (series.SeriesSlice, error) {
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `group`")
+		}
+		ss = append(ss, arg.seriesSlice...)
+	}
+	return ss, nil
+}
+
 func doSumSeries(args funcArgs) (series.SeriesSlice, error) {
 	ss := series.SeriesSlice{}
 	for _, arg := range args {
