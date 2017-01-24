@@ -10,7 +10,7 @@ deps:
 build: yacc mock
 	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o $(NAME)
 
-test:
+test: yacc mock
 	go test -race -v $$(glide novendor)
 
 mock:
