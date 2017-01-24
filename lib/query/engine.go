@@ -98,6 +98,12 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 				return nil, errors.WithStack(err)
 			}
 			return ss, err
+		case "group":
+			ss, err := doGroup(args)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			return ss, err
 		case "averageSeries", "avg":
 			ss, err := doAverageSeries(args)
 			if err != nil {

@@ -295,6 +295,38 @@ func TestDoMultiplySeries(t *testing.T) {
 	}
 }
 
+func TestDoGroup(t *testing.T) {
+	args := funcArgs{
+		&funcArg{
+			expr: SeriesListExpr{Literal: "server{1,2}.loadavg5"},
+			seriesSlice: SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{0.1}, 0, 1),
+				NewSeries("server2.loadavg5", []float64{0.2}, 0, 1),
+			},
+		},
+		&funcArg{
+			expr: SeriesListExpr{Literal: "server{2,3}.loadavg5"},
+			seriesSlice: SeriesSlice{
+				NewSeries("server2.loadavg5", []float64{0.2}, 0, 1),
+				NewSeries("server3.loadavg5", []float64{0.3}, 0, 1),
+			},
+		},
+	}
+	got, err := doGroup(args)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	expected := SeriesSlice{
+		NewSeries("server1.loadavg5", []float64{0.1}, 0, 1),
+		NewSeries("server2.loadavg5", []float64{0.2}, 0, 1),
+		NewSeries("server2.loadavg5", []float64{0.2}, 0, 1),
+		NewSeries("server3.loadavg5", []float64{0.3}, 0, 1),
+	}
+	if diff := pretty.Compare(got, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}
+
 func TestAlias(t *testing.T) {
 	ss := SeriesSlice{
 		NewSeries("server1.loadavg5", []float64{10.0}, 0, 60),

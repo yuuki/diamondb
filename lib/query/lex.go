@@ -40,6 +40,7 @@ var (
 		"false": FALSE,
 
 		"alias":                 FUNC,
+		"group":                 FUNC,
 		"avg":                   FUNC,
 		"averageSeries":         FUNC,
 		"sum":                   FUNC,
