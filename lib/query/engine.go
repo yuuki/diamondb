@@ -2,6 +2,7 @@ package query
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -54,6 +55,13 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 			)
 		}
 		return ss, nil
+	case GroupSeriesExpr:
+		joinedValues := make([]string, 0, len(e.ValueList))
+		for _, value := range e.ValueList {
+			joinedValues = append(joinedValues, e.Prefix+value+e.Postfix)
+		}
+		expr = SeriesListExpr{Literal: strings.Join(joinedValues, ",")}
+		return invokeExpr(fetcher, expr, startTime, endTime)
 	case FuncExpr:
 		args := funcArgs{}
 		for _, expr := range e.SubExprs {
@@ -64,7 +72,7 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 				args = append(args, &funcArg{expr: expr})
 			case StringExpr:
 				args = append(args, &funcArg{expr: expr})
-			case SeriesListExpr:
+			case SeriesListExpr, GroupSeriesExpr:
 				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 				if err != nil {
 					return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)

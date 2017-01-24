@@ -35,14 +35,15 @@ func alias(ss series.SeriesSlice, newName string) series.SeriesSlice {
 }
 
 func doSumSeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 1 {
-		return nil, errors.New("too few arguments to function `sumSeries`")
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `sumSeries`")
+		}
+		ss = append(ss, arg.seriesSlice...)
 	}
-	_, ok := args[0].expr.(SeriesListExpr)
-	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `sumSeries`")
-	}
-	return series.SeriesSlice{sumSeries(args[0].seriesSlice)}, nil
+	return series.SeriesSlice{sumSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeries
@@ -58,14 +59,15 @@ func sumSeries(ss series.SeriesSlice) series.Series {
 }
 
 func doAverageSeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 1 {
-		return nil, errors.New("too few arguments to function `averageSeries`")
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `averageSeries`")
+		}
+		ss = append(ss, arg.seriesSlice...)
 	}
-	_, ok := args[0].expr.(SeriesListExpr)
-	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `averageSeries`")
-	}
-	return series.SeriesSlice{averageSeries(args[0].seriesSlice)}, nil
+	return series.SeriesSlice{averageSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.averageSeries
@@ -81,14 +83,15 @@ func averageSeries(ss series.SeriesSlice) series.Series {
 }
 
 func doMinSeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 1 {
-		return nil, errors.New("too few arguments to function `minSeries`")
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `minSeries`")
+		}
+		ss = append(ss, arg.seriesSlice...)
 	}
-	_, ok := args[0].expr.(SeriesListExpr)
-	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `minSeries`")
-	}
-	return series.SeriesSlice{minSeries(args[0].seriesSlice)}, nil
+	return series.SeriesSlice{minSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.minSeries
@@ -104,14 +107,15 @@ func minSeries(ss series.SeriesSlice) series.Series {
 }
 
 func doMaxSeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 1 {
-		return nil, errors.New("too few arguments to function `maxSeries`")
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `maxSeries`")
+		}
+		ss = append(ss, arg.seriesSlice...)
 	}
-	_, ok := args[0].expr.(SeriesListExpr)
-	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `maxSeries`")
-	}
-	return series.SeriesSlice{maxSeries(args[0].seriesSlice)}, nil
+	return series.SeriesSlice{maxSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.maxSeries
@@ -128,14 +132,15 @@ func maxSeries(ss series.SeriesSlice) series.Series {
 }
 
 func doMultiplySeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 1 {
-		return nil, errors.New("too few arguments to function `multiplySeries`")
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `multiplySeries`")
+		}
+		ss = append(ss, arg.seriesSlice...)
 	}
-	_, ok := args[0].expr.(SeriesListExpr)
-	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `multiplySeries`")
-	}
-	return series.SeriesSlice{multiplySeries(args[0].seriesSlice)}, nil
+	return series.SeriesSlice{multiplySeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.multiplySeries

@@ -29,6 +29,13 @@ type SeriesListExpr struct {
 	Literal string
 }
 
+// GroupSeriesExpr provides grouping series expression.
+type GroupSeriesExpr struct {
+	Prefix    string
+	ValueList []string
+	Postfix   string
+}
+
 // FuncExpr provides function expression.
 type FuncExpr struct {
 	Name     string
