@@ -578,3 +578,19 @@ func TestSummarize(t *testing.T) {
 		}
 	}
 }
+
+func TestPercentileOfSeries(t *testing.T) {
+	ss := SeriesSlice{
+		NewSeries("server1.loadavg5", []float64{1.0, 2.0, 3.0}, 1, 1),
+		NewSeries("server2.loadavg5", []float64{4.0, 5.0, 6.0}, 1, 1),
+		NewSeries("server3.loadavg5", []float64{7.0, 8.0, 9.0}, 1, 1),
+	}
+	got := percentileOfSeries(ss, 30)
+	expected := NewSeries(
+		"percentileOfSeries(server1.loadavg5,server2.loadavg5,server3.loadavg5)",
+		[]float64{4.0, 5.0, 6.0}, 1, 1,
+	)
+	if diff := pretty.Compare(got, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}
