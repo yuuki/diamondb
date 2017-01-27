@@ -16,7 +16,7 @@ import (
 
 func TestRenderHandler(t *testing.T) {
 	fakefetcher := &storage.FakeFetcher{
-		FakeFetchSeriesSlice: func(name string, start, end time.Time) (SeriesSlice, error) {
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
 			}, nil

@@ -9,9 +9,9 @@ import (
 // FakeFetcher is for stub testing
 type FakeFetcher struct {
 	Fetcher
-	FakeFetchSeriesSlice func(name string, start, end time.Time) (series.SeriesSlice, error)
+	FakeFetch func(name string, start, end time.Time) (series.SeriesSlice, error)
 }
 
-func (s *FakeFetcher) FetchSeriesSlice(name string, start, end time.Time) (series.SeriesSlice, error) {
-	return s.FakeFetchSeriesSlice(name, start, end)
+func (s *FakeFetcher) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
+	return s.FakeFetch(name, start, end)
 }

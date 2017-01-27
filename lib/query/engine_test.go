@@ -13,7 +13,7 @@ import (
 
 func TestEvalTarget_Func(t *testing.T) {
 	fakefetcher := &storage.FakeFetcher{
-		FakeFetchSeriesSlice: func(name string, start, end time.Time) (SeriesSlice, error) {
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
 			}, nil
@@ -40,7 +40,7 @@ func TestEvalTarget_Func(t *testing.T) {
 
 func TestEvalTarget_FuncNest(t *testing.T) {
 	fakefetcher := &storage.FakeFetcher{
-		FakeFetchSeriesSlice: func(name string, start, end time.Time) (SeriesSlice, error) {
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
 			}, nil
@@ -72,7 +72,7 @@ func TestEvalTarget_GroupSeries(t *testing.T) {
 		NewSeries("server2.loadavg5", []float64{12.0, 13.0}, 1000, 60),
 	}
 	fakefetcher := &storage.FakeFetcher{
-		FakeFetchSeriesSlice: func(name string, start, end time.Time) (SeriesSlice, error) {
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			if name != "server1.loadavg5,server2.loadavg5" {
 				return nil, errors.Errorf("unexpected name: %s", name)
 			}

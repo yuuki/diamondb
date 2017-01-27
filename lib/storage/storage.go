@@ -12,7 +12,7 @@ import (
 
 // Fetcher defines the interface for data store reader.
 type Fetcher interface {
-	FetchSeriesSlice(string, time.Time, time.Time) (series.SeriesSlice, error)
+	Fetch(string, time.Time, time.Time) (series.SeriesSlice, error)
 }
 
 // Store provides each data store client.
@@ -31,7 +31,7 @@ func NewStore() Fetcher {
 }
 
 // FetchSeriesSlice fetches series from Redis, DynamoDB and S3.
-func (s *Store) FetchSeriesSlice(name string, start, end time.Time) (series.SeriesSlice, error) {
+func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
 	sm1, err := s.Redis.FetchSeriesMap(name, start, end)
 	if err != nil {
 		return nil, errors.Wrapf(err,

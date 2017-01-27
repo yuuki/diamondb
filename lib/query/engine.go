@@ -47,7 +47,7 @@ func EvalTarget(fetcher storage.Fetcher, target string, startTime, endTime time.
 func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time) (series.SeriesSlice, error) {
 	switch e := expr.(type) {
 	case SeriesListExpr:
-		ss, err := fetcher.FetchSeriesSlice(e.Literal, startTime, endTime)
+		ss, err := fetcher.Fetch(e.Literal, startTime, endTime)
 		if err != nil {
 			return nil, errors.Wrapf(err,
 				"Failed to FetchSeriesSlice %s %d %d",
