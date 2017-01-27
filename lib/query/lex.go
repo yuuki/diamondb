@@ -49,6 +49,7 @@ var (
 		"maxSeries":             FUNC,
 		"multiplySeries":        FUNC,
 		"divideSeries":          FUNC,
+		"percentileOfSeries":    FUNC,
 		"summarize":             FUNC,
 		"nonNegativeDerivative": FUNC,
 	}

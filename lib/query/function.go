@@ -199,7 +199,7 @@ func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.S
 	return result
 }
 
-func doPercentileOfSeries(args funcArgs) (series.Series, error) {
+func doPercentileOfSeries(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 {
 		return nil, errors.Errorf("wrong number of arguments (%d for 2)", len(args))
 	}
@@ -211,7 +211,8 @@ func doPercentileOfSeries(args funcArgs) (series.Series, error) {
 	if !ok {
 		return nil, errors.New("invalid argument type `n` to function `percentileOfSeries`")
 	}
-	return percentileOfSeries(args[0].seriesSlice, float64(n.Literal)), nil
+	ss := series.SeriesSlice{percentileOfSeries(args[0].seriesSlice, float64(n.Literal))}
+	return ss, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.percentileOfSeries
