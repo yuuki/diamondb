@@ -199,6 +199,21 @@ func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.S
 	return result
 }
 
+func doPercentileOfSeries(args funcArgs) (series.Series, error) {
+	if len(args) != 2 {
+		return nil, errors.Errorf("wrong number of arguments (%d for 2)", len(args))
+	}
+	_, ok := args[0].expr.(SeriesListExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `seriesList` to function `percentileOfSeries`")
+	}
+	n, ok := args[1].expr.(NumberExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `n` to function `percentileOfSeries`")
+	}
+	return percentileOfSeries(args[0].seriesSlice, float64(n.Literal)), nil
+}
+
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.percentileOfSeries
 func percentileOfSeries(ss series.SeriesSlice, n float64) series.Series {
 	start, _, step := ss.Normalize()

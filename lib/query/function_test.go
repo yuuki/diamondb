@@ -295,6 +295,74 @@ func TestDoMultiplySeries(t *testing.T) {
 	}
 }
 
+var testDoPercentileOfSeries = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		errors.New("wrong number of arguments (1 for 2)"),
+	},
+	{
+		"SeriesListExpr + NumberExpr",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{expr: NumberExpr{Literal: 10}},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{
+			&funcArg{expr: StringExpr{Literal: "hoge"}},
+			&funcArg{expr: StringExpr{Literal: "foo"}},
+		},
+		errors.New("invalid argument type `seriesList` to function `percentileOfSeries`"),
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{expr: StringExpr{Literal: "hoge"}},
+		},
+		errors.New("invalid argument type `n` to function `percentileOfSeries`"),
+	},
+}
+
+func TestDoPercentileOfSeries(t *testing.T) {
+	for _, tc := range testDoPercentileOfSeries {
+		_, err := doPercentileOfSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
+
 func TestDoGroup(t *testing.T) {
 	args := funcArgs{
 		&funcArg{
