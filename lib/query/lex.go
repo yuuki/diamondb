@@ -2,6 +2,7 @@ package query
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"text/scanner"
 	"unicode"
@@ -74,6 +75,9 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	}
 	if token == scanner.Ident {
 		token = IDENTIFIER
+		if _, err := strconv.ParseInt(tokstr, 10, 64); err == nil {
+			token = NUMBER
+		}
 	}
 	lval.token = Token{Token: token, Literal: tokstr}
 	return token
