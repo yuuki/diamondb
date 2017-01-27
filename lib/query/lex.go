@@ -63,9 +63,6 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	if token == scanner.EOF {
 		return EOF
 	}
-	if token == scanner.Int || token == scanner.Float {
-		token = NUMBER
-	}
 	if token == scanner.Char || token == scanner.String {
 		token = STRING
 		tokstr = tokstr[1 : len(tokstr)-1]
@@ -96,7 +93,7 @@ func isIdentRune(ch rune, i int) bool {
 func ParseTarget(target string) (Expr, error) {
 	l := &Lexer{}
 	l.Init(strings.NewReader(target))
-	l.Mode &^= scanner.ScanRawStrings | scanner.ScanComments | scanner.SkipComments
+	l.Mode &^= scanner.ScanInts | scanner.ScanFloats | scanner.ScanRawStrings | scanner.ScanComments | scanner.SkipComments
 	l.IsIdentRune = isIdentRune
 	yyParse(l)
 	if l.e != nil {
