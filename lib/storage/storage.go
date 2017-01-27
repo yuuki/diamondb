@@ -30,7 +30,7 @@ func NewStore() Fetcher {
 	}
 }
 
-// FetchSeriesSlice fetches series from Redis, DynamoDB and S3.
+// Fetch fetches series from Redis, DynamoDB and S3.
 func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
 	sm1, err := s.Redis.Fetch(name, start, end)
 	if err != nil {
