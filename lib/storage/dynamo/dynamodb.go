@@ -56,8 +56,8 @@ func NewDynamoDB() *DynamoDB {
 	}
 }
 
-// FetchSeriesMap fetches datapoints by name from start until end.
-func (d *DynamoDB) FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
+// Fetch fetches datapoints by name from start until end.
+func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
 	slots, step := selectTimeSlots(start, end, d.tablePrefix)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
 	c := make(chan interface{})

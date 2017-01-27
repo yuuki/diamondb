@@ -45,7 +45,7 @@ func TestFetchSeriesMap(t *testing.T) {
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
 
 	d := newTestDynamoDB(mock)
-	sm, err := d.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -101,7 +101,7 @@ func TestFetchSeriesMap_Concurrent(t *testing.T) {
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
 
 	d := newTestDynamoDB(mock)
-	sm, err := d.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -175,7 +175,7 @@ func TestFetchSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
 
 	d := newTestDynamoDB(mock)
-	sm, err := d.FetchSeriesMap("roleA.r.1.loadavg", time.Unix(100, 0), time.Unix(4000, 0))
+	sm, err := d.Fetch("roleA.r.1.loadavg", time.Unix(100, 0), time.Unix(4000, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -215,7 +215,7 @@ func TestFetchSeriesMap_Empty(t *testing.T) {
 	d := newTestDynamoDB(dmock)
 
 	name := "roleA.r.{1,2}.loadavg"
-	sm, err := d.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("Should ignore NotFound error: %s", err)
 	}

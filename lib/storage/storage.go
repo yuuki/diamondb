@@ -32,14 +32,14 @@ func NewStore() Fetcher {
 
 // FetchSeriesSlice fetches series from Redis, DynamoDB and S3.
 func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
-	sm1, err := s.Redis.FetchSeriesMap(name, start, end)
+	sm1, err := s.Redis.Fetch(name, start, end)
 	if err != nil {
 		return nil, errors.Wrapf(err,
 			"Failed to redis.FetchMetrics %s %d %d",
 			name, start.Unix(), end.Unix(),
 		)
 	}
-	sm2, err := s.DynamoDB.FetchSeriesMap(name, start, end)
+	sm2, err := s.DynamoDB.Fetch(name, start, end)
 	if err != nil {
 		return nil, errors.Wrapf(err,
 			"Failed to FetchMetricsFromDynamoDB %s %d %d",

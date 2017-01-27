@@ -37,8 +37,8 @@ func NewRedis() *Redis {
 	}
 }
 
-// FetchSeriesMap fetches datapoints by name from start until end.
-func (r *Redis) FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
+// Fetch fetches datapoints by name from start until end.
+func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
 	slot, step := selectTimeSlot(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)
 	c := make(chan interface{})
