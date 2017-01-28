@@ -67,7 +67,7 @@ func Load() error {
 	}
 	Config.DynamoDBTablePrefix = os.Getenv("DIAMONDB_DYNAMODB_TABLE_PREFIX")
 	if Config.DynamoDBTablePrefix == "" {
-		Config.DynamoDBTablePrefix = DefaultDynamoDBRegion
+		Config.DynamoDBTablePrefix = DefaultDynamoDBTablePrefix
 	}
 
 	if os.Getenv("DIAMONDB_DEBUG") != "" {
