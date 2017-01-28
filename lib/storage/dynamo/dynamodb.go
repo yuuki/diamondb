@@ -56,6 +56,7 @@ func NewDynamoDB() *DynamoDB {
 	}
 }
 
+// Ping pings DynamoDB endpoint.
 func (d *DynamoDB) Ping() error {
 	var params *dynamodb.DescribeLimitsInput
 	_, err := d.svc.DescribeLimits(params)
