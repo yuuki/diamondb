@@ -12,6 +12,20 @@ import (
 	"github.com/yuuki/diamondb/lib/series"
 )
 
+func TestPing(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := NewMockDynamoDBAPI(ctrl)
+	mock.EXPECT().DescribeLimits(gomock.Any()).Return(
+		&dynamodb.DescribeLimitsOutput{}, nil,
+	)
+	d := newTestDynamoDB(mock)
+	err := d.Ping()
+	if err != nil {
+		t.Fatalf("unexpected error occurs %s", err)
+	}
+}
+
 func TestFetchSeriesMap(t *testing.T) {
 	name := "roleA.r.{1,2}.loadavg"
 	expected := series.SeriesMap{

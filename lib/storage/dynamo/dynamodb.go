@@ -56,6 +56,15 @@ func NewDynamoDB() *DynamoDB {
 	}
 }
 
+func (d *DynamoDB) Ping() error {
+	var params *dynamodb.DescribeLimitsInput
+	_, err := d.svc.DescribeLimits(params)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
 // Fetch fetches datapoints by name from start until end.
 func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
 	slots, step := selectTimeSlots(start, end, d.tablePrefix)
