@@ -10,6 +10,23 @@ import (
 	"github.com/yuuki/diamondb/lib/series"
 )
 
+func TestPing(t *testing.T) {
+	s, err := miniredis.Run()
+	if err != nil {
+		panic(err)
+	}
+	defer s.Close()
+
+	// Set mock
+	config.Config.RedisAddr = s.Addr()
+	r := NewRedis()
+
+	err = r.Ping()
+	if err != nil {
+		t.Fatalf("unexpected error %s", err)
+	}
+}
+
 func TestFetchSeriesMap(t *testing.T) {
 	s, err := miniredis.Run()
 	if err != nil {

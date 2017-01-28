@@ -37,6 +37,15 @@ func NewRedis() *Redis {
 	}
 }
 
+// Ping pings Redis server.
+func (r *Redis) Ping() error {
+	_, err := r.client.Ping().Result()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
 // Fetch fetches datapoints by name from start until end.
 func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
 	slot, step := selectTimeSlot(start, end)
