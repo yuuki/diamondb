@@ -3,8 +3,6 @@ package web
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/yuuki/diamondb/lib/log"
 )
 
 func renderJSON(w http.ResponseWriter, status int, v interface{}) {
@@ -29,8 +27,6 @@ func ok(w http.ResponseWriter, msg string) {
 }
 
 func badRequest(w http.ResponseWriter, msg string) {
-	log.Println(msg)
-
 	var data struct {
 		Error string `json:"error"`
 	}
@@ -44,8 +40,6 @@ func notFound(w http.ResponseWriter) {
 }
 
 func serverError(w http.ResponseWriter, msg string) {
-	log.Println(msg)
-
 	var data struct {
 		Error string `json:"error"`
 	}
