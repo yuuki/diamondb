@@ -72,24 +72,32 @@ func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, er
 	}(name, start, end)
 
 	var (
-		smR, smD series.SeriesMap
+		smR, smD     series.SeriesMap
+		rdone, ddone bool
 	)
-	select {
-	case rit := <-redisCh:
-		if rit.err != nil {
-			return nil, errors.Wrapf(rit.err, "redis.Fetch(%s,%d,%d)",
-				name, start.Unix(), end.Unix(),
-			)
+	for {
+		select {
+		case rit := <-redisCh:
+			if rit.err != nil {
+				return nil, errors.Wrapf(rit.err, "redis.Fetch(%s,%d,%d)",
+					name, start.Unix(), end.Unix(),
+				)
+			}
+			smR = rit.result
+			rdone = true
+		case dit := <-dynamodbCh:
+			if dit.err != nil {
+				return nil, errors.Wrapf(dit.err, "dynamodb.Fetch(%s,%d,%d)",
+					name, start.Unix(), end.Unix(),
+				)
+			}
+			smD = dit.result
+			ddone = true
+			// TODO timeout
 		}
-		smR = rit.result
-	case dit := <-dynamodbCh:
-		if dit.err != nil {
-			return nil, errors.Wrapf(dit.err, "dynamodb.Fetch(%s,%d,%d)",
-				name, start.Unix(), end.Unix(),
-			)
+		if rdone && ddone {
+			break
 		}
-		smD = dit.result
-		// TODO timeout
 	}
 	// TODO S3
 
