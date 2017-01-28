@@ -55,6 +55,12 @@ type futureSeriesMap struct {
 	done   chan struct{}
 }
 
+func newFutureSeriesMap() *futureSeriesMap {
+	return &futureSeriesMap{
+		done: make(chan struct{}, 1),
+	}
+}
+
 func (f *futureSeriesMap) Get() (series.SeriesMap, error) {
 	<-f.done
 	return f.result, f.err
@@ -63,12 +69,8 @@ func (f *futureSeriesMap) Get() (series.SeriesMap, error) {
 // Fetch fetches series from Redis, DynamoDB and S3.
 // TODO S3
 func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
-	fredis := futureSeriesMap{
-		done: make(chan struct{}, 1),
-	}
-	fdynamodb := futureSeriesMap{
-		done: make(chan struct{}, 1),
-	}
+	fredis := newFutureSeriesMap()
+	fdynamodb := newFutureSeriesMap()
 
 	// Redis task
 	go func(name string, start, end time.Time) {
