@@ -1,7 +1,9 @@
 package series
 
 import (
+	"encoding/json"
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 )
@@ -28,6 +30,15 @@ func (d *DataPoint) Timestamp() int64 {
 // Value returns value.
 func (d *DataPoint) Value() float64 {
 	return d.value
+}
+
+// MarshalJSON marshals DataPoint into JSON.
+func (d *DataPoint) MarshalJSON() ([]byte, error) {
+	if math.IsNaN(d.Value()) {
+		return json.Marshal([]interface{}{nil, d.timestamp})
+	} else {
+		return json.Marshal([]interface{}{d.value, d.timestamp})
+	}
 }
 
 // DataPoints represents the slice of pointer of DataPoint
