@@ -87,6 +87,9 @@ func (s *series) Alias() string {
 
 // Points returns DataPoints converted from values.
 func (s *series) Points() DataPoints {
+	if s.Len() == 0 {
+		return DataPoints{}
+	}
 	points := make(DataPoints, 0, s.Len())
 	end := s.End()
 	vals := s.Values()
