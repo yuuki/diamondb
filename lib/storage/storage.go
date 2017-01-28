@@ -32,21 +32,48 @@ func NewStore() Fetcher {
 
 // Fetch fetches series from Redis, DynamoDB and S3.
 func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
-	sm1, err := s.Redis.Fetch(name, start, end)
-	if err != nil {
-		return nil, errors.Wrapf(err,
-			"Failed to redis.FetchMetrics %s %d %d",
-			name, start.Unix(), end.Unix(),
-		)
+	type item struct {
+		result series.SeriesMap
+		err    error
 	}
-	sm2, err := s.DynamoDB.Fetch(name, start, end)
-	if err != nil {
-		return nil, errors.Wrapf(err,
-			"Failed to FetchMetricsFromDynamoDB %s %d %d",
-			name, start.Unix(), end.Unix(),
-		)
+
+	redisCh := make(chan item, 1)
+	dynamodbCh := make(chan item, 1)
+
+	// Redis task
+	go func(name string, start, end time.Time) {
+		sm, err := s.Redis.Fetch(name, start, end)
+		redisCh <- item{result: sm, err: err}
+	}(name, start, end)
+
+	// DynamoDB task
+	go func(name string, start, end time.Time) {
+		sm, err := s.DynamoDB.Fetch(name, start, end)
+		dynamodbCh <- item{result: sm, err: err}
+	}(name, start, end)
+
+	var (
+		smR, smD series.SeriesMap
+	)
+	select {
+	case rit := <-redisCh:
+		if rit.err != nil {
+			return nil, errors.Wrapf(rit.err, "redis.Fetch(%s,%d,%d)",
+				name, start.Unix(), end.Unix(),
+			)
+		}
+		smR = rit.result
+	case dit := <-dynamodbCh:
+		if dit.err != nil {
+			return nil, errors.Wrapf(dit.err, "dynamodb.Fetch(%s,%d,%d)",
+				name, start.Unix(), end.Unix(),
+			)
+		}
+		smD = dit.result
+		// TODO timeout
 	}
-	sm := sm1.MergePointsToSlice(sm2)
 	// TODO S3
+
+	sm := smR.MergePointsToSlice(smD)
 	return sm, nil
 }
