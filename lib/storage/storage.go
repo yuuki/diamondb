@@ -97,6 +97,6 @@ func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, er
 		)
 	}
 
-	sm := smR.MergePointsToSlice(smD)
-	return sm, nil
+	ss := smR.MergePointsToSlice(smD)
+	return ss, nil
 }
