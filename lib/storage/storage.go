@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -13,6 +14,7 @@ import (
 // Fetcher defines the interface for data store reader.
 type Fetcher interface {
 	Fetch(string, time.Time, time.Time) (series.SeriesSlice, error)
+	Ping() error
 }
 
 // Store provides each data store client.
@@ -28,6 +30,23 @@ func NewStore() Fetcher {
 		Redis:    redis.NewRedis(),
 		DynamoDB: dynamo.NewDynamoDB(),
 	}
+}
+
+// Ping pings each storage.
+func (s *Store) Ping() error {
+	rerr := s.Redis.Ping()
+	derr := s.DynamoDB.Ping()
+	if rerr != nil || derr != nil {
+		var errMsg string
+		if rerr != nil {
+			errMsg += fmt.Sprintf("Redis connection error: %s \n", rerr)
+		}
+		if derr != nil {
+			errMsg += fmt.Sprintf("DynamoDB connection error: %s ", derr)
+		}
+		return errors.New(errMsg)
+	}
+	return nil
 }
 
 // Fetch fetches series from Redis, DynamoDB and S3.

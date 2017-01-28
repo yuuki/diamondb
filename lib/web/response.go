@@ -19,6 +19,15 @@ func renderJSON(w http.ResponseWriter, status int, v interface{}) {
 	w.Write(res)
 }
 
+func ok(w http.ResponseWriter, msg string) {
+	var data struct {
+		Msg string `json:"message"`
+	}
+	data.Msg = msg
+	renderJSON(w, http.StatusOK, data)
+	return
+}
+
 func badRequest(w http.ResponseWriter, msg string) {
 	log.Println(msg)
 
@@ -42,5 +51,14 @@ func serverError(w http.ResponseWriter, msg string) {
 	}
 	data.Error = msg
 	renderJSON(w, http.StatusInternalServerError, data)
+	return
+}
+
+func unavaliableError(w http.ResponseWriter, msg string) {
+	var data struct {
+		Error string `json:"error"`
+	}
+	data.Error = msg
+	renderJSON(w, http.StatusServiceUnavailable, data)
 	return
 }

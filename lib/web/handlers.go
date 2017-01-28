@@ -18,6 +18,18 @@ const (
 	DayTime = time.Duration(24*60*60) * time.Second
 )
 
+// PingHandler returns a HTTP handler for the endpoint to ping storage.
+func PingHandler(env *env.Env) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := env.Fetcher.Ping(); err != nil {
+			unavaliableError(w, errors.Cause(err).Error())
+			return
+		}
+		ok(w, "PONG")
+		return
+	})
+}
+
 // RenderHandler returns a HTTP handler for the endpoint to read data.
 func RenderHandler(env *env.Env) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

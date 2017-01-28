@@ -67,6 +67,7 @@ func (cli *CLI) Run(args []string) int {
 	e := &env.Env{Fetcher: storage.NewStore()}
 
 	mux := http.NewServeMux()
+	mux.Handle("/ping", web.PingHandler(e))
 	mux.Handle("/render", web.RenderHandler(e))
 
 	n := negroni.New()
