@@ -50,7 +50,7 @@ func RenderHandler(env *env.Env) http.Handler {
 			return
 		}
 
-		seriesResps := make([]*series.SeriesResp, 0, len(targets))
+		seriesResps := series.SeriesSlice{}
 		for _, target := range targets {
 			seriesSlice, err := query.EvalTarget(env.Fetcher, target, from, until)
 			if err != nil {
@@ -63,9 +63,7 @@ func RenderHandler(env *env.Env) http.Handler {
 				}
 				return
 			}
-			for _, series := range seriesSlice {
-				seriesResps = append(seriesResps, series.AsResp())
-			}
+			seriesResps = append(seriesResps, seriesSlice...)
 		}
 		renderJSON(w, http.StatusOK, seriesResps)
 	})

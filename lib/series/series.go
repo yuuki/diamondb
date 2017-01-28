@@ -1,6 +1,6 @@
 package series
 
-import "math"
+import "encoding/json"
 
 // Series provides the interface for time series.
 type Series interface {
@@ -13,7 +13,7 @@ type Series interface {
 	SetAlias(s string)
 	SetAliasWith(s string) Series
 	Alias() string
-	AsResp() *SeriesResp
+	MarshalJSON() ([]byte, error)
 	Points() DataPoints
 }
 
@@ -114,22 +114,16 @@ An example of json response
 }
 */
 
-// SeriesResp represents the JSON response structure.
-type SeriesResp struct {
-	Target     string          `json:"target"`
-	DataPoints [][]interface{} `json:"datapoints"`
+// jsonMarshallableSeries represents the JSON response structure for Series.
+type jsonMarshallableSeries struct {
+	Target     string     `json:"target"`
+	DataPoints DataPoints `json:"datapoints"`
 }
 
-// AsResp returns the pointer of SeriesResp converted from values.
-func (s *series) AsResp() *SeriesResp {
-	points := make([][]interface{}, 0, s.Len())
-	for i, v := range s.Values() {
-		timestamp := s.Start() + int64(s.Step()*i)
-		if math.IsNaN(v) {
-			points = append(points, []interface{}{nil, timestamp})
-		} else {
-			points = append(points, []interface{}{v, timestamp})
-		}
-	}
-	return &SeriesResp{Target: s.Alias(), DataPoints: points}
+// MarshalJSON marshals Series as JSON.
+func (s *series) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&jsonMarshallableSeries{
+		Target:     s.Alias(),
+		DataPoints: s.Points(),
+	})
 }

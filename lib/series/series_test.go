@@ -51,17 +51,16 @@ func TestSeriesAlias(t *testing.T) {
 	}
 }
 
-func TestSeriesAsResp(t *testing.T) {
+func TestMarshalJSON(t *testing.T) {
 	s := NewSeries("server1.loadavg5", []float64{0.1, 0.2, 0.3, math.NaN(), 0.5}, 1000, 60)
 	s.SetAlias("func(server1.loadavg5)")
-	sresp := s.AsResp()
-	j, err := json.Marshal(sresp)
+	j, err := json.Marshal(s)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 	expected := "{\"target\":\"func(server1.loadavg5)\",\"datapoints\":[[0.1,1000],[0.2,1060],[0.3,1120],[null,1180],[0.5,1240]]}"
-	if fmt.Sprintf("%s", j) != expected {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, j)
+	if got := fmt.Sprintf("%s", j); got != expected {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, got)
 	}
 }
 
