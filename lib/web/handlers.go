@@ -67,7 +67,7 @@ func RenderHandler(env *env.Env) http.Handler {
 			seriesSlice, err := query.EvalTarget(env.Fetcher, target, from, until)
 			if err != nil {
 				log.Printf("%+v", err) // Print stack trace by pkg/errors
-				switch err.(type) {
+				switch errors.Cause(err).(type) {
 				case *query.ParserError, *query.UnsupportedFunctionError:
 					badRequest(w, errors.Cause(err).Error())
 				default:
