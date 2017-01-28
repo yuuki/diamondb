@@ -49,57 +49,51 @@ func (s *Store) Ping() error {
 	return nil
 }
 
-// Fetch fetches series from Redis, DynamoDB and S3.
-func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
-	type item struct {
-		result series.SeriesMap
-		err    error
-	}
+type futureSeriesMap struct {
+	result series.SeriesMap
+	err    error
+	done   chan struct{}
+}
 
-	redisCh := make(chan item, 1)
-	dynamodbCh := make(chan item, 1)
+func (f *futureSeriesMap) Get() (series.SeriesMap, error) {
+	<-f.done
+	return f.result, f.err
+}
+
+// Fetch fetches series from Redis, DynamoDB and S3.
+// TODO S3
+func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
+	fredis := futureSeriesMap{
+		done: make(chan struct{}, 1),
+	}
+	fdynamodb := futureSeriesMap{
+		done: make(chan struct{}, 1),
+	}
 
 	// Redis task
 	go func(name string, start, end time.Time) {
-		sm, err := s.Redis.Fetch(name, start, end)
-		redisCh <- item{result: sm, err: err}
+		fredis.result, fredis.err = s.Redis.Fetch(name, start, end)
+		fredis.done <- struct{}{}
 	}(name, start, end)
 
 	// DynamoDB task
 	go func(name string, start, end time.Time) {
-		sm, err := s.DynamoDB.Fetch(name, start, end)
-		dynamodbCh <- item{result: sm, err: err}
+		fdynamodb.result, fdynamodb.err = s.DynamoDB.Fetch(name, start, end)
+		fdynamodb.done <- struct{}{}
 	}(name, start, end)
 
-	var (
-		smR, smD     series.SeriesMap
-		rdone, ddone bool
-	)
-	for {
-		select {
-		case rit := <-redisCh:
-			if rit.err != nil {
-				return nil, errors.Wrapf(rit.err, "redis.Fetch(%s,%d,%d)",
-					name, start.Unix(), end.Unix(),
-				)
-			}
-			smR = rit.result
-			rdone = true
-		case dit := <-dynamodbCh:
-			if dit.err != nil {
-				return nil, errors.Wrapf(dit.err, "dynamodb.Fetch(%s,%d,%d)",
-					name, start.Unix(), end.Unix(),
-				)
-			}
-			smD = dit.result
-			ddone = true
-			// TODO timeout
-		}
-		if rdone && ddone {
-			break
-		}
+	smR, err := fredis.Get()
+	if err != nil {
+		return nil, errors.Wrapf(err, "redis.Fetch(%s,%d,%d)",
+			name, start.Unix(), end.Unix(),
+		)
 	}
-	// TODO S3
+	smD, err := fdynamodb.Get()
+	if err != nil {
+		return nil, errors.Wrapf(err, "dynamodb.Fetch(%s,%d,%d)",
+			name, start.Unix(), end.Unix(),
+		)
+	}
 
 	sm := smR.MergePointsToSlice(smD)
 	return sm, nil
