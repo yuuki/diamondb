@@ -79,7 +79,8 @@ func (d *DynamoDB) Ping() error {
 func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
 	slots, step := selectTimeSlots(start, end, d.tablePrefix)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
-	c := make(chan interface{})
+	numQueries := len(slots) * len(nameGroups)
+	c := make(chan interface{}, numQueries)
 	for _, slot := range slots {
 		for _, names := range nameGroups {
 			q := &query{
@@ -93,7 +94,7 @@ func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, e
 		}
 	}
 	sm := make(series.SeriesMap, len(nameGroups))
-	for i := 0; i < len(slots)*len(nameGroups); i++ {
+	for i := 0; i < numQueries; i++ {
 		ret := <-c
 		switch ret.(type) {
 		case series.SeriesMap:
