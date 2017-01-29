@@ -26,6 +26,15 @@ type Redis struct {
 	client *redis.Client
 }
 
+type query struct {
+	names []string
+	start time.Time
+	end   time.Time
+	slot  string
+	step  int
+	// context
+}
+
 // NewRedis creates a Redis.
 func NewRedis() *Redis {
 	return &Redis{
@@ -57,10 +66,17 @@ func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, erro
 	}
 	c := make(chan *result, len(nameGroups))
 	for _, names := range nameGroups {
-		go func(slot string, names []string, step int) {
-			sm, err := r.batchGet(slot, names, step)
+		q := &query{
+			names: names,
+			slot:  slot,
+			start: start,
+			end:   end,
+			step:  step,
+		}
+		go func(q *query) {
+			sm, err := r.batchGet(q)
 			c <- &result{value: sm, err: err}
-		}(slot, names, step)
+		}(q)
 	}
 	sm := make(series.SeriesMap, len(nameGroups))
 	for i := 0; i < len(nameGroups); i++ {
@@ -73,7 +89,7 @@ func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, erro
 	return sm, nil
 }
 
-func hGetAllToMap(name string, tsval map[string]string, step int) (*series.SeriesPoint, error) {
+func hGetAllToMap(name string, tsval map[string]string, q *query) (*series.SeriesPoint, error) {
 	points := make(series.DataPoints, 0, len(tsval))
 	for ts, val := range tsval {
 		t, err := strconv.ParseInt(ts, 10, 64)
@@ -86,23 +102,23 @@ func hGetAllToMap(name string, tsval map[string]string, step int) (*series.Serie
 		}
 		points = append(points, series.NewDataPoint(t, v))
 	}
-	return series.NewSeriesPoint(name, points, step), nil
+	return series.NewSeriesPoint(name, points, q.step), nil
 }
 
-func (r *Redis) batchGet(slot string, names []string, step int) (series.SeriesMap, error) {
-	sm := make(series.SeriesMap, len(names))
-	for _, name := range names {
-		key := fmt.Sprintf("%s:%s", slot, name)
+func (r *Redis) batchGet(q *query) (series.SeriesMap, error) {
+	sm := make(series.SeriesMap, len(q.names))
+	for _, name := range q.names {
+		key := fmt.Sprintf("%s:%s", q.slot, name)
 		tsval, err := r.client.HGetAll(key).Result()
 		if err != nil {
 			return nil, errors.Wrapf(err,
-				"Failed to redis hgetall %s", strings.Join(names, ","),
+				"Failed to redis hgetall %s", strings.Join(q.names, ","),
 			)
 		}
 		if len(tsval) < 1 {
 			continue
 		}
-		sp, err := hGetAllToMap(name, tsval, step)
+		sp, err := hGetAllToMap(name, tsval, q)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Failed to hGetAllToMap %+v", tsval)
 		}

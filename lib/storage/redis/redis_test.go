@@ -97,8 +97,13 @@ func TestBatchGet(t *testing.T) {
 		panic(err)
 	}
 
-	names := []string{"server1.loadavg5", "server2.loadavg5"}
-	metrics, err := r.batchGet("1m", names, 30)
+	metrics, err := r.batchGet(&query{
+		names: []string{"server1.loadavg5", "server2.loadavg5"},
+		slot:  "1m",
+		start: time.Unix(100, 0),
+		end:   time.Unix(200, 0),
+		step:  30,
+	})
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -130,8 +135,13 @@ func TestBatchGet_Empty(t *testing.T) {
 	config.Config.RedisAddr = s.Addr()
 	r := NewRedis()
 
-	names := []string{"server1.loadavg5", "server2.loadavg5"}
-	metrics, err := r.batchGet("1m", names, 30)
+	metrics, err := r.batchGet(&query{
+		names: []string{"server1.loadavg5", "server2.loadavg5"},
+		slot:  "1m",
+		start: time.Unix(100, 0),
+		end:   time.Unix(200, 0),
+		step:  30,
+	})
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
