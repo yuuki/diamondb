@@ -13,7 +13,7 @@ import (
 	"github.com/yuuki/diamondb/lib/series"
 )
 
-func NewTestRedis(t *testing.T) {
+func TestNewRedis(t *testing.T) {
 	tests := []struct {
 		desc         string
 		in           []string
@@ -27,7 +27,7 @@ func NewTestRedis(t *testing.T) {
 		{
 			"redis cluster",
 			[]string{"dummy01:6379", "dummy02:6379"},
-			reflect.TypeOf((*goredis.Client)(nil)),
+			reflect.TypeOf((*goredis.ClusterClient)(nil)),
 		},
 	}
 	for _, tc := range tests {
