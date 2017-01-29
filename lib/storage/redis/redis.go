@@ -50,7 +50,7 @@ func (r *Redis) Ping() error {
 func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
 	slot, step := selectTimeSlot(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)
-	c := make(chan interface{})
+	c := make(chan interface{}, len(nameGroups))
 	for _, names := range nameGroups {
 		r.concurrentBatchGet(slot, names, step, c)
 	}
