@@ -65,6 +65,7 @@ func TestDataPointsDeduplicate(t *testing.T) {
 		NewDataPoint(900, 0.2),
 		NewDataPoint(1000, 0.1),
 		NewDataPoint(1060, 0.3),
+		NewDataPoint(1060, math.NaN()),
 		NewDataPoint(1120, 0.2),
 		NewDataPoint(1120, 0.1),
 	}
@@ -72,7 +73,7 @@ func TestDataPointsDeduplicate(t *testing.T) {
 	expected := DataPoints{
 		NewDataPoint(900, 0.2),
 		NewDataPoint(1000, 0.1),
-		NewDataPoint(1060, 0.3),
+		NewDataPoint(1060, 0.3), // Don't overwrite with NaN
 		NewDataPoint(1120, 0.1),
 	}
 	if diff := pretty.Compare(points, expected); diff != "" {

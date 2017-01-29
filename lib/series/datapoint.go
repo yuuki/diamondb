@@ -69,7 +69,14 @@ func (ds DataPoints) Sort() DataPoints {
 func (ds DataPoints) Deduplicate() DataPoints {
 	deduplicated := make(map[string]float64, ds.Len())
 	for _, d := range ds {
-		deduplicated[fmt.Sprintf("%d", d.Timestamp())] = d.Value()
+		key := fmt.Sprintf("%d", d.Timestamp())
+		if _, ok := deduplicated[key]; ok {
+			// Don't overwrite with NaN value
+			if math.IsNaN(d.Value()) {
+				continue
+			}
+		}
+		deduplicated[key] = d.Value()
 	}
 	points := make(DataPoints, 0, len(deduplicated))
 	for ts, v := range deduplicated {
