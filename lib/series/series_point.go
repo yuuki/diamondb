@@ -14,7 +14,7 @@ type SeriesPoint struct {
 // NewSeriesPoint creates a new SeriesPoint. The points is sorted by the timestamp and
 // deduplicated with the same timestamp.
 func NewSeriesPoint(name string, points DataPoints, step int) *SeriesPoint {
-	points = points.Sort().Deduplicate().AlignTimestamp(step)
+	points = points.AlignTimestamp(step).Sort().Deduplicate()
 	return &SeriesPoint{
 		name:   name,
 		points: points,
