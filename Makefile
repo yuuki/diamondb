@@ -17,7 +17,7 @@ mock:
 	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination lib/storage/dynamo/dynamodb_mock.go -package dynamo
 
 yacc:
-	go tool yacc -o lib/query/parse.go lib/query/parse.go.y
+	go tool yacc -o lib/query/parser.go lib/query/parser.go.y
 
 fmt:
 	gofmt -s -w $(shell git ls | grep -e '\.go$$' | grep -v /vendor/)
