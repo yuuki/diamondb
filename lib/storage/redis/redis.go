@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	goredis "gopkg.in/redis.v5"
+
 	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/util"
-	redis "gopkg.in/redis.v5"
 )
 
 const (
@@ -23,7 +24,7 @@ const (
 
 // Redis provides a redis client.
 type Redis struct {
-	client *redis.Client
+	client *goredis.Client
 }
 
 type query struct {
@@ -38,7 +39,7 @@ type query struct {
 // NewRedis creates a Redis.
 func NewRedis() *Redis {
 	return &Redis{
-		client: redis.NewClient(&redis.Options{
+		client: goredis.NewClient(&goredis.Options{
 			Addr:     config.Config.RedisAddr,
 			Password: config.Config.RedisPassword,
 			DB:       config.Config.RedisDB,
