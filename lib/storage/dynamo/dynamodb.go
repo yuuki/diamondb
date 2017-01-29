@@ -95,10 +95,10 @@ func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, e
 				slot:  slot,
 				step:  step,
 			}
-			go func() {
+			go func(q *query) {
 				sm, err := d.batchGet(q)
 				c <- &result{value: sm, err: err}
-			}()
+			}(q)
 		}
 	}
 	sm := make(series.SeriesMap, len(nameGroups))
