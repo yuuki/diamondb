@@ -36,9 +36,8 @@ func (d *DataPoint) Value() float64 {
 func (d *DataPoint) MarshalJSON() ([]byte, error) {
 	if math.IsNaN(d.Value()) {
 		return json.Marshal([]interface{}{nil, d.timestamp})
-	} else {
-		return json.Marshal([]interface{}{d.value, d.timestamp})
 	}
+	return json.Marshal([]interface{}{d.value, d.timestamp})
 }
 
 // DataPoints represents the slice of pointer of DataPoint
