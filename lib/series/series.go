@@ -53,6 +53,9 @@ func (s *series) Start() int64 {
 
 // End returns the end timestamp.
 func (s *series) End() int64 {
+	if s.Len() == 0 {
+		return -1
+	}
 	return s.Start() + int64(s.Step()*(s.Len()-1))
 }
 
