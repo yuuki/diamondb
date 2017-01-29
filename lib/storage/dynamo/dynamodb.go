@@ -80,7 +80,12 @@ func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, e
 	slots, step := selectTimeSlots(start, end, d.tablePrefix)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
 	numQueries := len(slots) * len(nameGroups)
-	c := make(chan interface{}, numQueries)
+
+	type result struct {
+		value series.SeriesMap
+		err   error
+	}
+	c := make(chan *result, numQueries)
 	for _, slot := range slots {
 		for _, names := range nameGroups {
 			q := &query{
@@ -91,24 +96,18 @@ func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, e
 				step:  step,
 			}
 			go func() {
-				resp, err := d.batchGet(q)
-				if err != nil {
-					c <- errors.WithStack(err)
-				} else {
-					c <- resp
-				}
+				sm, err := d.batchGet(q)
+				c <- &result{value: sm, err: err}
 			}()
 		}
 	}
 	sm := make(series.SeriesMap, len(nameGroups))
 	for i := 0; i < numQueries; i++ {
 		ret := <-c
-		switch ret.(type) {
-		case series.SeriesMap:
-			sm.MergePointsToMap(ret.(series.SeriesMap))
-		case error:
-			return nil, errors.WithStack(ret.(error))
+		if ret.err != nil {
+			return nil, errors.WithStack(ret.err)
 		}
+		sm.MergePointsToMap(ret.value)
 	}
 	return sm, nil
 }
