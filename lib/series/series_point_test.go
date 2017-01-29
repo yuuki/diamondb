@@ -49,6 +49,14 @@ var testNewSeriesPointTests = []struct {
 		960,
 		1080,
 	},
+	{
+		"zero length points",
+		DataPoints{},
+		DataPoints{},
+		[]float64{},
+		-1,
+		-1,
+	},
 }
 
 func TestNewSeriesPoint(t *testing.T) {

@@ -34,6 +34,10 @@ func (s *SeriesPoint) Points() DataPoints {
 
 // Values convertes the values with []float64 format.
 func (s *SeriesPoint) Values() []float64 {
+	if len(s.Points()) == 0 {
+		return []float64{}
+	}
+
 	points := s.Points()
 	vals := make([]float64, points.Len())
 	for i := range vals {
@@ -49,11 +53,17 @@ func (s *SeriesPoint) Values() []float64 {
 
 // Start returns the unix timestamp of the beginning of the data points.
 func (s *SeriesPoint) Start() int64 {
+	if len(s.Points()) == 0 {
+		return -1
+	}
 	return s.Points()[0].Timestamp()
 }
 
 // End returns the unix timestamp of the end of the data points.
 func (s *SeriesPoint) End() int64 {
+	if len(s.Points()) == 0 {
+		return -1
+	}
 	return s.Start() + int64(s.Step()*(s.Len()-1))
 }
 
