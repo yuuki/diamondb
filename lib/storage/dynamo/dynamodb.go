@@ -90,7 +90,14 @@ func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, e
 				slot:  slot,
 				step:  step,
 			}
-			d.concurrentBatchGet(q, c)
+			go func() {
+				resp, err := d.batchGet(q)
+				if err != nil {
+					c <- errors.WithStack(err)
+				} else {
+					c <- resp
+				}
+			}()
 		}
 	}
 	sm := make(series.SeriesMap, len(nameGroups))
@@ -151,17 +158,6 @@ func (d *DynamoDB) batchGet(q *query) (series.SeriesMap, error) {
 		)
 	}
 	return batchGetResultToMap(resp, q), nil
-}
-
-func (d *DynamoDB) concurrentBatchGet(q *query, c chan interface{}) {
-	go func() {
-		resp, err := d.batchGet(q)
-		if err != nil {
-			c <- errors.WithStack(err)
-		} else {
-			c <- resp
-		}
-	}()
 }
 
 func selectTimeSlots(startTime, endTime time.Time, tablePrefix string) ([]*timeSlot, int) {

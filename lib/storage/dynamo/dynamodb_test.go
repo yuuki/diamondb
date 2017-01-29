@@ -284,50 +284,6 @@ func TestBatchGet(t *testing.T) {
 	}
 }
 
-func TestConcurrentBatchGet(t *testing.T) {
-	expected := series.SeriesMap{
-		"server1.loadavg5": series.NewSeriesPoint(
-			"server1.loadavg5",
-			series.DataPoints{
-				series.NewDataPoint(1100, 10.0),
-			},
-			60,
-		),
-		"server2.loadavg5": series.NewSeriesPoint(
-			"server2.loadavg5",
-			series.DataPoints{
-				series.NewDataPoint(1200, 15.0),
-			},
-			60,
-		),
-	}
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mock := NewMockDynamoDBAPI(ctrl)
-	param := &mockDynamoDBParam{
-		Resolution: "1m1h",
-		TableEpoch: 0,
-		ItemEpoch:  1000,
-		SeriesMap:  expected,
-	}
-	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
-	d := newTestDynamoDB(mock)
-
-	c := make(chan interface{})
-	d.concurrentBatchGet(&query{
-		names: []string{"server1.loadavg5", "server2.loadavg5"},
-		start: time.Unix(1000, 0),
-		end:   time.Unix(2000, 0),
-		slot:  &timeSlot{mockTableName("1m1h", 0), 1000},
-		step:  60,
-	}, c)
-	ret := <-c
-	sm := ret.(series.SeriesMap)
-	if diff := pretty.Compare(sm, expected); diff != "" {
-		t.Fatalf("diff: (-actual +expected)\n%s", diff)
-	}
-}
-
 var selectTimeSlotsTests = []struct {
 	start     time.Time
 	end       time.Time
