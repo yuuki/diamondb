@@ -13,6 +13,9 @@ build: yacc mock
 test: yacc mock
 	go test -race -v $$(glide novendor)
 
+cover: yacc mock
+	go test -cover $$(glide novendor)
+
 mock:
 	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination lib/storage/dynamo/dynamodb_mock.go -package dynamo
 
