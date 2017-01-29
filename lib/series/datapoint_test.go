@@ -79,3 +79,24 @@ func TestDataPointsDeduplicate(t *testing.T) {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
+
+func TestDataPointAlignTimestamp(t *testing.T) {
+	points := DataPoints{
+		NewDataPoint(10, 0.1),
+		NewDataPoint(120, 0.2),
+		NewDataPoint(220, 0.3),
+		NewDataPoint(230, 0.4),
+		NewDataPoint(335, 0.5),
+	}
+	got := points.AlignTimestamp(60)
+	expected := DataPoints{
+		NewDataPoint(0, 0.1),
+		NewDataPoint(120, 0.2),
+		NewDataPoint(180, 0.3),
+		NewDataPoint(180, 0.4),
+		NewDataPoint(300, 0.5),
+	}
+	if diff := pretty.Compare(got, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}

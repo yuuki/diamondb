@@ -78,3 +78,11 @@ func (ds DataPoints) Deduplicate() DataPoints {
 	}
 	return points.Sort()
 }
+
+// AlignTimestamp aligns each timestamp into multiples of step with DataPoints.
+func (ds DataPoints) AlignTimestamp(step int) DataPoints {
+	for _, d := range ds {
+		d.timestamp -= d.timestamp % int64(step)
+	}
+	return ds
+}
