@@ -172,7 +172,7 @@ func selectTimeSlots(startTime, endTime time.Time, tablePrefix string) ([]*timeS
 	)
 	diffTime := endTime.Sub(startTime)
 	if oneYear <= diffTime {
-		tableName = tablePrefix + "-1d360d"
+		tableName = tablePrefix + "-1d1y"
 		tableEpochStep = oneYearSeconds
 		itemEpochStep = tableEpochStep
 		step = 60 * 60 * 24

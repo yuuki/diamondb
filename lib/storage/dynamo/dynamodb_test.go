@@ -333,19 +333,19 @@ var selectTimeSlotsTests = []struct {
 		time.Unix(1000000, 0), time.Unix(100000000, 0), 86400,
 		[]*timeSlot{
 			{
-				tableName: mockTableName("1d360d", 0),
+				tableName: mockTableName("1d1y", 0),
 				itemEpoch: 0,
 			},
 			{
-				tableName: mockTableName("1d360d", 31104000),
+				tableName: mockTableName("1d1y", 31104000),
 				itemEpoch: 31104000,
 			},
 			{
-				tableName: mockTableName("1d360d", 62208000),
+				tableName: mockTableName("1d1y", 62208000),
 				itemEpoch: 62208000,
 			},
 			{
-				tableName: mockTableName("1d360d", 93312000),
+				tableName: mockTableName("1d1y", 93312000),
 				itemEpoch: 93312000,
 			},
 		},
