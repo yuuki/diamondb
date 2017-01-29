@@ -140,54 +140,6 @@ func TestBatchGet_Empty(t *testing.T) {
 	}
 }
 
-func TestConcurrentBatchGet(t *testing.T) {
-	s, err := miniredis.Run()
-	if err != nil {
-		panic(err)
-	}
-	defer s.Close()
-
-	// Set mock
-	config.Config.RedisAddr = s.Addr()
-	r := NewRedis()
-
-	_, err = r.client.HMSet("1m:server1.loadavg5", map[string]string{
-		"100": "10.0", "130": "10.2", "160": "11.0",
-	}).Result()
-	if err != nil {
-		panic(err)
-	}
-	_, err = r.client.HMSet("1m:server2.loadavg5", map[string]string{
-		"100": "8.0", "130": "5.0", "160": "6.0",
-	}).Result()
-	if err != nil {
-		panic(err)
-	}
-
-	names := []string{"server1.loadavg5", "server2.loadavg5"}
-	ch := make(chan interface{})
-
-	r.concurrentBatchGet("1m", names, 30, ch)
-
-	ret := <-ch
-	sm := ret.(series.SeriesMap)
-	expected := series.SeriesMap{
-		"server1.loadavg5": series.NewSeriesPoint("server1.loadavg5", series.DataPoints{
-			series.NewDataPoint(100, 10.0),
-			series.NewDataPoint(130, 10.2),
-			series.NewDataPoint(160, 11.0),
-		}, 30),
-		"server2.loadavg5": series.NewSeriesPoint("server2.loadavg5", series.DataPoints{
-			series.NewDataPoint(100, 8.0),
-			series.NewDataPoint(130, 5.0),
-			series.NewDataPoint(160, 6.0),
-		}, 30),
-	}
-	if diff := pretty.Compare(sm, expected); diff != "" {
-		t.Fatalf("diff: (-actual +expected)\n%s", diff)
-	}
-}
-
 var selectTimeSlotTests = []struct {
 	start time.Time
 	end   time.Time

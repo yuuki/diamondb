@@ -52,7 +52,17 @@ func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, erro
 	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)
 	c := make(chan interface{}, len(nameGroups))
 	for _, names := range nameGroups {
-		r.concurrentBatchGet(slot, names, step, c)
+		go func(slot string, names []string, step int) {
+			resp, err := r.batchGet(slot, names, step)
+			if err != nil {
+				c <- errors.Wrapf(err,
+					"Failed to redis batchGet %s %s %d",
+					slot, strings.Join(names, ","), step,
+				)
+			} else {
+				c <- resp
+			}
+		}(slot, names, step)
 	}
 	sm := make(series.SeriesMap, len(nameGroups))
 	for i := 0; i < len(nameGroups); i++ {
@@ -65,20 +75,6 @@ func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, erro
 		}
 	}
 	return sm, nil
-}
-
-func (r *Redis) concurrentBatchGet(slot string, names []string, step int, c chan<- interface{}) {
-	go func() {
-		resp, err := r.batchGet(slot, names, step)
-		if err != nil {
-			c <- errors.Wrapf(err,
-				"Failed to redis batchGet %s %s %d",
-				slot, strings.Join(names, ","), step,
-			)
-		} else {
-			c <- resp
-		}
-	}()
 }
 
 func hGetAllToMap(name string, tsval map[string]string, step int) (*series.SeriesPoint, error) {
