@@ -243,14 +243,14 @@ func TestBatchGet(t *testing.T) {
 		"server1.loadavg5": series.NewSeriesPoint(
 			"server1.loadavg5",
 			series.DataPoints{
-				series.NewDataPoint(1465516810, 10.0),
+				series.NewDataPoint(1100, 10.0),
 			},
 			60,
 		),
 		"server2.loadavg5": series.NewSeriesPoint(
 			"server2.loadavg5",
 			series.DataPoints{
-				series.NewDataPoint(1465516810, 15.0),
+				series.NewDataPoint(1100, 15.0),
 			},
 			60,
 		),
@@ -267,11 +267,13 @@ func TestBatchGet(t *testing.T) {
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
 	d := newTestDynamoDB(mock)
 
-	sm, err := d.batchGet(
-		&timeSlot{mockTableName("1m1h", 0), 1000},
-		[]string{"server1.loadavg5", "server2.loadavg5"},
-		60,
-	)
+	sm, err := d.batchGet(&query{
+		names: []string{"server1.loadavg5", "server2.loadavg5"},
+		start: time.Unix(1000, 0),
+		end:   time.Unix(2000, 0),
+		slot:  &timeSlot{mockTableName("1m1h", 0), 1000},
+		step:  60,
+	})
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -287,14 +289,14 @@ func TestConcurrentBatchGet(t *testing.T) {
 		"server1.loadavg5": series.NewSeriesPoint(
 			"server1.loadavg5",
 			series.DataPoints{
-				series.NewDataPoint(1465516810, 10.0),
+				series.NewDataPoint(1100, 10.0),
 			},
 			60,
 		),
 		"server2.loadavg5": series.NewSeriesPoint(
 			"server2.loadavg5",
 			series.DataPoints{
-				series.NewDataPoint(1465516810, 15.0),
+				series.NewDataPoint(1200, 15.0),
 			},
 			60,
 		),
@@ -312,12 +314,13 @@ func TestConcurrentBatchGet(t *testing.T) {
 	d := newTestDynamoDB(mock)
 
 	c := make(chan interface{})
-	d.concurrentBatchGet(
-		&timeSlot{mockTableName("1m1h", 0), 1000},
-		[]string{"server1.loadavg5", "server2.loadavg5"},
-		60,
-		c,
-	)
+	d.concurrentBatchGet(&query{
+		names: []string{"server1.loadavg5", "server2.loadavg5"},
+		start: time.Unix(1000, 0),
+		end:   time.Unix(2000, 0),
+		slot:  &timeSlot{mockTableName("1m1h", 0), 1000},
+		step:  60,
+	}, c)
 	ret := <-c
 	sm := ret.(series.SeriesMap)
 	if diff := pretty.Compare(sm, expected); diff != "" {
