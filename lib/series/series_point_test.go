@@ -17,9 +17,10 @@ func TestNewSeriesPoint(t *testing.T) {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", "server1.loadavg5", s.Name())
 	}
 	expected := DataPoints{
-		NewDataPoint(1000, 0.1),
-		NewDataPoint(1060, 0.2),
-		NewDataPoint(1120, 0.3),
+		// Align timestamp by step
+		NewDataPoint(960, 0.1),
+		NewDataPoint(1020, 0.2),
+		NewDataPoint(1080, 0.3),
 	}
 	if diff := pretty.Compare(s.Points(), expected); diff != "" {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
@@ -30,11 +31,11 @@ func TestNewSeriesPoint(t *testing.T) {
 	if s.Step() != 60 {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", 60, s.Step())
 	}
-	if s.Start() != 1000 {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", 1000, s.Start())
+	if s.Start() != 960 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 960, s.Start())
 	}
-	if s.End() != 1120 {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", 1120, s.End())
+	if s.End() != 1080 {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", 1080, s.End())
 	}
 	if s.Len() != 3 {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", 3, s.Len())

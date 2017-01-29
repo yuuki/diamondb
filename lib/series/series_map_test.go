@@ -101,8 +101,8 @@ func TestMergePointsToSlice(t *testing.T) {
 	sl := sm1.MergePointsToSlice(sm2)
 
 	expected := SeriesSlice{
-		NewSeries("server1.loadavg5", []float64{0.1, 0.2, 0.1, 0.2, 0.3}, 1000, 60),
-		NewSeries("server2.loadavg5", []float64{0.1}, 1120, 60),
+		NewSeries("server1.loadavg5", []float64{0.1, 0.2, 0.1, 0.2, 0.3}, 960, 60),
+		NewSeries("server2.loadavg5", []float64{0.1}, 1080, 60),
 	}
 	if diff := pretty.Compare(sl, expected); diff != "" {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
