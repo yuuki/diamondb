@@ -100,6 +100,10 @@ func hGetAllToMap(name string, tsval map[string]string, q *query) (*series.Serie
 		if err != nil {
 			return nil, errors.Wrapf(err, "Failed to ParseFloat value %s", v)
 		}
+		// Trim datapoints out of [start, end]
+		if t < q.start.Unix() || q.end.Unix() < t {
+			continue
+		}
 		points = append(points, series.NewDataPoint(t, v))
 	}
 	return series.NewSeriesPoint(name, points, q.step), nil

@@ -121,6 +121,10 @@ func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, q *query) series.Ser
 			for _, y := range x["Values"].BS {
 				t := int64(binary.BigEndian.Uint64(y[0:8]))
 				v := math.Float64frombits(binary.BigEndian.Uint64(y[8:]))
+				// Trim datapoints out of [start, end]
+				if t < q.start.Unix() || q.end.Unix() < t {
+					continue
+				}
 				points = append(points, series.NewDataPoint(t, v))
 			}
 			sm[name] = series.NewSeriesPoint(name, points, q.step)

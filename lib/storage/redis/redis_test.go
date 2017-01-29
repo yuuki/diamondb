@@ -150,6 +150,65 @@ func TestBatchGet_Empty(t *testing.T) {
 	}
 }
 
+var testHGetAllToMapTests = []struct {
+	desc     string
+	name     string
+	tsval    map[string]string
+	query    *query
+	expected *series.SeriesPoint
+}{
+	{
+		"all datapoints within time range",
+		"server1.loadavg5",
+		map[string]string{"100": "10.0", "160": "11.0", "240": "12.0"},
+		&query{
+			names: []string{"server1.loadavg5"},
+			start: time.Unix(100, 0),
+			end:   time.Unix(240, 0),
+			slot:  "1m",
+			step:  60,
+		},
+		series.NewSeriesPoint(
+			"server1.loadavg5", series.DataPoints{
+				series.NewDataPoint(100, 10.0),
+				series.NewDataPoint(160, 11.0),
+				series.NewDataPoint(240, 12.0),
+			}, 60,
+		),
+	},
+	{
+		"some datapoints out of time range",
+		"server1.loadavg5",
+		map[string]string{"40": "9.0", "100": "10.0", "160": "11.0", "240": "12.0", "300": "13.0"},
+		&query{
+			names: []string{"server1.loadavg5"},
+			start: time.Unix(100, 0),
+			end:   time.Unix(240, 0),
+			slot:  "1m",
+			step:  60,
+		},
+		series.NewSeriesPoint(
+			"server1.loadavg5", series.DataPoints{
+				series.NewDataPoint(100, 10.0),
+				series.NewDataPoint(160, 11.0),
+				series.NewDataPoint(240, 12.0),
+			}, 60,
+		),
+	},
+}
+
+func TestHGetAllToMap(t *testing.T) {
+	for _, tc := range testHGetAllToMapTests {
+		got, err := hGetAllToMap(tc.name, tc.tsval, tc.query)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+		if diff := pretty.Compare(got, tc.expected); diff != "" {
+			t.Fatalf("diff: (-actual +expected)\n%s", diff)
+		}
+	}
+}
+
 var selectTimeSlotTests = []struct {
 	start time.Time
 	end   time.Time
