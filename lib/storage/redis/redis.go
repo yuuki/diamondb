@@ -50,29 +50,25 @@ func (r *Redis) Ping() error {
 func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
 	slot, step := selectTimeSlot(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)
-	c := make(chan interface{}, len(nameGroups))
+
+	type result struct {
+		value series.SeriesMap
+		err   error
+	}
+	c := make(chan *result, len(nameGroups))
 	for _, names := range nameGroups {
 		go func(slot string, names []string, step int) {
-			resp, err := r.batchGet(slot, names, step)
-			if err != nil {
-				c <- errors.Wrapf(err,
-					"Failed to redis batchGet %s %s %d",
-					slot, strings.Join(names, ","), step,
-				)
-			} else {
-				c <- resp
-			}
+			sm, err := r.batchGet(slot, names, step)
+			c <- &result{value: sm, err: err}
 		}(slot, names, step)
 	}
 	sm := make(series.SeriesMap, len(nameGroups))
 	for i := 0; i < len(nameGroups); i++ {
 		ret := <-c
-		switch ret.(type) {
-		case series.SeriesMap:
-			sm.Merge(ret.(series.SeriesMap))
-		case error:
-			return nil, errors.WithStack(ret.(error))
+		if ret.err != nil {
+			return nil, errors.WithStack(ret.err)
 		}
+		sm.Merge(ret.value)
 	}
 	return sm, nil
 }
