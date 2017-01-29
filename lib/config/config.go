@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -10,7 +11,7 @@ import (
 type config struct {
 	Host                string
 	Port                string
-	RedisAddr           string
+	RedisAddrs          []string
 	RedisPassword       string
 	RedisDB             int
 	DynamoDBRegion      string
@@ -43,9 +44,9 @@ func Load() error {
 	if Config.Port == "" {
 		Config.Port = DefaultPort
 	}
-	Config.RedisAddr = os.Getenv("DIAMONDB_REDIS_ADDR")
-	if Config.RedisAddr == "" {
-		Config.RedisAddr = DefaultRedisAddr
+	Config.RedisAddrs = strings.Split(os.Getenv("DIAMONDB_REDIS_ADDRS"), ",")
+	if len(Config.RedisAddrs) == 0 {
+		Config.RedisAddrs = []string{DefaultRedisAddr}
 	}
 	Config.RedisPassword = os.Getenv("DIAMONDB_REDIS_PASSWORD")
 	if Config.RedisPassword == "" {

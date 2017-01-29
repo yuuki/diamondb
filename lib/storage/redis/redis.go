@@ -22,9 +22,15 @@ const (
 	redisBatchLimit = 50 // TODO need to tweak
 )
 
+type redisClient interface {
+	Ping() *goredis.StatusCmd
+	HGetAll(key string) *goredis.StringStringMapCmd
+	HMSet(key string, fields map[string]string) *goredis.StatusCmd
+}
+
 // Redis provides a redis client.
 type Redis struct {
-	client *goredis.Client
+	client redisClient
 }
 
 type query struct {
@@ -38,13 +44,26 @@ type query struct {
 
 // NewRedis creates a Redis.
 func NewRedis() *Redis {
-	return &Redis{
-		client: goredis.NewClient(&goredis.Options{
-			Addr:     config.Config.RedisAddr,
-			Password: config.Config.RedisPassword,
-			DB:       config.Config.RedisDB,
-		}),
+	addrs := config.Config.RedisAddrs
+	if len(addrs) > 1 {
+		r := Redis{
+			client: goredis.NewClusterClient(&goredis.ClusterOptions{
+				Addrs:    config.Config.RedisAddrs,
+				Password: config.Config.RedisPassword,
+			}),
+		}
+		return &r
+	} else if len(addrs) == 1 {
+		r := Redis{
+			client: goredis.NewClient(&goredis.Options{
+				Addr:     config.Config.RedisAddrs[0],
+				Password: config.Config.RedisPassword,
+				DB:       config.Config.RedisDB,
+			}),
+		}
+		return &r
 	}
+	return nil
 }
 
 // Ping pings Redis server.

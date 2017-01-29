@@ -1,14 +1,44 @@
 package redis
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/alicebob/miniredis"
 	"github.com/kylelemons/godebug/pretty"
+	goredis "gopkg.in/redis.v5"
+
 	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/series"
 )
+
+func NewTestRedis(t *testing.T) {
+	tests := []struct {
+		desc         string
+		in           []string
+		expectedType reflect.Type
+	}{
+		{
+			"redis not cluster",
+			[]string{"dummy:6379"},
+			reflect.TypeOf((*goredis.Client)(nil)),
+		},
+		{
+			"redis cluster",
+			[]string{"dummy01:6379", "dummy02:6379"},
+			reflect.TypeOf((*goredis.Client)(nil)),
+		},
+	}
+	for _, tc := range tests {
+		config.Config.RedisAddrs = tc.in
+		r := NewRedis()
+		if v := reflect.TypeOf(r.client); v != tc.expectedType {
+			t.Fatalf("desc: %s , Redis client type should be %s, not %s",
+				tc.desc, tc.expectedType, v)
+		}
+	}
+}
 
 func TestPing(t *testing.T) {
 	s, err := miniredis.Run()
@@ -18,7 +48,7 @@ func TestPing(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	config.Config.RedisAddr = s.Addr()
+	config.Config.RedisAddrs = []string{s.Addr()}
 	r := NewRedis()
 
 	err = r.Ping()
@@ -35,7 +65,7 @@ func TestFetchSeriesMap(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	config.Config.RedisAddr = s.Addr()
+	config.Config.RedisAddrs = []string{s.Addr()}
 	r := NewRedis()
 
 	_, err = r.client.HMSet("1m:server1.loadavg5", map[string]string{
@@ -81,7 +111,7 @@ func TestBatchGet(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	config.Config.RedisAddr = s.Addr()
+	config.Config.RedisAddrs = []string{s.Addr()}
 	r := NewRedis()
 
 	_, err = r.client.HMSet("1m:server1.loadavg5", map[string]string{
@@ -132,7 +162,7 @@ func TestBatchGet_Empty(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	config.Config.RedisAddr = s.Addr()
+	config.Config.RedisAddrs = []string{s.Addr()}
 	r := NewRedis()
 
 	metrics, err := r.batchGet(&query{
