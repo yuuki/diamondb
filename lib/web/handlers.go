@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/env"
 	"github.com/yuuki/diamondb/lib/log"
 	"github.com/yuuki/diamondb/lib/query"
@@ -26,6 +27,14 @@ func PingHandler(env *env.Env) http.Handler {
 			return
 		}
 		ok(w, "PONG")
+		return
+	})
+}
+
+// InspectHandler returns a HTTP handler for the endpoint to inspect information.
+func InspectHandler(env *env.Env) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		renderJSON(w, http.StatusOK, config.Config)
 		return
 	})
 }

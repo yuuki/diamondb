@@ -9,15 +9,15 @@ import (
 )
 
 type config struct {
-	Host                string
-	Port                string
-	RedisAddrs          []string
-	RedisPassword       string
-	RedisDB             int
-	DynamoDBRegion      string
-	DynamoDBTablePrefix string
+	Host                string   `json:"host"`
+	Port                string   `json:"port"`
+	RedisAddrs          []string `json:"redis_addrs"`
+	RedisPassword       string   `json:"redis_password"`
+	RedisDB             int      `json:"redis_db"`
+	DynamoDBRegion      string   `json:"dynamodb_region"`
+	DynamoDBTablePrefix string   `json:"dynamodb_table_prefix"`
 
-	Debug bool
+	Debug bool `json:"debug"`
 }
 
 const (
