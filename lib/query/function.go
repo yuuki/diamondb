@@ -231,16 +231,15 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 	step := int64(delta.Seconds())
 	for _, s := range ss {
 		bucketNum := int(math.Ceil(float64((s.End() - s.Start()) / step)))
-		buckets := make(map[string][]float64, bucketNum)
+		buckets := make(map[int64][]float64, bucketNum)
 		for _, p := range s.Points() {
 			t, val := p.Timestamp(), p.Value()
 			bucketTime := t - (t % step)
-			key := fmt.Sprintf("%d", bucketTime)
-			if _, ok := buckets[key]; !ok {
-				buckets[key] = []float64{}
+			if _, ok := buckets[bucketTime]; !ok {
+				buckets[bucketTime] = []float64{}
 			}
 			if !math.IsNaN(val) {
-				buckets[key] = append(buckets[key], val)
+				buckets[bucketTime] = append(buckets[bucketTime], val)
 			}
 		}
 		newStart := s.Start() - (s.Start() % step)
@@ -248,8 +247,7 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 		newValues := make([]float64, 0, bucketNum)
 		for t := newStart; t <= newEnd; t += step {
 			bucketTime := t - (t % step)
-			key := fmt.Sprintf("%d", bucketTime)
-			if bucketVals, ok := buckets[key]; !ok {
+			if bucketVals, ok := buckets[bucketTime]; !ok {
 				newValues = append(newValues, math.NaN())
 			} else {
 				switch function {

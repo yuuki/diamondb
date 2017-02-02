@@ -2,10 +2,8 @@ package series
 
 import (
 	"encoding/json"
-	"fmt"
 	"math"
 	"sort"
-	"strconv"
 )
 
 // DataPoint represents a pair of metric timestamp and value.
@@ -66,9 +64,9 @@ func (ds DataPoints) Sort() DataPoints {
 
 // Deduplicate eliminates duplications of DataPoints with the same timestamp.
 func (ds DataPoints) Deduplicate() DataPoints {
-	deduplicated := make(map[string]float64, ds.Len())
+	deduplicated := make(map[int64]float64, ds.Len())
 	for _, d := range ds {
-		key := fmt.Sprintf("%d", d.Timestamp())
+		key := d.Timestamp()
 		if _, ok := deduplicated[key]; ok {
 			// Don't overwrite with NaN value
 			if math.IsNaN(d.Value()) {
@@ -78,8 +76,7 @@ func (ds DataPoints) Deduplicate() DataPoints {
 		deduplicated[key] = d.Value()
 	}
 	points := make(DataPoints, 0, len(deduplicated))
-	for ts, v := range deduplicated {
-		t, _ := strconv.ParseInt(ts, 10, 64)
+	for t, v := range deduplicated {
 		points = append(points, NewDataPoint(t, v))
 	}
 	return points.Sort()
