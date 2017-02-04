@@ -29,7 +29,7 @@ imports:
 	goimports -w $(shell git ls | grep -e '\.go$$' | grep -v /vendor/)
 
 lint:
-	@for dir in $$(glide novendor); do golint $$dir; done
+	golint $$(glide novendor)
 
 vet:
 	go vet -v $$(glide novendor)
