@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
 	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/env"
 	"github.com/yuuki/diamondb/lib/log"
