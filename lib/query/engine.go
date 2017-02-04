@@ -29,6 +29,38 @@ type funcArg struct {
 
 type funcArgs []*funcArg
 
+// EvalTargets evaluates the targets concurrently. It is guaranteed that the order
+// of the targets as input value and SeriesSlice as retuen value is the same.
+func EvalTargets(fetcher storage.Fetcher, targets []string, startTime, endTime time.Time) (series.SeriesSlice, error) {
+	type result struct {
+		value series.SeriesSlice
+		err   error
+		index int
+	}
+
+	c := make(chan *result)
+	for i, target := range targets {
+		go func(target string, start, end time.Time, i int) {
+			ss, err := EvalTarget(fetcher, target, start, end)
+			c <- &result{value: ss, err: err, index: i}
+		}(target, startTime, endTime, i)
+	}
+	ordered := make([]series.SeriesSlice, len(targets))
+	for i := 0; i < len(targets); i++ {
+		ret := <-c
+		if ret.err != nil {
+			// return err that is found firstly.
+			return nil, ret.err
+		}
+		ordered[ret.index] = ret.value
+	}
+	results := series.SeriesSlice{}
+	for _, ss := range ordered {
+		results = append(results, ss...)
+	}
+	return results, nil
+}
+
 // EvalTarget evaluates the target. It parses the target into AST structure and fetches datapoints from storage.
 //
 // ex. target: "alias(sumSeries(server1.loadavg5,server2.loadavg5),\"server_loadavg5\")"

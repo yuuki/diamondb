@@ -10,7 +10,6 @@ import (
 	"github.com/yuuki/diamondb/lib/env"
 	"github.com/yuuki/diamondb/lib/log"
 	"github.com/yuuki/diamondb/lib/query"
-	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/timeparser"
 )
 
@@ -71,21 +70,17 @@ func RenderHandler(env *env.Env) http.Handler {
 			return
 		}
 
-		seriesResps := series.SeriesSlice{}
-		for _, target := range targets {
-			seriesSlice, err := query.EvalTarget(env.Fetcher, target, from, until)
-			if err != nil {
-				log.Printf("%+v", err) // Print stack trace by pkg/errors
-				switch errors.Cause(err).(type) {
-				case *query.ParserError, *query.UnsupportedFunctionError:
-					badRequest(w, errors.Cause(err).Error())
-				default:
-					serverError(w, errors.Cause(err).Error())
-				}
-				return
+		seriesSlice, err := query.EvalTargets(env.Fetcher, targets, from, until)
+		if err != nil {
+			log.Printf("%+v", err) // Print stack trace by pkg/errors
+			switch err.(type) {
+			case *query.ParserError, *query.UnsupportedFunctionError:
+				badRequest(w, errors.Cause(err).Error())
+			default:
+				serverError(w, errors.Cause(err).Error())
 			}
-			seriesResps = append(seriesResps, seriesSlice...)
+			return
 		}
-		renderJSON(w, http.StatusOK, seriesResps)
+		renderJSON(w, http.StatusOK, seriesSlice)
 	})
 }
