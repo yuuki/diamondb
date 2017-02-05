@@ -43,7 +43,7 @@ expr :
   }
   | NUMBER
   {
-    n, _ := strconv.Atoi($1.Literal)
+    n, _ := strconv.ParseFloat($1.Literal, 64)
     $$ = NumberExpr{Literal: n}
   }
   | STRING

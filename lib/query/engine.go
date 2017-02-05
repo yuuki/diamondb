@@ -130,6 +130,12 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 				return nil, errors.WithStack(err)
 			}
 			return ss, err
+		case "offset":
+			ss, err := doOffset(args)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			return ss, err
 		case "group":
 			ss, err := doGroup(args)
 			if err != nil {

@@ -41,6 +41,7 @@ var (
 		"false": FALSE,
 
 		"alias":                 FUNC,
+		"offset":                FUNC,
 		"group":                 FUNC,
 		"avg":                   FUNC,
 		"averageSeries":         FUNC,
@@ -72,7 +73,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	}
 	if token == scanner.Ident {
 		token = IDENTIFIER
-		if _, err := strconv.ParseInt(tokstr, 10, 64); err == nil {
+		if _, err := strconv.ParseFloat(tokstr, 64); err == nil {
 			token = NUMBER
 		}
 	}
