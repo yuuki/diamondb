@@ -340,6 +340,81 @@ func TestAlias(t *testing.T) {
 	}
 }
 
+func TestDoOffset(t *testing.T) {
+	tests := []struct {
+		desc string
+		args funcArgs
+		err  error
+	}{
+		{
+			"one argument",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+					},
+				},
+			},
+			errors.New("wrong number of arguments `offset` (1 for 2)"),
+		},
+		{
+			"seriesListExpr + numberExpr",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+					},
+				},
+				&funcArg{expr: NumberExpr{Literal: 1}},
+			},
+			nil,
+		},
+		{
+			"seriesSliceExpr(2) + numberExpr",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server{1,2}.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+						NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+					},
+				},
+				&funcArg{expr: NumberExpr{Literal: 1}},
+			},
+			nil,
+		},
+		{
+			"seriesSliceExpr + seriesSliceExpr",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+					},
+				},
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server2.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+					},
+				},
+			},
+			errors.New("invalid argument type `number` to function `offset`"),
+		},
+	}
+
+	for _, tc := range tests {
+		_, err := doOffset(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(errors.Cause(err).Error(), errors.Cause(tc.err).Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+		}
+	}
+}
+
 func TestOffset(t *testing.T) {
 	tests := []struct {
 		desc                string

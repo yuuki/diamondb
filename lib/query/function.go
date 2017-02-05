@@ -34,6 +34,23 @@ func alias(ss series.SeriesSlice, newName string) series.SeriesSlice {
 	return ss
 }
 
+func doOffset(args funcArgs) (series.SeriesSlice, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("wrong number of arguments `offset` (%d for 2)", len(args))
+	}
+
+	_, ok := args[0].expr.(SeriesListExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `seriesList` to function `offset`")
+	}
+	factor, ok := args[1].expr.(NumberExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `number` to function `offset`")
+	}
+
+	return offset(args[0].seriesSlice, float64(factor.Literal)), nil
+}
+
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.offset
 func offset(ss series.SeriesSlice, factor float64) series.SeriesSlice {
 	result := make(series.SeriesSlice, 0, len(ss))
