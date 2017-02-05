@@ -34,6 +34,20 @@ func alias(ss series.SeriesSlice, newName string) series.SeriesSlice {
 	return ss
 }
 
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.offset
+func offset(ss series.SeriesSlice, factor float64) series.SeriesSlice {
+	result := make(series.SeriesSlice, 0, len(ss))
+	for _, s := range ss {
+		name := fmt.Sprintf("offset(%s,%g)", s.Name(), factor)
+		vals := s.Values()
+		for i := 0; i < len(vals); i++ {
+			vals[i] += factor
+		}
+		result = append(result, series.NewSeries(name, vals, s.Start(), s.Step()))
+	}
+	return result
+}
+
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.group
 func doGroup(args funcArgs) (series.SeriesSlice, error) {
 	ss := series.SeriesSlice{}

@@ -340,6 +340,47 @@ func TestAlias(t *testing.T) {
 	}
 }
 
+func TestOffset(t *testing.T) {
+	tests := []struct {
+		desc                string
+		inputSeriesSlice    SeriesSlice
+		inputFactor         float64
+		expectedSeriesSlice SeriesSlice
+	}{
+		{
+			"positive factor",
+			SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{1.0, 2.0, 3.0, 4.0}, 1, 1),
+				NewSeries("server2.loadavg5", []float64{math.NaN(), 5.0}, 4, 1),
+			},
+			0.5,
+			SeriesSlice{
+				NewSeries("offset(server1.loadavg5,0.5)", []float64{1.5, 2.5, 3.5, 4.5}, 1, 1),
+				NewSeries("offset(server2.loadavg5,0.5)", []float64{math.NaN(), 5.5}, 4, 1),
+			},
+		},
+		{
+			"negative factor",
+			SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{1.0, 2.0, 3.0, 4.0}, 1, 1),
+				NewSeries("server2.loadavg5", []float64{math.NaN(), 5.0}, 4, 1),
+			},
+			-0.5,
+			SeriesSlice{
+				NewSeries("offset(server1.loadavg5,-0.5)", []float64{0.5, 1.5, 2.5, 3.5}, 1, 1),
+				NewSeries("offset(server2.loadavg5,-0.5)", []float64{math.NaN(), 4.5}, 4, 1),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		got := offset(tc.inputSeriesSlice, tc.inputFactor)
+		if diff := pretty.Compare(got, tc.expectedSeriesSlice); diff != "" {
+			t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+		}
+	}
+}
+
 func TestSumSeries(t *testing.T) {
 	series := sumSeries(GenerateSeriesSlice())
 	vals := make([]float64, 100)
