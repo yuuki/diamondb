@@ -41,6 +41,7 @@ var (
 		"false": FALSE,
 
 		"alias":                 FUNC,
+		"offset":                FUNC,
 		"group":                 FUNC,
 		"avg":                   FUNC,
 		"averageSeries":         FUNC,
