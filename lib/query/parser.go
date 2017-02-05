@@ -489,7 +489,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line lib/query/parser.go.y:45
 		{
-			n, _ := strconv.Atoi(yyDollar[1].token.Literal)
+			n, _ := strconv.ParseFloat(yyDollar[1].token.Literal, 64)
 			yyVAL.expr = NumberExpr{Literal: n}
 		}
 	case 5:
