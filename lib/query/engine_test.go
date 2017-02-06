@@ -11,9 +11,106 @@ import (
 	"github.com/yuuki/diamondb/lib/storage"
 )
 
+func TestEvalTargets(t *testing.T) {
+	tests := []struct {
+		desc     string
+		targets  []string
+		mockFunc func(string, time.Time, time.Time) (SeriesSlice, error)
+		expected SeriesSlice
+		err      error
+	}{
+		{
+			"one target",
+			[]string{"server1.loadavg5"},
+			func(name string, start, end time.Time) (SeriesSlice, error) {
+				if name != "server1.loadavg5" {
+					return nil, errors.Errorf("unexpected name: %s", name)
+				}
+				return SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60),
+				}, nil
+			},
+			SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60),
+			},
+			nil,
+		},
+		{
+			"three targets",
+			[]string{"server1.loadavg5", "server2.loadavg5", "server3.loadavg5"},
+			func(name string, start, end time.Time) (SeriesSlice, error) {
+				switch name {
+				case "server1.loadavg5":
+					return SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60),
+					}, nil
+				case "server2.loadavg5":
+					return SeriesSlice{
+						NewSeries("server2.loadavg5", []float64{11.0}, 1000, 60),
+					}, nil
+				case "server3.loadavg5":
+					return SeriesSlice{
+						NewSeries("server3.loadavg5", []float64{12.0}, 1000, 60),
+					}, nil
+				default:
+					return nil, errors.Errorf("unexpected name %s", name)
+				}
+			},
+			SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60),
+				NewSeries("server2.loadavg5", []float64{11.0}, 1000, 60),
+				NewSeries("server3.loadavg5", []float64{12.0}, 1000, 60),
+			},
+			nil,
+		},
+		{
+			"return one goroutine error",
+			[]string{"server1.loadavg5", "server2.loadavg5", "server3.loadavg5"},
+			func(name string, start, end time.Time) (SeriesSlice, error) {
+				switch name {
+				case "server1.loadavg5":
+					return SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60),
+					}, nil
+				case "server2.loadavg5":
+					return nil, errors.New("some accident occur")
+				case "server3.loadavg5":
+					return SeriesSlice{
+						NewSeries("server3.loadavg5", []float64{12.0}, 1000, 60),
+					}, nil
+				default:
+					return nil, errors.Errorf("unexpected name %s", name)
+				}
+			},
+			SeriesSlice{},
+			errors.New("some accident occur"),
+		},
+	}
+
+	for _, tc := range tests {
+		fakefetcher := &storage.FakeFetcher{
+			FakeFetch: tc.mockFunc,
+		}
+		got, err := EvalTargets(
+			fakefetcher,
+			tc.targets,
+			time.Unix(0, 0),
+			time.Unix(120, 0),
+		)
+		if err != nil {
+			if errors.Cause(err).Error() != errors.Cause(tc.err).Error() {
+				t.Fatalf("err: %s", err)
+			}
+		}
+		if diff := pretty.Compare(got, tc.expected); diff != "" {
+			t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+		}
+	}
+}
+
 func TestEvalTarget_Func(t *testing.T) {
 	fakefetcher := &storage.FakeFetcher{
-		FakeFetchSeriesSlice: func(name string, start, end time.Time) (SeriesSlice, error) {
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
 			}, nil
@@ -40,7 +137,7 @@ func TestEvalTarget_Func(t *testing.T) {
 
 func TestEvalTarget_FuncNest(t *testing.T) {
 	fakefetcher := &storage.FakeFetcher{
-		FakeFetchSeriesSlice: func(name string, start, end time.Time) (SeriesSlice, error) {
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
 			}, nil
@@ -72,7 +169,7 @@ func TestEvalTarget_GroupSeries(t *testing.T) {
 		NewSeries("server2.loadavg5", []float64{12.0, 13.0}, 1000, 60),
 	}
 	fakefetcher := &storage.FakeFetcher{
-		FakeFetchSeriesSlice: func(name string, start, end time.Time) (SeriesSlice, error) {
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			if name != "server1.loadavg5,server2.loadavg5" {
 				return nil, errors.Errorf("unexpected name: %s", name)
 			}

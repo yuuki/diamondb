@@ -103,6 +103,11 @@ var testSeriesSliceZipTests = []struct {
 		},
 		[][]float64{{0.1, 0.1, 0.1}, {0.2, 0.2, 0.2}},
 	},
+	{
+		"SeriesSlice is zero length",
+		SeriesSlice{},
+		nil,
+	},
 }
 
 func TestSeriesSliceZip(t *testing.T) {

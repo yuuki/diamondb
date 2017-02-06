@@ -20,7 +20,7 @@ import (
 %type<expr> expr
 %type<exprs> exprs
 %type<literals> identifiers
-%type<str> identifier_opt
+%type<str> identifier_opt ident_in_brace
 %token<token> NUMBER STRING TRUE FALSE IDENTIFIER FUNC LBRACK RBRACK
 
 %%
@@ -43,7 +43,7 @@ expr :
   }
   | NUMBER
   {
-    n, _ := strconv.Atoi($1.Literal)
+    n, _ := strconv.ParseFloat($1.Literal, 64)
     $$ = NumberExpr{Literal: n}
   }
   | STRING
@@ -83,13 +83,23 @@ identifier_opt:
   }
 
 identifiers: 
-  IDENTIFIER 
+  ident_in_brace 
   {
-    $$ = []string{$1.Literal}
+    $$ = []string{$1}
   }
-  | identifiers ',' IDENTIFIER
+  | identifiers ',' ident_in_brace
   {
-    $$ = append($1, $3.Literal)
+    $$ = append($1, $3)
+  }
+
+ident_in_brace:
+  NUMBER
+  { 
+    $$ = $1.Literal
+  }
+  | IDENTIFIER 
+  {
+    $$ = $1.Literal
   }
 
 %%

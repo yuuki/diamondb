@@ -3,20 +3,21 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 )
 
 type config struct {
-	Host                string
-	Port                string
-	RedisAddr           string
-	RedisPassword       string
-	RedisDB             int
-	DynamoDBRegion      string
-	DynamoDBTablePrefix string
+	Host                string   `json:"host"`
+	Port                string   `json:"port"`
+	RedisAddrs          []string `json:"redis_addrs"`
+	RedisPassword       string   `json:"redis_password"`
+	RedisDB             int      `json:"redis_db"`
+	DynamoDBRegion      string   `json:"dynamodb_region"`
+	DynamoDBTablePrefix string   `json:"dynamodb_table_prefix"`
 
-	Debug bool
+	Debug bool `json:"debug"`
 }
 
 const (
@@ -43,9 +44,9 @@ func Load() error {
 	if Config.Port == "" {
 		Config.Port = DefaultPort
 	}
-	Config.RedisAddr = os.Getenv("DIAMONDB_REDIS_ADDR")
-	if Config.RedisAddr == "" {
-		Config.RedisAddr = DefaultRedisAddr
+	Config.RedisAddrs = strings.Split(os.Getenv("DIAMONDB_REDIS_ADDRS"), ",")
+	if len(Config.RedisAddrs) == 0 {
+		Config.RedisAddrs = []string{DefaultRedisAddr}
 	}
 	Config.RedisPassword = os.Getenv("DIAMONDB_REDIS_PASSWORD")
 	if Config.RedisPassword == "" {
@@ -67,7 +68,7 @@ func Load() error {
 	}
 	Config.DynamoDBTablePrefix = os.Getenv("DIAMONDB_DYNAMODB_TABLE_PREFIX")
 	if Config.DynamoDBTablePrefix == "" {
-		Config.DynamoDBTablePrefix = DefaultDynamoDBRegion
+		Config.DynamoDBTablePrefix = DefaultDynamoDBTablePrefix
 	}
 
 	if os.Getenv("DIAMONDB_DEBUG") != "" {

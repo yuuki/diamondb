@@ -14,9 +14,10 @@ type SeriesPoint struct {
 // NewSeriesPoint creates a new SeriesPoint. The points is sorted by the timestamp and
 // deduplicated with the same timestamp.
 func NewSeriesPoint(name string, points DataPoints, step int) *SeriesPoint {
+	points = points.AlignTimestamp(step).Sort().Deduplicate()
 	return &SeriesPoint{
 		name:   name,
-		points: points.Sort().Deduplicate(),
+		points: points,
 		step:   step,
 	}
 }
@@ -33,6 +34,10 @@ func (s *SeriesPoint) Points() DataPoints {
 
 // Values convertes the values with []float64 format.
 func (s *SeriesPoint) Values() []float64 {
+	if len(s.Points()) == 0 {
+		return []float64{}
+	}
+
 	points := s.Points()
 	vals := make([]float64, points.Len())
 	for i := range vals {
@@ -48,11 +53,17 @@ func (s *SeriesPoint) Values() []float64 {
 
 // Start returns the unix timestamp of the beginning of the data points.
 func (s *SeriesPoint) Start() int64 {
+	if len(s.Points()) == 0 {
+		return -1
+	}
 	return s.Points()[0].Timestamp()
 }
 
 // End returns the unix timestamp of the end of the data points.
 func (s *SeriesPoint) End() int64 {
+	if len(s.Points()) == 0 {
+		return -1
+	}
 	return s.Start() + int64(s.Step()*(s.Len()-1))
 }
 

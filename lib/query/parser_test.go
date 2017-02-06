@@ -160,6 +160,52 @@ func TestParsetTarget_FuncExprWithBoolExpr(t *testing.T) {
 	}
 }
 
+func TestParseTarget_FuncExprWithNumberExpr(t *testing.T) {
+	tests := []struct {
+		desc  string
+		input string
+		value float64
+	}{
+		{"positive integer", "offset(server1.loadavg5,10)", 10.0},
+		{"negative integer", "offset(server1.loadavg5,-10)", -10.0},
+		{"positive float", "offset(server1.loadavg5,0.5)", 0.5},
+		{"negative float", "offset(server1.loadavg5,-0.5)", -0.5},
+	}
+	for _, tc := range tests {
+		expr, err := ParseTarget(tc.input)
+		if err != nil {
+			t.Fatalf("%s", err)
+		}
+
+		v1, ok1 := expr.(FuncExpr)
+		if !ok1 {
+			t.Fatalf("expr %#v should be FuncExpr", v1)
+		}
+		if v1.Name != "offset" {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", "offset", v1.Name)
+		}
+		if l := len(v1.SubExprs); l != 2 {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", 4, l)
+		}
+
+		v2, ok2 := v1.SubExprs[0].(SeriesListExpr)
+		if !ok2 {
+			t.Fatalf("expr %#v should be SeriesListExpr", v2)
+		}
+		if v2.Literal != "server1.loadavg5" {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", "server1.loadavg5", v2.Literal)
+		}
+
+		v3, ok3 := v1.SubExprs[1].(NumberExpr)
+		if !ok3 {
+			t.Fatalf("expr %#v should be NumberExpr", v1.SubExprs[1])
+		}
+		if v3.Literal != tc.value {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", 10, v3.Literal)
+		}
+	}
+}
+
 func TestParsetTarget_FuncExprWithFuncExpr(t *testing.T) {
 	expr, err := ParseTarget("summarize(nonNegativeDerivative(gauge.num_users),\"1week\")")
 	if err != nil {

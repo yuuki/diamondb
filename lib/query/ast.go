@@ -16,7 +16,7 @@ type BoolExpr struct {
 
 // NumberExpr provides Number expression.
 type NumberExpr struct {
-	Literal int
+	Literal float64
 }
 
 // StringExpr provides String expression.

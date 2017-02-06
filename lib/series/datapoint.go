@@ -1,9 +1,9 @@
 package series
 
 import (
-	"fmt"
+	"encoding/json"
+	"math"
 	"sort"
-	"strconv"
 )
 
 // DataPoint represents a pair of metric timestamp and value.
@@ -28,6 +28,14 @@ func (d *DataPoint) Timestamp() int64 {
 // Value returns value.
 func (d *DataPoint) Value() float64 {
 	return d.value
+}
+
+// MarshalJSON marshals DataPoint into JSON.
+func (d *DataPoint) MarshalJSON() ([]byte, error) {
+	if math.IsNaN(d.Value()) {
+		return json.Marshal([]interface{}{nil, d.timestamp})
+	}
+	return json.Marshal([]interface{}{d.value, d.timestamp})
 }
 
 // DataPoints represents the slice of pointer of DataPoint
@@ -56,14 +64,28 @@ func (ds DataPoints) Sort() DataPoints {
 
 // Deduplicate eliminates duplications of DataPoints with the same timestamp.
 func (ds DataPoints) Deduplicate() DataPoints {
-	deduplicated := make(map[string]float64, ds.Len())
+	deduplicated := make(map[int64]float64, ds.Len())
 	for _, d := range ds {
-		deduplicated[fmt.Sprintf("%d", d.Timestamp())] = d.Value()
+		key := d.Timestamp()
+		if _, ok := deduplicated[key]; ok {
+			// Don't overwrite with NaN value
+			if math.IsNaN(d.Value()) {
+				continue
+			}
+		}
+		deduplicated[key] = d.Value()
 	}
 	points := make(DataPoints, 0, len(deduplicated))
-	for ts, v := range deduplicated {
-		t, _ := strconv.ParseInt(ts, 10, 64)
+	for t, v := range deduplicated {
 		points = append(points, NewDataPoint(t, v))
 	}
 	return points.Sort()
+}
+
+// AlignTimestamp aligns each timestamp into multiples of step with DataPoints.
+func (ds DataPoints) AlignTimestamp(step int) DataPoints {
+	for _, d := range ds {
+		d.timestamp -= d.timestamp % int64(step)
+	}
+	return ds
 }

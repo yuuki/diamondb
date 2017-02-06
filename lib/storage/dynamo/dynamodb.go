@@ -31,6 +31,15 @@ type timeSlot struct {
 	itemEpoch int64
 }
 
+type query struct {
+	names []string
+	start time.Time
+	end   time.Time
+	slot  *timeSlot
+	step  int
+	// context
+}
+
 const (
 	oneYear time.Duration = time.Duration(24*360) * time.Hour
 	oneWeek time.Duration = time.Duration(24*7) * time.Hour
@@ -56,30 +65,54 @@ func NewDynamoDB() *DynamoDB {
 	}
 }
 
-// FetchSeriesMap fetches datapoints by name from start until end.
-func (d *DynamoDB) FetchSeriesMap(name string, start, end time.Time) (series.SeriesMap, error) {
+// Ping pings DynamoDB endpoint.
+func (d *DynamoDB) Ping() error {
+	var params *dynamodb.DescribeLimitsInput
+	_, err := d.svc.DescribeLimits(params)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
+// Fetch fetches datapoints by name from start until end.
+func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
 	slots, step := selectTimeSlots(start, end, d.tablePrefix)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
-	c := make(chan interface{})
+	numQueries := len(slots) * len(nameGroups)
+
+	type result struct {
+		value series.SeriesMap
+		err   error
+	}
+	c := make(chan *result, numQueries)
 	for _, slot := range slots {
 		for _, names := range nameGroups {
-			d.concurrentBatchGet(slot, names, step, c)
+			q := &query{
+				names: names,
+				start: start,
+				end:   end,
+				slot:  slot,
+				step:  step,
+			}
+			go func(q *query) {
+				sm, err := d.batchGet(q)
+				c <- &result{value: sm, err: err}
+			}(q)
 		}
 	}
 	sm := make(series.SeriesMap, len(nameGroups))
-	for i := 0; i < len(slots)*len(nameGroups); i++ {
+	for i := 0; i < numQueries; i++ {
 		ret := <-c
-		switch ret.(type) {
-		case series.SeriesMap:
-			sm.MergePointsToMap(ret.(series.SeriesMap))
-		case error:
-			return nil, errors.WithStack(ret.(error))
+		if ret.err != nil {
+			return nil, errors.WithStack(ret.err)
 		}
+		sm.MergePointsToMap(ret.value)
 	}
 	return sm, nil
 }
 
-func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, step int) series.SeriesMap {
+func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, q *query) series.SeriesMap {
 	sm := make(series.SeriesMap, len(resp.Responses))
 	for _, xs := range resp.Responses {
 		for _, x := range xs {
@@ -88,24 +121,28 @@ func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, step int) series.Ser
 			for _, y := range x["Values"].BS {
 				t := int64(binary.BigEndian.Uint64(y[0:8]))
 				v := math.Float64frombits(binary.BigEndian.Uint64(y[8:]))
+				// Trim datapoints out of [start, end]
+				if t < q.start.Unix() || q.end.Unix() < t {
+					continue
+				}
 				points = append(points, series.NewDataPoint(t, v))
 			}
-			sm[name] = series.NewSeriesPoint(name, points, step)
+			sm[name] = series.NewSeriesPoint(name, points, q.step)
 		}
 	}
 	return sm
 }
 
-func (d *DynamoDB) batchGet(slot *timeSlot, names []string, step int) (series.SeriesMap, error) {
+func (d *DynamoDB) batchGet(q *query) (series.SeriesMap, error) {
 	var keys []map[string]*dynamodb.AttributeValue
-	for _, name := range names {
+	for _, name := range q.names {
 		keys = append(keys, map[string]*dynamodb.AttributeValue{
 			"MetricName": {S: aws.String(name)},
-			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", slot.itemEpoch))},
+			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", q.slot.itemEpoch))},
 		})
 	}
 	items := make(map[string]*dynamodb.KeysAndAttributes)
-	items[slot.tableName] = &dynamodb.KeysAndAttributes{Keys: keys}
+	items[q.slot.tableName] = &dynamodb.KeysAndAttributes{Keys: keys}
 	params := &dynamodb.BatchGetItemInput{
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
@@ -120,21 +157,10 @@ func (d *DynamoDB) batchGet(slot *timeSlot, names []string, step int) (series.Se
 			}
 		}
 		return nil, errors.Wrapf(err, "Failed to BatchGetItem %s %d %s %d",
-			slot.tableName, slot.itemEpoch, strings.Join(names, ","), step,
+			q.slot.tableName, q.slot.itemEpoch, strings.Join(q.names, ","), q.step,
 		)
 	}
-	return batchGetResultToMap(resp, step), nil
-}
-
-func (d *DynamoDB) concurrentBatchGet(slot *timeSlot, names []string, step int, c chan<- interface{}) {
-	go func() {
-		resp, err := d.batchGet(slot, names, step)
-		if err != nil {
-			c <- errors.WithStack(err)
-		} else {
-			c <- resp
-		}
-	}()
+	return batchGetResultToMap(resp, q), nil
 }
 
 func selectTimeSlots(startTime, endTime time.Time, tablePrefix string) ([]*timeSlot, int) {
@@ -146,7 +172,7 @@ func selectTimeSlots(startTime, endTime time.Time, tablePrefix string) ([]*timeS
 	)
 	diffTime := endTime.Sub(startTime)
 	if oneYear <= diffTime {
-		tableName = tablePrefix + "-1d360d"
+		tableName = tablePrefix + "-1d1y"
 		tableEpochStep = oneYearSeconds
 		itemEpochStep = tableEpochStep
 		step = 60 * 60 * 24
