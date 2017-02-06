@@ -130,7 +130,7 @@ func Lcm(a, b int) int {
 // Percentile is calculated using the method outlined in the NIST Engineering
 // Statistics Handbook:
 // http://www.itl.nist.gov/div898/handbook/prc/section2/prc252.htm
-func Percentile(vals []float64, n float64) float64 {
+func Percentile(vals []float64, n float64, interpolate bool) float64 {
 	vals = notNaNVals(vals)
 	if len(vals) < 1 {
 		return math.NaN()
@@ -143,7 +143,9 @@ func Percentile(vals []float64, n float64) float64 {
 	fractionalRank := (n / 100.0) * float64((len(vals) + 1))
 	rank := int(fractionalRank)
 	rankFraction := fractionalRank - float64(rank)
-	rank += int(math.Ceil(rankFraction))
+	if !interpolate {
+		rank += int(math.Ceil(rankFraction))
+	}
 
 	var percentile float64
 	if rank == 0 {
@@ -152,6 +154,13 @@ func Percentile(vals []float64, n float64) float64 {
 		percentile = vals[len(vals)-1]
 	} else {
 		percentile = vals[rank-1] // Adjust for 0-index
+	}
+
+	if interpolate {
+		if rank != len(vals) {
+			nextValue := vals[rank]
+			percentile += rankFraction * (nextValue - percentile)
+		}
 	}
 
 	return percentile
