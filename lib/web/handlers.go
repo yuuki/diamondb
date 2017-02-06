@@ -63,7 +63,6 @@ func RenderHandler(env *env.Env) http.Handler {
 			}
 			until = t
 		}
-		log.Debugf("from:%d until:%d", from.Unix(), until.Unix())
 
 		targets := r.Form["target"]
 		if len(targets) < 1 {
