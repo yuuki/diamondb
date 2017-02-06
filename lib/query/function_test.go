@@ -310,7 +310,7 @@ var testDoPercentileOfSeries = []struct {
 				},
 			},
 		},
-		errors.New("wrong number of arguments (1 for 2)"),
+		errors.New("wrong number of arguments (1 for 2 or 3)"),
 	},
 	{
 		"SeriesListExpr + NumberExpr",
@@ -358,7 +358,7 @@ func TestDoPercentileOfSeries(t *testing.T) {
 			continue
 		}
 		if err != nil {
-			t.Fatalf("err should be nil")
+			t.Fatalf("err should be nil: %s", err)
 		}
 	}
 }
@@ -769,7 +769,7 @@ func TestPercentileOfSeries(t *testing.T) {
 		NewSeries("server2.loadavg5", []float64{4.0, 5.0, 6.0}, 1, 1),
 		NewSeries("server3.loadavg5", []float64{7.0, 8.0, 9.0}, 1, 1),
 	}
-	got := percentileOfSeries(ss, 30)
+	got := percentileOfSeries(ss, 30, false)
 	expected := NewSeries(
 		"percentileOfSeries(server1.loadavg5,server2.loadavg5,server3.loadavg5)",
 		[]float64{4.0, 5.0, 6.0}, 1, 1,

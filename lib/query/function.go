@@ -231,7 +231,7 @@ func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.S
 }
 
 func doPercentileOfSeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 2 || len(args) != 3 {
+	if len(args) != 2 && len(args) != 3 {
 		return nil, errors.Errorf("wrong number of arguments (%d for 2 or 3)", len(args))
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
