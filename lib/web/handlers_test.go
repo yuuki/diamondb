@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/kylelemons/godebug/pretty"
+
 	"github.com/yuuki/diamondb/lib/env"
 	. "github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/storage"
