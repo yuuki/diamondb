@@ -230,6 +230,43 @@ func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.S
 	return result
 }
 
+func doPercentileOfSeries(args funcArgs) (series.SeriesSlice, error) {
+	if len(args) != 2 && len(args) != 3 {
+		return nil, errors.Errorf("wrong number of arguments (%d for 2 or 3)", len(args))
+	}
+	_, ok := args[0].expr.(SeriesListExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `seriesList` to function `percentileOfSeries`")
+	}
+	n, ok := args[1].expr.(NumberExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `n` to function `percentileOfSeries`")
+	}
+	interpolate := false
+	if len(args) == 3 {
+		i, ok := args[2].expr.(BoolExpr)
+		if ok {
+			interpolate = i.Literal
+		}
+	}
+	ss := series.SeriesSlice{
+		percentileOfSeries(args[0].seriesSlice, float64(n.Literal), interpolate),
+	}
+	return ss, nil
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.percentileOfSeries
+func percentileOfSeries(ss series.SeriesSlice, n float64, interpolate bool) series.Series {
+	start, _, step := ss.Normalize()
+	vals := make([]float64, 0, len(ss))
+	iter := ss.Zip()
+	for row := iter(); row != nil; row = iter() {
+		vals = append(vals, mathutil.Percentile(row, n, interpolate))
+	}
+	name := fmt.Sprintf("percentileOfSeries(%s)", ss.FormattedName())
+	return series.NewSeries(name, vals, start, step)
+}
+
 func doSummarize(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 && len(args) != 3 {
 		return nil, errors.New("too few arguments to function `summarize`")

@@ -295,6 +295,74 @@ func TestDoMultiplySeries(t *testing.T) {
 	}
 }
 
+var testDoPercentileOfSeries = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		errors.New("wrong number of arguments (1 for 2 or 3)"),
+	},
+	{
+		"SeriesListExpr + NumberExpr",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{expr: NumberExpr{Literal: 10}},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{
+			&funcArg{expr: StringExpr{Literal: "hoge"}},
+			&funcArg{expr: StringExpr{Literal: "foo"}},
+		},
+		errors.New("invalid argument type `seriesList` to function `percentileOfSeries`"),
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{expr: StringExpr{Literal: "hoge"}},
+		},
+		errors.New("invalid argument type `n` to function `percentileOfSeries`"),
+	},
+}
+
+func TestDoPercentileOfSeries(t *testing.T) {
+	for _, tc := range testDoPercentileOfSeries {
+		_, err := doPercentileOfSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil: %s", err)
+		}
+	}
+}
+
 func TestDoGroup(t *testing.T) {
 	args := funcArgs{
 		&funcArg{
@@ -692,5 +760,21 @@ func TestSummarize(t *testing.T) {
 		if diff := pretty.Compare(got, tc.expectedSeriesSlice); diff != "" {
 			t.Fatalf("desc: %s, diff: (-actual +expected)\n%s", tc.desc, diff)
 		}
+	}
+}
+
+func TestPercentileOfSeries(t *testing.T) {
+	ss := SeriesSlice{
+		NewSeries("server1.loadavg5", []float64{1.0, 2.0, 3.0}, 1, 1),
+		NewSeries("server2.loadavg5", []float64{4.0, 5.0, 6.0}, 1, 1),
+		NewSeries("server3.loadavg5", []float64{7.0, 8.0, 9.0}, 1, 1),
+	}
+	got := percentileOfSeries(ss, 30, false)
+	expected := NewSeries(
+		"percentileOfSeries(server1.loadavg5,server2.loadavg5,server3.loadavg5)",
+		[]float64{4.0, 5.0, 6.0}, 1, 1,
+	)
+	if diff := pretty.Compare(got, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }

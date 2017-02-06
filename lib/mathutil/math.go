@@ -1,6 +1,9 @@
 package mathutil
 
-import "math"
+import (
+	"math"
+	"sort"
+)
 
 func notNaNVals(vals []float64) []float64 {
 	newVals := make([]float64, 0, len(vals))
@@ -122,4 +125,43 @@ func Lcm(a, b int) int {
 		a, b = b, a // ensure a > b
 	}
 	return a * b / Gcd(a, b)
+}
+
+// Percentile is calculated using the method outlined in the NIST Engineering
+// Statistics Handbook:
+// http://www.itl.nist.gov/div898/handbook/prc/section2/prc252.htm
+func Percentile(vals []float64, n float64, interpolate bool) float64 {
+	vals = notNaNVals(vals)
+	if len(vals) < 1 {
+		return math.NaN()
+	}
+	if n > 100 {
+		return math.NaN()
+	}
+
+	sort.Float64s(vals)
+	fractionalRank := (n / 100.0) * float64((len(vals) + 1))
+	rank := int(fractionalRank)
+	rankFraction := fractionalRank - float64(rank)
+	if !interpolate {
+		rank += int(math.Ceil(rankFraction))
+	}
+
+	var percentile float64
+	if rank == 0 {
+		percentile = vals[0]
+	} else if rank-1 == len(vals) {
+		percentile = vals[len(vals)-1]
+	} else {
+		percentile = vals[rank-1] // Adjust for 0-index
+	}
+
+	if interpolate {
+		if rank != len(vals) {
+			nextValue := vals[rank]
+			percentile += rankFraction * (nextValue - percentile)
+		}
+	}
+
+	return percentile
 }

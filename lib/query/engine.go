@@ -178,6 +178,12 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 				return nil, errors.WithStack(err)
 			}
 			return ss, err
+		case "percentileOfSeries":
+			ss, err := doPercentileOfSeries(args)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			return ss, err
 		case "summarize":
 			ss, err := doSummarize(args)
 			if err != nil {

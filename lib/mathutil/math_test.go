@@ -270,3 +270,25 @@ func TestLcm(t *testing.T) {
 		}
 	}
 }
+
+var testPercentileTests = []struct {
+	vals        []float64
+	n           float64
+	interpolate bool
+	expected    float64
+}{
+	{[]float64{11.0, 12.0, 10.0, 13.0, 14.0}, 50.0, false, 12.0},
+	{[]float64{11.0, 12.0, 10.0, 13.0, 14.0}, 51.0, false, 13.0},
+	{[]float64{11.0, 12.0, 10.0, 13.0, 14.0}, 50.0, true, 12.0},
+	{[]float64{11.0, 12.0, 10.0, 13.0, 14.0}, 51.0, true, 12.06},
+	{[]float64{11.0, 12.0, 10.0, 13.0, 14.0}, 78.0, true, 13.68},
+}
+
+func TestPercentile(t *testing.T) {
+	for _, tc := range testPercentileTests {
+		got := Percentile(tc.vals, tc.n, tc.interpolate)
+		if diff := pretty.Compare(got, tc.expected); diff != "" {
+			t.Fatalf("diff: (-actual +expected)\n%s", diff)
+		}
+	}
+}
