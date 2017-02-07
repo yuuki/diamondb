@@ -10,6 +10,7 @@ type Series interface {
 	End() int64
 	Step() int
 	Len() int
+	SetName(name string)
 	SetAlias(s string)
 	SetAliasWith(s string) Series
 	Alias() string
@@ -67,6 +68,11 @@ func (s *series) Step() int {
 // Len returns the length of series.
 func (s *series) Len() int {
 	return len(s.Values())
+}
+
+// SetName sets the name
+func (s *series) SetName(name string) {
+	s.name = name
 }
 
 // SetAlias set alias with a.

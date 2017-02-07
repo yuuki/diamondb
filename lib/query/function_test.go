@@ -778,3 +778,236 @@ func TestPercentileOfSeries(t *testing.T) {
 		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
+
+func TestDoSumSeriesWithWildcards(t *testing.T) {
+	tests := []struct {
+		desc string
+		args funcArgs
+		err  error
+	}{
+		{
+			"normal (SeriesListExpr + NumberExpr)",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 1},
+				},
+			},
+			nil,
+		},
+		{
+			"normal (SeriesListExpr + NumberExpr x 3)",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 1},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 2},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 3},
+				},
+			},
+			nil,
+		},
+		{
+			"too few arguments",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+			},
+			errors.New("wrong number of arguments `sumSeriesWithWildcards` (1 for 2+)"),
+		},
+		{
+			"the type of SeriesSlice is wrong",
+			funcArgs{
+				&funcArg{
+					expr: NumberExpr{Literal: 1},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 2},
+				},
+			},
+			errors.New("invalid argument type `SeriesList` to function `sumSeriesWithWildcards`"),
+		},
+		{
+			"the type of position is wrong",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				&funcArg{
+					expr: StringExpr{Literal: "1"},
+				},
+			},
+			errors.New("invalid argument type `position` to function `sumSeriesWithWildcards`"),
+		},
+	}
+
+	for _, tc := range tests {
+		_, err := doSumSeriesWithWildcards(tc.args)
+		if err != tc.err {
+			if diff := pretty.Compare(errors.Cause(err).Error(), errors.Cause(tc.err).Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+		}
+	}
+}
+
+func TestSumSeriesWithWildcards(t *testing.T) {
+	tests := []struct {
+		desc                string
+		inputSeriesSlice    SeriesSlice
+		inputPositions      []int
+		expectedSeriesSlice SeriesSlice
+	}{
+		{
+			"position 0",
+			SeriesSlice{
+				NewSeries("server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("server0.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{0},
+			SeriesSlice{
+				NewSeries("loadavg5", []float64{
+					float64(0.1) + float64(1.1),
+					float64(0.2) + float64(1.2),
+					float64(0.3) + float64(1.3),
+				}, 0, 1),
+			},
+		},
+		{
+			"position last",
+			SeriesSlice{
+				NewSeries("server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{1},
+			SeriesSlice{
+				NewSeries("server0", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("server1", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+		},
+		{
+			"position 1",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleA.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{1},
+			SeriesSlice{
+				NewSeries("roleA.loadavg5", []float64{
+					float64(0.1) + float64(1.1),
+					float64(0.2) + float64(1.2),
+					float64(0.3) + float64(1.3),
+				}, 0, 1),
+			},
+		},
+		{
+			"position 1 + two series that postion 0 is different",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleB.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{1},
+			SeriesSlice{
+				NewSeries("roleA.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleB.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+		},
+		{
+			"position {0, last}",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleA.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{0, 2},
+			SeriesSlice{
+				NewSeries("server0", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("server1", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+		},
+		{
+			"position 0,1",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleA.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{0, 1},
+			SeriesSlice{
+				NewSeries("loadavg5", []float64{
+					float64(0.1) + float64(1.1),
+					float64(0.2) + float64(1.2),
+					float64(0.3) + float64(1.3),
+				}, 0, 1),
+			},
+		},
+		{
+			"position all",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleA.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{0, 1, 2},
+			SeriesSlice{
+				NewSeries("", []float64{
+					float64(0.1) + float64(1.1),
+					float64(0.2) + float64(1.2),
+					float64(0.3) + float64(1.3),
+				}, 0, 1),
+			},
+		},
+		{
+			"position is out of range",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleB.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{100},
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleB.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+		},
+		{
+			"position includes out of range",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleA.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{0, 1, 100},
+			SeriesSlice{
+				NewSeries("loadavg5", []float64{
+					float64(0.1) + float64(1.1),
+					float64(0.2) + float64(1.2),
+					float64(0.3) + float64(1.3),
+				}, 0, 1),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		got := sumSeriesWithWildcards(tc.inputSeriesSlice, tc.inputPositions)
+		if diff := pretty.Compare(got, tc.expectedSeriesSlice); diff != "" {
+			t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+		}
+	}
+}
