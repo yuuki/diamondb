@@ -75,6 +75,14 @@ func TestSeriesAlias(t *testing.T) {
 	}
 }
 
+func TestSeriesSetName(t *testing.T) {
+	s := NewSeries("server1.loadavg5", []float64{}, 100, 60)
+	s.SetName("server10.loadavg5")
+	if s.Name() != "server10.loadavg5" {
+		t.Fatalf("failed to SetName. got %s, expected 'server10.loadavg5'", s.Name())
+	}
+}
+
 func TestMarshalJSON(t *testing.T) {
 	s := NewSeries("server1.loadavg5", []float64{0.1, 0.2, 0.3, math.NaN(), 0.5}, 1000, 60)
 	s.SetAlias("func(server1.loadavg5)")
