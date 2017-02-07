@@ -343,6 +343,25 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 	return result, nil
 }
 
+func doSumSeriesWithWildcards(args funcArgs) (series.SeriesSlice, error) {
+	if len(args) < 2 {
+		return nil, errors.Errorf("wrong number of arguments `sumSeriesWithWildcards` (%d for 2+)", len(args))
+	}
+	_, ok := args[0].expr.(SeriesListExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `SeriesList` to function `sumSeriesWithWildcards`")
+	}
+	positions := make([]int, 0, len(args)-1)
+	for i := 1; i < len(args); i++ {
+		p, ok := args[1].expr.(NumberExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `position` to function `sumSeriesWithWildcards`")
+		}
+		positions = append(positions, int(p.Literal))
+	}
+	return sumSeriesWithWildcards(args[0].seriesSlice, positions), nil
+}
+
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeriesWithWildcards
 func sumSeriesWithWildcards(ss series.SeriesSlice, positions []int) series.SeriesSlice {
 	newSeries := make(map[string]series.Series, len(ss))

@@ -779,6 +779,99 @@ func TestPercentileOfSeries(t *testing.T) {
 	}
 }
 
+func TestDoSumSeriesWithWildcards(t *testing.T) {
+	tests := []struct {
+		desc string
+		args funcArgs
+		err  error
+	}{
+		{
+			"normal (SeriesListExpr + NumberExpr)",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 1},
+				},
+			},
+			nil,
+		},
+		{
+			"normal (SeriesListExpr + NumberExpr x 3)",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 1},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 2},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 3},
+				},
+			},
+			nil,
+		},
+		{
+			"too few arguments",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+			},
+			errors.New("wrong number of arguments `sumSeriesWithWildcards` (1 for 2+)"),
+		},
+		{
+			"the type of SeriesSlice is wrong",
+			funcArgs{
+				&funcArg{
+					expr: NumberExpr{Literal: 1},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 2},
+				},
+			},
+			errors.New("invalid argument type `SeriesList` to function `sumSeriesWithWildcards`"),
+		},
+		{
+			"the type of position is wrong",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				&funcArg{
+					expr: StringExpr{Literal: "1"},
+				},
+			},
+			errors.New("invalid argument type `position` to function `sumSeriesWithWildcards`"),
+		},
+	}
+
+	for _, tc := range tests {
+		_, err := doSumSeriesWithWildcards(tc.args)
+		if err != tc.err {
+			if diff := pretty.Compare(errors.Cause(err).Error(), errors.Cause(tc.err).Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+		}
+	}
+}
+
 func TestSumSeriesWithWildcards(t *testing.T) {
 	tests := []struct {
 		desc                string
