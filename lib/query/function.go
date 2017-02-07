@@ -3,6 +3,7 @@ package query
 import (
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -340,4 +341,39 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 		result = append(result, newSeries)
 	}
 	return result, nil
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeriesWithWildcards
+func sumSeriesWithWildcards(ss series.SeriesSlice, positions []int) series.SeriesSlice {
+	newSeries := make(map[string]series.Series, len(ss))
+	newNames := make([]string, 0, len(ss))
+	for _, s := range ss {
+		nameParts := []string{}
+		for i, part := range strings.Split(s.Name(), ".") {
+			inPosition := false
+			for _, pos := range positions {
+				if pos == i {
+					inPosition = true
+					break
+				}
+			}
+			if inPosition {
+				continue
+			}
+			nameParts = append(nameParts, part)
+		}
+		newName := strings.Join(nameParts, ".")
+		if _, ok := newSeries[newName]; ok {
+			newSeries[newName] = sumSeries(series.SeriesSlice{s, newSeries[newName]})
+		} else {
+			newSeries[newName] = s
+			newNames = append(newNames, newName)
+		}
+		newSeries[newName].SetName(newName)
+	}
+	results := make(series.SeriesSlice, 0, len(newSeries))
+	for _, name := range newNames {
+		results = append(results, newSeries[name])
+	}
+	return results
 }
