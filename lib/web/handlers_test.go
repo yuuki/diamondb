@@ -43,4 +43,8 @@ func TestRenderHandler(t *testing.T) {
 	} else {
 		t.Fatalf("response code should be 200")
 	}
+
+	if v := r.HeaderMap["Content-Type"][0]; v != "application/json" {
+		t.Fatalf("response code should be not %s, but application/json", v)
+	}
 }
