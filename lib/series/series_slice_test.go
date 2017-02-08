@@ -32,8 +32,8 @@ var testFormatedNameTests = []struct {
 	},
 }
 
-func TestFormatedName(t *testing.T) {
-	for _, tc := range testFormatedNameTests {
+func TestFormattedName(t *testing.T) {
+	for _, tc := range testFormattedNameTests {
 		name := tc.ss.FormattedName()
 		if name != tc.name {
 			t.Fatalf("\nExpected: %+v\nActual:   %+v", tc.name, name)
