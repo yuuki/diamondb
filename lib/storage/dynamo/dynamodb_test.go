@@ -19,7 +19,7 @@ func TestPing(t *testing.T) {
 	mock.EXPECT().DescribeLimits(gomock.Any()).Return(
 		&dynamodb.DescribeLimitsOutput{}, nil,
 	)
-	d := newTestDynamoDB(mock)
+	d := NewTestDynamoDB(mock)
 	err := d.Ping()
 	if err != nil {
 		t.Fatalf("unexpected error occurs %s", err)
@@ -58,7 +58,7 @@ func TestFetchSeriesMap(t *testing.T) {
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
 
-	d := newTestDynamoDB(mock)
+	d := NewTestDynamoDB(mock)
 	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
@@ -114,7 +114,7 @@ func TestFetchSeriesMap_Concurrent(t *testing.T) {
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
 
-	d := newTestDynamoDB(mock)
+	d := NewTestDynamoDB(mock)
 	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
@@ -188,7 +188,7 @@ func TestFetchSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
 
-	d := newTestDynamoDB(mock)
+	d := NewTestDynamoDB(mock)
 	sm, err := d.Fetch("roleA.r.1.loadavg", time.Unix(100, 0), time.Unix(4000, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
@@ -226,7 +226,7 @@ func TestFetchSeriesMap_Empty(t *testing.T) {
 	dmock.EXPECT().BatchGetItem(gomock.Any()).Return(
 		&dynamodb.BatchGetItemOutput{Responses: responses}, reqErr,
 	)
-	d := newTestDynamoDB(dmock)
+	d := NewTestDynamoDB(dmock)
 
 	name := "roleA.r.{1,2}.loadavg"
 	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
@@ -265,7 +265,7 @@ func TestBatchGet(t *testing.T) {
 		SeriesMap:  expected,
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
-	d := newTestDynamoDB(mock)
+	d := NewTestDynamoDB(mock)
 
 	sm, err := d.batchGet(&query{
 		names: []string{"server1.loadavg5", "server2.loadavg5"},

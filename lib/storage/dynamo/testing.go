@@ -21,7 +21,7 @@ type mockDynamoDBParam struct {
 
 var testTableNamePrefix = "diamondb_datapoints_test"
 
-func newTestDynamoDB(mock *MockDynamoDBAPI) *DynamoDB {
+func NewTestDynamoDB(mock *MockDynamoDBAPI) *DynamoDB {
 	return &DynamoDB{
 		svc:         mock,
 		tablePrefix: testTableNamePrefix,
