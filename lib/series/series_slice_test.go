@@ -6,7 +6,7 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 )
 
-var testFormatedNameTests = []struct {
+var testFormattedNameTests = []struct {
 	desc string
 	ss   SeriesSlice
 	name string
