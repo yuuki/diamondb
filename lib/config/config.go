@@ -16,6 +16,7 @@ type config struct {
 	RedisDB             int      `json:"redis_db"`
 	DynamoDBRegion      string   `json:"dynamodb_region"`
 	DynamoDBTablePrefix string   `json:"dynamodb_table_prefix"`
+	DynamoDBEndpoint    string   `json:"dynamodb_endpoint"`
 
 	Debug bool `json:"debug"`
 }
@@ -69,6 +70,9 @@ func Load() error {
 	Config.DynamoDBTablePrefix = os.Getenv("DIAMONDB_DYNAMODB_TABLE_PREFIX")
 	if Config.DynamoDBTablePrefix == "" {
 		Config.DynamoDBTablePrefix = DefaultDynamoDBTablePrefix
+	}
+	if v := os.Getenv("DIAMONDB_DYNAMODB_ENDPOINT"); v != "" {
+		Config.DynamoDBEndpoint = v
 	}
 
 	if os.Getenv("DIAMONDB_DEBUG") != "" {

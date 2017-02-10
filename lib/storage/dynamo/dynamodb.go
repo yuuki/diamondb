@@ -64,11 +64,14 @@ var (
 
 // NewDynamoDB creates a new DynamoDB.
 func NewDynamoDB() Fetcher {
+	awsConf := aws.NewConfig()
+	if config.Config.DynamoDBEndpoint == "" {
+		awsConf.WithRegion(config.Config.DynamoDBRegion)
+	} else {
+		awsConf.WithEndpoint(config.Config.DynamoDBEndpoint)
+	}
 	return &DynamoDB{
-		svc: dynamodb.New(
-			session.New(),
-			aws.NewConfig().WithRegion(config.Config.DynamoDBRegion),
-		),
+		svc:         dynamodb.New(session.New(), awsConf),
 		tablePrefix: config.Config.DynamoDBTablePrefix,
 	}
 }
