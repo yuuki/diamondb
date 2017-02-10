@@ -5,12 +5,23 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
 	"github.com/yuuki/diamondb/lib/series"
 )
+
+// FakeFetcher is for stub testing
+type FakeFetcher struct {
+	Fetcher
+	FakeFetch func(name string, start, end time.Time) (series.SeriesMap, error)
+}
+
+func (s *FakeFetcher) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
+	return s.FakeFetch(name, start, end)
+}
 
 type mockDynamoDBParam struct {
 	Resolution string

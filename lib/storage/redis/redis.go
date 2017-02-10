@@ -22,6 +22,14 @@ const (
 	redisBatchLimit = 50 // TODO need to tweak
 )
 
+// Fetcher defines the interface for Redis reader.
+type Fetcher interface {
+	Ping() error
+	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
+	Client() redisClient
+	batchGet(q *query) (series.SeriesMap, error)
+}
+
 type redisClient interface {
 	Ping() *goredis.StatusCmd
 	HGetAll(key string) *goredis.StringStringMapCmd
@@ -43,7 +51,7 @@ type query struct {
 }
 
 // NewRedis creates a Redis.
-func NewRedis() *Redis {
+func NewRedis() Fetcher {
 	addrs := config.Config.RedisAddrs
 	if len(addrs) > 1 {
 		r := Redis{
@@ -64,6 +72,10 @@ func NewRedis() *Redis {
 		return &r
 	}
 	return nil
+}
+
+func (r *Redis) Client() redisClient {
+	return r.client
 }
 
 // Ping pings Redis server.

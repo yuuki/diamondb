@@ -20,6 +20,14 @@ import (
 	"github.com/yuuki/diamondb/lib/util"
 )
 
+// Fetcher defines the interface for Redis reader.
+type Fetcher interface {
+	Ping() error
+	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
+	Client() dynamodbiface.DynamoDBAPI
+	batchGet(q *query) (series.SeriesMap, error)
+}
+
 // DynamoDB provides a dynamodb client.
 type DynamoDB struct {
 	svc         dynamodbiface.DynamoDBAPI
@@ -55,7 +63,7 @@ var (
 )
 
 // NewDynamoDB creates a new DynamoDB.
-func NewDynamoDB() *DynamoDB {
+func NewDynamoDB() Fetcher {
 	return &DynamoDB{
 		svc: dynamodb.New(
 			session.New(),
@@ -63,6 +71,10 @@ func NewDynamoDB() *DynamoDB {
 		),
 		tablePrefix: config.Config.DynamoDBTablePrefix,
 	}
+}
+
+func (d *DynamoDB) Client() dynamodbiface.DynamoDBAPI {
+	return d.svc
 }
 
 // Ping pings DynamoDB endpoint.
