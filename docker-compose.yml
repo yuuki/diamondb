@@ -15,3 +15,5 @@ services:
     image: redis:3.2.7
   dynamodb:
     image: deangiberson/aws-dynamodb-local:latest
+    volumes:
+      - ./tmp/dynamodb:/var/dynamodb_local
