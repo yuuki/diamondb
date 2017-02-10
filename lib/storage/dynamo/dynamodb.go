@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
@@ -64,14 +65,14 @@ var (
 
 // NewDynamoDB creates a new DynamoDB.
 func NewDynamoDB() Fetcher {
-	awsConf := aws.NewConfig()
-	if config.Config.DynamoDBEndpoint == "" {
-		awsConf.WithRegion(config.Config.DynamoDBRegion)
-	} else {
+	awsConf := aws.NewConfig().WithRegion(config.Config.DynamoDBRegion)
+	if config.Config.DynamoDBEndpoint != "" {
+		// For dynamodb-local configuration
 		awsConf.WithEndpoint(config.Config.DynamoDBEndpoint)
+		awsConf.WithCredentials(credentials.NewStaticCredentials("dummy", "dummy", "dummy"))
 	}
 	return &DynamoDB{
-		svc:         dynamodb.New(session.New(), awsConf),
+		svc:         dynamodb.New(session.New(awsConf)),
 		tablePrefix: config.Config.DynamoDBTablePrefix,
 	}
 }
