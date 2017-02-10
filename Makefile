@@ -34,4 +34,7 @@ lint:
 vet:
 	go vet -v $$(glide novendor)
 
-.PHONY: all deps mock yecc build test fmt imports lint vet
+docker-up:
+	docker-compose up --build
+
+.PHONY: all deps mock yecc build test fmt imports lint vet docker-up
