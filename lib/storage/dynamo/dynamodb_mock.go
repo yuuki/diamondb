@@ -248,6 +248,28 @@ func (_mr *_MockDynamoDBAPIRecorder) ListTablesPages(arg0, arg1 interface{}) *go
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTablesPages", arg0, arg1)
 }
 
+func (_m *MockDynamoDBAPI) ListTagsOfResourceRequest(_param0 *dynamodb.ListTagsOfResourceInput) (*request.Request, *dynamodb.ListTagsOfResourceOutput) {
+	ret := _m.ctrl.Call(_m, "ListTagsOfResourceRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.ListTagsOfResourceOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) ListTagsOfResourceRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTagsOfResourceRequest", arg0)
+}
+
+func (_m *MockDynamoDBAPI) ListTagsOfResource(_param0 *dynamodb.ListTagsOfResourceInput) (*dynamodb.ListTagsOfResourceOutput, error) {
+	ret := _m.ctrl.Call(_m, "ListTagsOfResource", _param0)
+	ret0, _ := ret[0].(*dynamodb.ListTagsOfResourceOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) ListTagsOfResource(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTagsOfResource", arg0)
+}
+
 func (_m *MockDynamoDBAPI) PutItemRequest(_param0 *dynamodb.PutItemInput) (*request.Request, *dynamodb.PutItemOutput) {
 	ret := _m.ctrl.Call(_m, "PutItemRequest", _param0)
 	ret0, _ := ret[0].(*request.Request)
@@ -332,6 +354,50 @@ func (_m *MockDynamoDBAPI) ScanPages(_param0 *dynamodb.ScanInput, _param1 func(*
 
 func (_mr *_MockDynamoDBAPIRecorder) ScanPages(arg0, arg1 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ScanPages", arg0, arg1)
+}
+
+func (_m *MockDynamoDBAPI) TagResourceRequest(_param0 *dynamodb.TagResourceInput) (*request.Request, *dynamodb.TagResourceOutput) {
+	ret := _m.ctrl.Call(_m, "TagResourceRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.TagResourceOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) TagResourceRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "TagResourceRequest", arg0)
+}
+
+func (_m *MockDynamoDBAPI) TagResource(_param0 *dynamodb.TagResourceInput) (*dynamodb.TagResourceOutput, error) {
+	ret := _m.ctrl.Call(_m, "TagResource", _param0)
+	ret0, _ := ret[0].(*dynamodb.TagResourceOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) TagResource(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "TagResource", arg0)
+}
+
+func (_m *MockDynamoDBAPI) UntagResourceRequest(_param0 *dynamodb.UntagResourceInput) (*request.Request, *dynamodb.UntagResourceOutput) {
+	ret := _m.ctrl.Call(_m, "UntagResourceRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.UntagResourceOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) UntagResourceRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UntagResourceRequest", arg0)
+}
+
+func (_m *MockDynamoDBAPI) UntagResource(_param0 *dynamodb.UntagResourceInput) (*dynamodb.UntagResourceOutput, error) {
+	ret := _m.ctrl.Call(_m, "UntagResource", _param0)
+	ret0, _ := ret[0].(*dynamodb.UntagResourceOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) UntagResource(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UntagResource", arg0)
 }
 
 func (_m *MockDynamoDBAPI) UpdateItemRequest(_param0 *dynamodb.UpdateItemInput) (*request.Request, *dynamodb.UpdateItemOutput) {
