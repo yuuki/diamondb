@@ -19,7 +19,15 @@ type UnsupportedFunctionError struct {
 // Error returns the error message for UnsupportedFunctionError.
 // UnsupportedFunctionError satisfies error interface.
 func (e *UnsupportedFunctionError) Error() string {
-	return fmt.Sprintf("Unsupported function %s", e.funcName)
+	return fmt.Sprintf("unsupported function %s", e.funcName)
+}
+
+type UnknownExpressionError struct {
+	expr Expr
+}
+
+func (e *UnknownExpressionError) Error() string {
+	return fmt.Sprintf("unknown expression %v", e.expr)
 }
 
 type funcArg struct {
@@ -120,7 +128,7 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 				ex := SeriesListExpr{Literal: fmt.Sprintf("%s(%s)", e2.Name, ss.FormattedName())}
 				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
 			default:
-				return nil, errors.Errorf("Unknown expression %+v", expr)
+				return nil, &UnknownExpressionError{expr: expr}
 			}
 		}
 		switch e.Name {
@@ -200,6 +208,6 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 			return nil, &UnsupportedFunctionError{funcName: e.Name}
 		}
 	default:
-		return nil, errors.Errorf("Unknown expression %+v", expr)
+		return nil, &UnknownExpressionError{expr: expr}
 	}
 }
