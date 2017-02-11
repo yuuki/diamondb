@@ -21,6 +21,8 @@ import (
 	"github.com/yuuki/diamondb/lib/util"
 )
 
+//go:generate mockgen -source ../../../vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination dynamodb_mock.go -package dynamo
+
 // Fetcher defines the interface for Redis reader.
 type Fetcher interface {
 	Ping() error

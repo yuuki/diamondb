@@ -7,20 +7,17 @@ deps:
 	glide install
 	go get github.com/golang/mock/mockgen
 
-build: yacc mock
+gen:
+	go generate $$(glide novendor)
+
+build: gen
 	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o $(NAME)
 
-test: yacc mock
+test: gen
 	go test -race -v $$(glide novendor)
 
-cover: yacc mock
+cover: gen
 	go test -cover $$(glide novendor)
-
-mock:
-	mockgen -source vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination lib/storage/dynamo/dynamodb_mock.go -package dynamo
-
-yacc:
-	go tool yacc -o lib/query/parser.go lib/query/parser.go.y
 
 fmt:
 	gofmt -s -w $(shell git ls | grep -e '\.go$$' | grep -v /vendor/)
@@ -34,7 +31,7 @@ lint:
 vet:
 	go vet -v $$(glide novendor)
 
-docker-up:
+docker-up: gen
 	docker-compose up --build
 
 .PHONY: all deps mock yecc build test fmt imports lint vet docker-up

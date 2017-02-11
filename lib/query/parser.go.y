@@ -1,4 +1,4 @@
-/* go tool yacc -o lib/query/parse.go lib/query/parse.go.y */
+/* go tool yacc -o lib/query/parser.go lib/query/parser.go.y */
 %{
 package query
 
