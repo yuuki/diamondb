@@ -74,6 +74,7 @@ func NewRedis() Fetcher {
 	return nil
 }
 
+// Client returns the redis client.
 func (r *Redis) Client() redisClient {
 	return r.client
 }

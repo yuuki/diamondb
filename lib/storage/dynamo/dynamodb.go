@@ -79,6 +79,7 @@ func NewDynamoDB() Fetcher {
 	}
 }
 
+// Client returns the DynamoDB client.
 func (d *DynamoDB) Client() dynamodbiface.DynamoDBAPI {
 	return d.svc
 }
