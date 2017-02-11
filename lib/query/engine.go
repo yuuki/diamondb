@@ -58,7 +58,7 @@ func EvalTargets(fetcher storage.Fetcher, targets []string, startTime, endTime t
 		ret := <-c
 		if ret.err != nil {
 			// return err that is found firstly.
-			return nil, ret.err
+			return nil, errors.Wrapf(ret.err, "failed to evaluate target (%s)", targets[i])
 		}
 		ordered[ret.index] = ret.value
 	}
@@ -75,11 +75,11 @@ func EvalTargets(fetcher storage.Fetcher, targets []string, startTime, endTime t
 func EvalTarget(fetcher storage.Fetcher, target string, startTime, endTime time.Time) (series.SeriesSlice, error) {
 	expr, err := ParseTarget(target)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to ParseTarget %s", target)
+		return nil, errors.Wrapf(err, "failed to parse target (%s)", target)
 	}
 	ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
+		return nil, errors.Wrapf(err, "failed to invoke %s", e.Literal)
 	}
 	return ss, err
 }
@@ -89,10 +89,7 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 	case SeriesListExpr:
 		ss, err := fetcher.Fetch(e.Literal, startTime, endTime)
 		if err != nil {
-			return nil, errors.Wrapf(err,
-				"Failed to FetchSeriesSlice %s %d %d",
-				e.Literal, startTime.Unix(), endTime.Unix(),
-			)
+			return nil, errors.Wrapf(err, "failed to fetch (%s,%d,%d)", e.Literal, startTime.Unix(), endTime.Unix())
 		}
 		return ss, nil
 	case GroupSeriesExpr:
@@ -101,7 +98,11 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 			joinedValues = append(joinedValues, e.Prefix+value+e.Postfix)
 		}
 		expr = SeriesListExpr{Literal: strings.Join(joinedValues, ",")}
-		return invokeExpr(fetcher, expr, startTime, endTime)
+		ss, err := invokeExpr(fetcher, expr, startTime, endTime)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to invoke (%s,%d,%d)", e.Literal, startTime.Unix(), endTime.Unix())
+		}
+		return ss, nil
 	case FuncExpr:
 		args := funcArgs{}
 		for _, expr := range e.SubExprs {
@@ -115,14 +116,14 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 			case SeriesListExpr, GroupSeriesExpr:
 				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 				if err != nil {
-					return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
+					return nil, errors.Wrapf(err, "failed to invoke %s", e.Literal)
 				}
 				ex := SeriesListExpr{Literal: ss.FormattedName()}
 				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
 			case FuncExpr:
 				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 				if err != nil {
-					return nil, errors.Wrapf(err, "Failed to invokeExpr %v %d %d", expr, startTime, endTime)
+					return nil, errors.Wrapf(err, "failed to invoke %s", e.Literal)
 				}
 				// Regard FuncExpr as SeriesListExpr after process function
 				ex := SeriesListExpr{Literal: fmt.Sprintf("%s(%s)", e2.Name, ss.FormattedName())}
