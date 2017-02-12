@@ -1,14 +1,61 @@
 package redis
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/alicebob/miniredis"
 	"github.com/kylelemons/godebug/pretty"
+	goredis "gopkg.in/redis.v5"
+
 	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/series"
 )
+
+func TestNewRedis(t *testing.T) {
+	tests := []struct {
+		desc         string
+		in           []string
+		expectedType reflect.Type
+	}{
+		{
+			"redis not cluster",
+			[]string{"dummy:6379"},
+			reflect.TypeOf((*goredis.Client)(nil)),
+		},
+		{
+			"redis cluster",
+			[]string{"dummy01:6379", "dummy02:6379"},
+			reflect.TypeOf((*goredis.ClusterClient)(nil)),
+		},
+	}
+	for _, tc := range tests {
+		config.Config.RedisAddrs = tc.in
+		r := NewRedis()
+		if v := reflect.TypeOf(r.Client()); v != tc.expectedType {
+			t.Fatalf("desc: %s , Redis client type should be %s, not %s",
+				tc.desc, tc.expectedType, v)
+		}
+	}
+}
+
+func TestPing(t *testing.T) {
+	s, err := miniredis.Run()
+	if err != nil {
+		panic(err)
+	}
+	defer s.Close()
+
+	// Set mock
+	config.Config.RedisAddrs = []string{s.Addr()}
+	r := NewRedis()
+
+	err = r.Ping()
+	if err != nil {
+		t.Fatalf("unexpected error %s", err)
+	}
+}
 
 func TestFetchSeriesMap(t *testing.T) {
 	s, err := miniredis.Run()
@@ -18,16 +65,16 @@ func TestFetchSeriesMap(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	config.Config.RedisAddr = s.Addr()
+	config.Config.RedisAddrs = []string{s.Addr()}
 	r := NewRedis()
 
-	_, err = r.client.HMSet("1m:server1.loadavg5", map[string]string{
+	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "160": "10.2", "220": "11.0",
 	}).Result()
 	if err != nil {
 		panic(err)
 	}
-	_, err = r.client.HMSet("1m:server2.loadavg5", map[string]string{
+	_, err = r.Client().HMSet("1m:server2.loadavg5", map[string]string{
 		"100": "8.0", "160": "5.0", "220": "6.0",
 	}).Result()
 	if err != nil {
@@ -35,7 +82,7 @@ func TestFetchSeriesMap(t *testing.T) {
 	}
 
 	name := "server{1,2}.loadavg5"
-	sm, err := r.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(1000, 0))
+	sm, err := r.Fetch(name, time.Unix(100, 0), time.Unix(1000, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -64,24 +111,29 @@ func TestBatchGet(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	config.Config.RedisAddr = s.Addr()
+	config.Config.RedisAddrs = []string{s.Addr()}
 	r := NewRedis()
 
-	_, err = r.client.HMSet("1m:server1.loadavg5", map[string]string{
+	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "130": "10.2", "160": "11.0",
 	}).Result()
 	if err != nil {
 		panic(err)
 	}
-	_, err = r.client.HMSet("1m:server2.loadavg5", map[string]string{
+	_, err = r.Client().HMSet("1m:server2.loadavg5", map[string]string{
 		"100": "8.0", "130": "5.0", "160": "6.0",
 	}).Result()
 	if err != nil {
 		panic(err)
 	}
 
-	names := []string{"server1.loadavg5", "server2.loadavg5"}
-	metrics, err := r.batchGet("1m", names, 30)
+	metrics, err := r.batchGet(&query{
+		names: []string{"server1.loadavg5", "server2.loadavg5"},
+		slot:  "1m",
+		start: time.Unix(100, 0),
+		end:   time.Unix(200, 0),
+		step:  30,
+	})
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -110,11 +162,16 @@ func TestBatchGet_Empty(t *testing.T) {
 	defer s.Close()
 
 	// Set mock
-	config.Config.RedisAddr = s.Addr()
+	config.Config.RedisAddrs = []string{s.Addr()}
 	r := NewRedis()
 
-	names := []string{"server1.loadavg5", "server2.loadavg5"}
-	metrics, err := r.batchGet("1m", names, 30)
+	metrics, err := r.batchGet(&query{
+		names: []string{"server1.loadavg5", "server2.loadavg5"},
+		slot:  "1m",
+		start: time.Unix(100, 0),
+		end:   time.Unix(200, 0),
+		step:  30,
+	})
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -123,51 +180,62 @@ func TestBatchGet_Empty(t *testing.T) {
 	}
 }
 
-func TestConcurrentBatchGet(t *testing.T) {
-	s, err := miniredis.Run()
-	if err != nil {
-		panic(err)
-	}
-	defer s.Close()
+var testHGetAllToMapTests = []struct {
+	desc     string
+	name     string
+	tsval    map[string]string
+	query    *query
+	expected *series.SeriesPoint
+}{
+	{
+		"all datapoints within time range",
+		"server1.loadavg5",
+		map[string]string{"100": "10.0", "160": "11.0", "240": "12.0"},
+		&query{
+			names: []string{"server1.loadavg5"},
+			start: time.Unix(100, 0),
+			end:   time.Unix(240, 0),
+			slot:  "1m",
+			step:  60,
+		},
+		series.NewSeriesPoint(
+			"server1.loadavg5", series.DataPoints{
+				series.NewDataPoint(100, 10.0),
+				series.NewDataPoint(160, 11.0),
+				series.NewDataPoint(240, 12.0),
+			}, 60,
+		),
+	},
+	{
+		"some datapoints out of time range",
+		"server1.loadavg5",
+		map[string]string{"40": "9.0", "100": "10.0", "160": "11.0", "240": "12.0", "300": "13.0"},
+		&query{
+			names: []string{"server1.loadavg5"},
+			start: time.Unix(100, 0),
+			end:   time.Unix(240, 0),
+			slot:  "1m",
+			step:  60,
+		},
+		series.NewSeriesPoint(
+			"server1.loadavg5", series.DataPoints{
+				series.NewDataPoint(100, 10.0),
+				series.NewDataPoint(160, 11.0),
+				series.NewDataPoint(240, 12.0),
+			}, 60,
+		),
+	},
+}
 
-	// Set mock
-	config.Config.RedisAddr = s.Addr()
-	r := NewRedis()
-
-	_, err = r.client.HMSet("1m:server1.loadavg5", map[string]string{
-		"100": "10.0", "130": "10.2", "160": "11.0",
-	}).Result()
-	if err != nil {
-		panic(err)
-	}
-	_, err = r.client.HMSet("1m:server2.loadavg5", map[string]string{
-		"100": "8.0", "130": "5.0", "160": "6.0",
-	}).Result()
-	if err != nil {
-		panic(err)
-	}
-
-	names := []string{"server1.loadavg5", "server2.loadavg5"}
-	ch := make(chan interface{})
-
-	r.concurrentBatchGet("1m", names, 30, ch)
-
-	ret := <-ch
-	sm := ret.(series.SeriesMap)
-	expected := series.SeriesMap{
-		"server1.loadavg5": series.NewSeriesPoint("server1.loadavg5", series.DataPoints{
-			series.NewDataPoint(100, 10.0),
-			series.NewDataPoint(130, 10.2),
-			series.NewDataPoint(160, 11.0),
-		}, 30),
-		"server2.loadavg5": series.NewSeriesPoint("server2.loadavg5", series.DataPoints{
-			series.NewDataPoint(100, 8.0),
-			series.NewDataPoint(130, 5.0),
-			series.NewDataPoint(160, 6.0),
-		}, 30),
-	}
-	if diff := pretty.Compare(sm, expected); diff != "" {
-		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+func TestHGetAllToMap(t *testing.T) {
+	for _, tc := range testHGetAllToMapTests {
+		got, err := hGetAllToMap(tc.name, tc.tsval, tc.query)
+		if err != nil {
+			t.Fatalf("err: %s", err)
+		}
+		if diff := pretty.Compare(got, tc.expected); diff != "" {
+			t.Fatalf("diff: (-actual +expected)\n%s", diff)
+		}
 	}
 }
 

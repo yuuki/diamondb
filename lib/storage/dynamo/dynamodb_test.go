@@ -12,6 +12,20 @@ import (
 	"github.com/yuuki/diamondb/lib/series"
 )
 
+func TestPing(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mock := NewMockDynamoDBAPI(ctrl)
+	mock.EXPECT().DescribeLimits(gomock.Any()).Return(
+		&dynamodb.DescribeLimitsOutput{}, nil,
+	)
+	d := NewTestDynamoDB(mock)
+	err := d.Ping()
+	if err != nil {
+		t.Fatalf("unexpected error occurs %s", err)
+	}
+}
+
 func TestFetchSeriesMap(t *testing.T) {
 	name := "roleA.r.{1,2}.loadavg"
 	expected := series.SeriesMap{
@@ -44,8 +58,8 @@ func TestFetchSeriesMap(t *testing.T) {
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
 
-	d := newTestDynamoDB(mock)
-	sm, err := d.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
+	d := NewTestDynamoDB(mock)
+	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -100,8 +114,8 @@ func TestFetchSeriesMap_Concurrent(t *testing.T) {
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
 
-	d := newTestDynamoDB(mock)
-	sm, err := d.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
+	d := NewTestDynamoDB(mock)
+	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -174,8 +188,8 @@ func TestFetchSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
 
-	d := newTestDynamoDB(mock)
-	sm, err := d.FetchSeriesMap("roleA.r.1.loadavg", time.Unix(100, 0), time.Unix(4000, 0))
+	d := NewTestDynamoDB(mock)
+	sm, err := d.Fetch("roleA.r.1.loadavg", time.Unix(100, 0), time.Unix(4000, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -212,10 +226,10 @@ func TestFetchSeriesMap_Empty(t *testing.T) {
 	dmock.EXPECT().BatchGetItem(gomock.Any()).Return(
 		&dynamodb.BatchGetItemOutput{Responses: responses}, reqErr,
 	)
-	d := newTestDynamoDB(dmock)
+	d := NewTestDynamoDB(dmock)
 
 	name := "roleA.r.{1,2}.loadavg"
-	sm, err := d.FetchSeriesMap(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("Should ignore NotFound error: %s", err)
 	}
@@ -229,14 +243,14 @@ func TestBatchGet(t *testing.T) {
 		"server1.loadavg5": series.NewSeriesPoint(
 			"server1.loadavg5",
 			series.DataPoints{
-				series.NewDataPoint(1465516810, 10.0),
+				series.NewDataPoint(1100, 10.0),
 			},
 			60,
 		),
 		"server2.loadavg5": series.NewSeriesPoint(
 			"server2.loadavg5",
 			series.DataPoints{
-				series.NewDataPoint(1465516810, 15.0),
+				series.NewDataPoint(1100, 15.0),
 			},
 			60,
 		),
@@ -251,13 +265,15 @@ func TestBatchGet(t *testing.T) {
 		SeriesMap:  expected,
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
-	d := newTestDynamoDB(mock)
+	d := NewTestDynamoDB(mock)
 
-	sm, err := d.batchGet(
-		&timeSlot{mockTableName("1m1h", 0), 1000},
-		[]string{"server1.loadavg5", "server2.loadavg5"},
-		60,
-	)
+	sm, err := d.batchGet(&query{
+		names: []string{"server1.loadavg5", "server2.loadavg5"},
+		start: time.Unix(1000, 0),
+		end:   time.Unix(2000, 0),
+		slot:  &timeSlot{mockTableName("1m1h", 0), 1000},
+		step:  60,
+	})
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -265,49 +281,6 @@ func TestBatchGet(t *testing.T) {
 		if diff := pretty.Compare(series, expected[name]); diff != "" {
 			t.Fatalf("diff: (-actual +expected)\n%s", diff)
 		}
-	}
-}
-
-func TestConcurrentBatchGet(t *testing.T) {
-	expected := series.SeriesMap{
-		"server1.loadavg5": series.NewSeriesPoint(
-			"server1.loadavg5",
-			series.DataPoints{
-				series.NewDataPoint(1465516810, 10.0),
-			},
-			60,
-		),
-		"server2.loadavg5": series.NewSeriesPoint(
-			"server2.loadavg5",
-			series.DataPoints{
-				series.NewDataPoint(1465516810, 15.0),
-			},
-			60,
-		),
-	}
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mock := NewMockDynamoDBAPI(ctrl)
-	param := &mockDynamoDBParam{
-		Resolution: "1m1h",
-		TableEpoch: 0,
-		ItemEpoch:  1000,
-		SeriesMap:  expected,
-	}
-	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
-	d := newTestDynamoDB(mock)
-
-	c := make(chan interface{})
-	d.concurrentBatchGet(
-		&timeSlot{mockTableName("1m1h", 0), 1000},
-		[]string{"server1.loadavg5", "server2.loadavg5"},
-		60,
-		c,
-	)
-	ret := <-c
-	sm := ret.(series.SeriesMap)
-	if diff := pretty.Compare(sm, expected); diff != "" {
-		t.Fatalf("diff: (-actual +expected)\n%s", diff)
 	}
 }
 
@@ -360,19 +333,19 @@ var selectTimeSlotsTests = []struct {
 		time.Unix(1000000, 0), time.Unix(100000000, 0), 86400,
 		[]*timeSlot{
 			{
-				tableName: mockTableName("1d360d", 0),
+				tableName: mockTableName("1d1y", 0),
 				itemEpoch: 0,
 			},
 			{
-				tableName: mockTableName("1d360d", 31104000),
+				tableName: mockTableName("1d1y", 31104000),
 				itemEpoch: 31104000,
 			},
 			{
-				tableName: mockTableName("1d360d", 62208000),
+				tableName: mockTableName("1d1y", 62208000),
 				itemEpoch: 62208000,
 			},
 			{
-				tableName: mockTableName("1d360d", 93312000),
+				tableName: mockTableName("1d1y", 93312000),
 				itemEpoch: 93312000,
 			},
 		},

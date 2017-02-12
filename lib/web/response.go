@@ -3,44 +3,56 @@ package web
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/yuuki/diamondb/lib/log"
 )
 
-func JSON(w http.ResponseWriter, status int, v interface{}) {
+func renderJSON(w http.ResponseWriter, status int, v interface{}) {
 	res, err := json.Marshal(v)
 	if err != nil {
-		ServerError(w, err.Error())
+		serverError(w, err.Error())
 		return
 	}
 
-	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
 	w.Write(res)
 }
 
-func BadRequest(w http.ResponseWriter, msg string) {
-	log.Println(msg)
-
+func ok(w http.ResponseWriter, msg string) {
 	var data struct {
-		Error string `json:"error"`
+		Msg string `json:"message"`
 	}
-	data.Error = msg
-	JSON(w, http.StatusBadRequest, data)
+	data.Msg = msg
+	renderJSON(w, http.StatusOK, data)
 	return
 }
 
-func NotFound(w http.ResponseWriter) {
-	http.Error(w, "404 Not Found", http.StatusNotFound)
-}
-
-func ServerError(w http.ResponseWriter, msg string) {
-	log.Println(msg)
-
+func badRequest(w http.ResponseWriter, msg string) {
 	var data struct {
 		Error string `json:"error"`
 	}
 	data.Error = msg
-	JSON(w, http.StatusInternalServerError, data)
+	renderJSON(w, http.StatusBadRequest, data)
+	return
+}
+
+func notFound(w http.ResponseWriter) {
+	http.Error(w, "404 Not Found", http.StatusNotFound)
+}
+
+func serverError(w http.ResponseWriter, msg string) {
+	var data struct {
+		Error string `json:"error"`
+	}
+	data.Error = msg
+	renderJSON(w, http.StatusInternalServerError, data)
+	return
+}
+
+func unavaliableError(w http.ResponseWriter, msg string) {
+	var data struct {
+		Error string `json:"error"`
+	}
+	data.Error = msg
+	renderJSON(w, http.StatusServiceUnavailable, data)
 	return
 }

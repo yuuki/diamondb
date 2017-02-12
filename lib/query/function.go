@@ -3,6 +3,7 @@ package query
 import (
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -11,17 +12,42 @@ import (
 	"github.com/yuuki/diamondb/lib/timeparser"
 )
 
+type ArgumentError struct {
+	funcName string
+	gotLen   int
+	wantLen  []int
+	variable bool // variable argument
+}
+
+func (e *ArgumentError) Error() string {
+	var plus string
+	if e.variable {
+		plus = "+"
+	}
+	lens := make([]string, 0, len(e.wantLen))
+	for _, l := range e.wantLen {
+		lens = append(lens, fmt.Sprintf("%d", l))
+	}
+	msg := fmt.Sprintf(
+		"wrong number of arguments '%s' (%d for %s%s)",
+		e.funcName, e.gotLen,
+		strings.Join(lens, " or "),
+		plus,
+	)
+	return msg
+}
+
 func doAlias(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 {
-		return nil, errors.New("too few arguments to function `alias`")
+		return nil, &ArgumentError{funcName: "alias", gotLen: len(args), wantLen: []int{2}}
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `alias`.")
+		return nil, errors.New("invalid argument type `seriesList` to function `alias`")
 	}
 	newNameExpr, ok := args[1].expr.(StringExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `newName` to function `alias`. `newName` must be string.")
+		return nil, errors.New("invalid argument type `newName` to function `alias`. `newName` must be string")
 	}
 	return alias(args[0].seriesSlice, newNameExpr.Literal), nil
 }
@@ -34,15 +60,60 @@ func alias(ss series.SeriesSlice, newName string) series.SeriesSlice {
 	return ss
 }
 
-func doSumSeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 1 {
-		return nil, errors.New("too few arguments to function `sumSeries`")
+func doOffset(args funcArgs) (series.SeriesSlice, error) {
+	if len(args) != 2 {
+		return nil, &ArgumentError{funcName: "offset", gotLen: len(args), wantLen: []int{2}}
 	}
+
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `sumSeries`.")
+		return nil, errors.New("invalid argument type `seriesList` to function `offset`")
 	}
-	return series.SeriesSlice{sumSeries(args[0].seriesSlice)}, nil
+	factor, ok := args[1].expr.(NumberExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `number` to function `offset`")
+	}
+
+	return offset(args[0].seriesSlice, float64(factor.Literal)), nil
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.offset
+func offset(ss series.SeriesSlice, factor float64) series.SeriesSlice {
+	result := make(series.SeriesSlice, 0, len(ss))
+	for _, s := range ss {
+		name := fmt.Sprintf("offset(%s,%g)", s.Name(), factor)
+		vals := s.Values()
+		for i := 0; i < len(vals); i++ {
+			vals[i] += factor
+		}
+		result = append(result, series.NewSeries(name, vals, s.Start(), s.Step()))
+	}
+	return result
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.group
+func doGroup(args funcArgs) (series.SeriesSlice, error) {
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `group`")
+		}
+		ss = append(ss, arg.seriesSlice...)
+	}
+	return ss, nil
+}
+
+func doSumSeries(args funcArgs) (series.SeriesSlice, error) {
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `sumSeries`")
+		}
+		ss = append(ss, arg.seriesSlice...)
+	}
+	return series.SeriesSlice{sumSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeries
@@ -53,19 +124,20 @@ func sumSeries(ss series.SeriesSlice) series.Series {
 	for row := iter(); row != nil; row = iter() {
 		vals = append(vals, mathutil.SumFloat64(row))
 	}
-	name := fmt.Sprintf("sumSeries(%s)", ss.FormatedName())
+	name := fmt.Sprintf("sumSeries(%s)", ss.FormattedName())
 	return series.NewSeries(name, vals, start, step)
 }
 
 func doAverageSeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 1 {
-		return nil, errors.New("too few arguments to function `averageSeries`")
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `averageSeries`")
+		}
+		ss = append(ss, arg.seriesSlice...)
 	}
-	_, ok := args[0].expr.(SeriesListExpr)
-	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `averageSeries`.")
-	}
-	return series.SeriesSlice{averageSeries(args[0].seriesSlice)}, nil
+	return series.SeriesSlice{averageSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.averageSeries
@@ -74,22 +146,22 @@ func averageSeries(ss series.SeriesSlice) series.Series {
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
 	for row := iter(); row != nil; row = iter() {
-		avg := mathutil.SumFloat64(row) / float64(len(row))
-		vals = append(vals, avg)
+		vals = append(vals, mathutil.AvgFloat64(row))
 	}
-	name := fmt.Sprintf("averageSeries(%s)", ss.FormatedName())
+	name := fmt.Sprintf("averageSeries(%s)", ss.FormattedName())
 	return series.NewSeries(name, vals, start, step)
 }
 
 func doMinSeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 1 {
-		return nil, errors.New("too few arguments to function `minSeries`")
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `minSeries`")
+		}
+		ss = append(ss, arg.seriesSlice...)
 	}
-	_, ok := args[0].expr.(SeriesListExpr)
-	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `minSeries`.")
-	}
-	return series.SeriesSlice{minSeries(args[0].seriesSlice)}, nil
+	return series.SeriesSlice{minSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.minSeries
@@ -100,19 +172,20 @@ func minSeries(ss series.SeriesSlice) series.Series {
 	for row := iter(); row != nil; row = iter() {
 		vals = append(vals, mathutil.MinFloat64(row))
 	}
-	name := fmt.Sprintf("minSeries(%s)", ss.FormatedName())
+	name := fmt.Sprintf("minSeries(%s)", ss.FormattedName())
 	return series.NewSeries(name, vals, start, step)
 }
 
 func doMaxSeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 1 {
-		return nil, errors.New("too few arguments to function `maxSeries`")
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `maxSeries`")
+		}
+		ss = append(ss, arg.seriesSlice...)
 	}
-	_, ok := args[0].expr.(SeriesListExpr)
-	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `maxSeries`.")
-	}
-	return series.SeriesSlice{maxSeries(args[0].seriesSlice)}, nil
+	return series.SeriesSlice{maxSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.maxSeries
@@ -124,19 +197,20 @@ func maxSeries(ss series.SeriesSlice) series.Series {
 		avg := mathutil.MaxFloat64(row)
 		vals = append(vals, avg)
 	}
-	name := fmt.Sprintf("maxSeries(%s)", ss.FormatedName())
+	name := fmt.Sprintf("maxSeries(%s)", ss.FormattedName())
 	return series.NewSeries(name, vals, start, step)
 }
 
 func doMultiplySeries(args funcArgs) (series.SeriesSlice, error) {
-	if len(args) != 1 {
-		return nil, errors.New("too few arguments to function `multiplySeries`")
+	ss := series.SeriesSlice{}
+	for _, arg := range args {
+		_, ok := args[0].expr.(SeriesListExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `seriesList` to function `multiplySeries`")
+		}
+		ss = append(ss, arg.seriesSlice...)
 	}
-	_, ok := args[0].expr.(SeriesListExpr)
-	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `multiplySeries`.")
-	}
-	return series.SeriesSlice{multiplySeries(args[0].seriesSlice)}, nil
+	return series.SeriesSlice{multiplySeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.multiplySeries
@@ -148,7 +222,7 @@ func multiplySeries(ss series.SeriesSlice) series.Series {
 		avg := mathutil.MultiplyFloat64(row)
 		vals = append(vals, avg)
 	}
-	name := fmt.Sprintf("multiplySeries(%s)", ss.FormatedName())
+	name := fmt.Sprintf("multiplySeries(%s)", ss.FormattedName())
 	return series.NewSeries(name, vals, start, step)
 }
 
@@ -159,7 +233,7 @@ func doDivideSeries(args funcArgs) (series.SeriesSlice, error) {
 	for i := 0; i < 2; i++ {
 		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `seriesList` to function `divideSeries`.")
+			return nil, errors.New("invalid argument type `seriesList` to function `divideSeries`")
 		}
 	}
 	return divideSeries(args[0].seriesSlice, args[1].seriesSlice[0]), nil
@@ -182,22 +256,59 @@ func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.S
 	return result
 }
 
-func doSummarize(args funcArgs) (series.SeriesSlice, error) {
+func doPercentileOfSeries(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 && len(args) != 3 {
-		return nil, errors.New("too few arguments to function `summarize`")
+		return nil, &ArgumentError{funcName: "percentileOfSeries", gotLen: len(args), wantLen: []int{2, 3}}
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `summarize`.")
+		return nil, errors.New("invalid argument type `seriesList` to function `percentileOfSeries`")
+	}
+	n, ok := args[1].expr.(NumberExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `n` to function `percentileOfSeries`")
+	}
+	interpolate := false
+	if len(args) == 3 {
+		i, ok := args[2].expr.(BoolExpr)
+		if ok {
+			interpolate = i.Literal
+		}
+	}
+	ss := series.SeriesSlice{
+		percentileOfSeries(args[0].seriesSlice, float64(n.Literal), interpolate),
+	}
+	return ss, nil
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.percentileOfSeries
+func percentileOfSeries(ss series.SeriesSlice, n float64, interpolate bool) series.Series {
+	start, _, step := ss.Normalize()
+	vals := make([]float64, 0, len(ss))
+	iter := ss.Zip()
+	for row := iter(); row != nil; row = iter() {
+		vals = append(vals, mathutil.Percentile(row, n, interpolate))
+	}
+	name := fmt.Sprintf("percentileOfSeries(%s)", ss.FormattedName())
+	return series.NewSeries(name, vals, start, step)
+}
+
+func doSummarize(args funcArgs) (series.SeriesSlice, error) {
+	if len(args) != 2 && len(args) != 3 {
+		return nil, &ArgumentError{funcName: "summarize", gotLen: len(args), wantLen: []int{2, 3}}
+	}
+	_, ok := args[0].expr.(SeriesListExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `seriesList` to function `summarize`")
 	}
 	intervalExpr, ok := args[1].expr.(StringExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `interval` to function `summarize`.")
+		return nil, errors.New("invalid argument type `interval` to function `summarize`")
 	}
 	if len(args) == 3 {
 		functionExpr, ok := args[2].expr.(StringExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `function` to function `summarize`.")
+			return nil, errors.New("invalid argument type `function` to function `summarize`")
 		}
 		return summarize(args[0].seriesSlice, intervalExpr.Literal, functionExpr.Literal)
 	}
@@ -214,16 +325,15 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 	step := int64(delta.Seconds())
 	for _, s := range ss {
 		bucketNum := int(math.Ceil(float64((s.End() - s.Start()) / step)))
-		buckets := make(map[string][]float64, bucketNum)
+		buckets := make(map[int64][]float64, bucketNum)
 		for _, p := range s.Points() {
 			t, val := p.Timestamp(), p.Value()
 			bucketTime := t - (t % step)
-			key := fmt.Sprintf("%d", bucketTime)
-			if _, ok := buckets[key]; !ok {
-				buckets[key] = []float64{}
+			if _, ok := buckets[bucketTime]; !ok {
+				buckets[bucketTime] = []float64{}
 			}
 			if !math.IsNaN(val) {
-				buckets[key] = append(buckets[key], val)
+				buckets[bucketTime] = append(buckets[bucketTime], val)
 			}
 		}
 		newStart := s.Start() - (s.Start() % step)
@@ -231,13 +341,12 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 		newValues := make([]float64, 0, bucketNum)
 		for t := newStart; t <= newEnd; t += step {
 			bucketTime := t - (t % step)
-			key := fmt.Sprintf("%d", bucketTime)
-			if bucketVals, ok := buckets[key]; !ok {
+			if bucketVals, ok := buckets[bucketTime]; !ok {
 				newValues = append(newValues, math.NaN())
 			} else {
 				switch function {
 				case "avg":
-					avg := mathutil.SumFloat64(bucketVals) / float64(len(bucketVals))
+					avg := mathutil.AvgFloat64(bucketVals)
 					newValues = append(newValues, avg)
 				case "last":
 					newValues = append(newValues, bucketVals[len(bucketVals)-1])
@@ -257,4 +366,63 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 		result = append(result, newSeries)
 	}
 	return result, nil
+}
+
+func doSumSeriesWithWildcards(args funcArgs) (series.SeriesSlice, error) {
+	if len(args) < 2 {
+		return nil, &ArgumentError{
+			funcName: "sumSeriesWithWildcards",
+			gotLen:   len(args),
+			wantLen:  []int{2},
+			variable: true,
+		}
+	}
+	_, ok := args[0].expr.(SeriesListExpr)
+	if !ok {
+		return nil, errors.New("invalid argument type `SeriesList` to function `sumSeriesWithWildcards`")
+	}
+	positions := make([]int, 0, len(args)-1)
+	for i := 1; i < len(args); i++ {
+		p, ok := args[1].expr.(NumberExpr)
+		if !ok {
+			return nil, errors.New("invalid argument type `position` to function `sumSeriesWithWildcards`")
+		}
+		positions = append(positions, int(p.Literal))
+	}
+	return sumSeriesWithWildcards(args[0].seriesSlice, positions), nil
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeriesWithWildcards
+func sumSeriesWithWildcards(ss series.SeriesSlice, positions []int) series.SeriesSlice {
+	newSeries := make(map[string]series.Series, len(ss))
+	newNames := make([]string, 0, len(ss))
+	for _, s := range ss {
+		nameParts := []string{}
+		for i, part := range strings.Split(s.Name(), ".") {
+			inPosition := false
+			for _, pos := range positions {
+				if pos == i {
+					inPosition = true
+					break
+				}
+			}
+			if inPosition {
+				continue
+			}
+			nameParts = append(nameParts, part)
+		}
+		newName := strings.Join(nameParts, ".")
+		if _, ok := newSeries[newName]; ok {
+			newSeries[newName] = sumSeries(series.SeriesSlice{s, newSeries[newName]})
+		} else {
+			newSeries[newName] = s
+			newNames = append(newNames, newName)
+		}
+		newSeries[newName].SetName(newName)
+	}
+	results := make(series.SeriesSlice, 0, len(newSeries))
+	for _, name := range newNames {
+		results = append(results, newSeries[name])
+	}
+	return results
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 )
 
-var testFormatedNameTests = []struct {
+var testFormattedNameTests = []struct {
 	desc string
 	ss   SeriesSlice
 	name string
@@ -32,9 +32,9 @@ var testFormatedNameTests = []struct {
 	},
 }
 
-func TestFormatedName(t *testing.T) {
-	for _, tc := range testFormatedNameTests {
-		name := tc.ss.FormatedName()
+func TestFormattedName(t *testing.T) {
+	for _, tc := range testFormattedNameTests {
+		name := tc.ss.FormattedName()
 		if name != tc.name {
 			t.Fatalf("\nExpected: %+v\nActual:   %+v", tc.name, name)
 		}
@@ -102,6 +102,11 @@ var testSeriesSliceZipTests = []struct {
 			NewSeries("server3.cpu.system", []float64{0.1, 0.2}, 1000, 60),
 		},
 		[][]float64{{0.1, 0.1, 0.1}, {0.2, 0.2, 0.2}},
+	},
+	{
+		"SeriesSlice is zero length",
+		SeriesSlice{},
+		nil,
 	},
 }
 

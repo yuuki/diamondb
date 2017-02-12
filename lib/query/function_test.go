@@ -5,8 +5,395 @@ import (
 	"testing"
 
 	"github.com/kylelemons/godebug/pretty"
+	"github.com/pkg/errors"
+
 	. "github.com/yuuki/diamondb/lib/series"
 )
+
+var testDoSumSeriesTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the number of arguments is two",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server2.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+		errors.New("invalid argument type `seriesList` to function `sumSeries`"),
+	},
+}
+
+func TestDoSumSeries(t *testing.T) {
+	for _, tc := range testDoSumSeriesTests {
+		_, err := doSumSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
+
+var testDoAverageSeriesTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the number of arguments is two",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server2.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+		errors.New("invalid argument type `seriesList` to function `averageSeries`"),
+	},
+}
+
+func TestDoAverageSeries(t *testing.T) {
+	for _, tc := range testDoAverageSeriesTests {
+		_, err := doAverageSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
+
+var testDoMinSeriesTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the number of arguments is two",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server2.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+		errors.New("invalid argument type `seriesList` to function `minSeries`"),
+	},
+}
+
+func TestDoMinSeries(t *testing.T) {
+	for _, tc := range testDoMinSeriesTests {
+		_, err := doMinSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
+
+var testDoMaxSeriesTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the number of arguments is two",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server2.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+		errors.New("invalid argument type `seriesList` to function `maxSeries`"),
+	},
+}
+
+func TestDoMaxSeries(t *testing.T) {
+	for _, tc := range testDoMaxSeriesTests {
+		_, err := doMaxSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
+
+var testDoMultiplySeriesTests = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the number of arguments is two",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server2.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+		errors.New("invalid argument type `seriesList` to function `multiplySeries`"),
+	},
+}
+
+func TestDoMultiplySeries(t *testing.T) {
+	for _, tc := range testDoMultiplySeriesTests {
+		_, err := doMultiplySeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil")
+		}
+	}
+}
+
+var testDoPercentileOfSeries = []struct {
+	desc string
+	args funcArgs
+	err  error
+}{
+	{
+		"the number of arguments is one",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+		},
+		errors.New("wrong number of arguments 'percentileOfSeries' (1 for 2 or 3)"),
+	},
+	{
+		"SeriesListExpr + NumberExpr",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{expr: NumberExpr{Literal: 10}},
+		},
+		nil,
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{
+			&funcArg{expr: StringExpr{Literal: "hoge"}},
+			&funcArg{expr: StringExpr{Literal: "foo"}},
+		},
+		errors.New("invalid argument type `seriesList` to function `percentileOfSeries`"),
+	},
+	{
+		"the type of the arguments is different",
+		funcArgs{
+			&funcArg{
+				expr: SeriesListExpr{Literal: "server1.loadavg5"},
+				seriesSlice: SeriesSlice{
+					NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+				},
+			},
+			&funcArg{expr: StringExpr{Literal: "hoge"}},
+		},
+		errors.New("invalid argument type `n` to function `percentileOfSeries`"),
+	},
+}
+
+func TestDoPercentileOfSeries(t *testing.T) {
+	for _, tc := range testDoPercentileOfSeries {
+		_, err := doPercentileOfSeries(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("err should be nil: %s", err)
+		}
+	}
+}
+
+func TestDoGroup(t *testing.T) {
+	args := funcArgs{
+		&funcArg{
+			expr: SeriesListExpr{Literal: "server{1,2}.loadavg5"},
+			seriesSlice: SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{0.1}, 0, 1),
+				NewSeries("server2.loadavg5", []float64{0.2}, 0, 1),
+			},
+		},
+		&funcArg{
+			expr: SeriesListExpr{Literal: "server{2,3}.loadavg5"},
+			seriesSlice: SeriesSlice{
+				NewSeries("server2.loadavg5", []float64{0.2}, 0, 1),
+				NewSeries("server3.loadavg5", []float64{0.3}, 0, 1),
+			},
+		},
+	}
+	got, err := doGroup(args)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	expected := SeriesSlice{
+		NewSeries("server1.loadavg5", []float64{0.1}, 0, 1),
+		NewSeries("server2.loadavg5", []float64{0.2}, 0, 1),
+		NewSeries("server2.loadavg5", []float64{0.2}, 0, 1),
+		NewSeries("server3.loadavg5", []float64{0.3}, 0, 1),
+	}
+	if diff := pretty.Compare(got, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}
 
 func TestAlias(t *testing.T) {
 	ss := SeriesSlice{
@@ -17,6 +404,122 @@ func TestAlias(t *testing.T) {
 	for _, s := range got {
 		if s.Alias() != "server.loadavg5" {
 			t.Fatalf("\nExpected: %+v\nActual:   %+v", "server.loadavg5", s.Alias())
+		}
+	}
+}
+
+func TestDoOffset(t *testing.T) {
+	tests := []struct {
+		desc string
+		args funcArgs
+		err  error
+	}{
+		{
+			"one argument",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+					},
+				},
+			},
+			errors.New("wrong number of arguments 'offset' (1 for 2)"),
+		},
+		{
+			"seriesListExpr + numberExpr",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+					},
+				},
+				&funcArg{expr: NumberExpr{Literal: 1}},
+			},
+			nil,
+		},
+		{
+			"seriesSliceExpr(2) + numberExpr",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server{1,2}.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+						NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+					},
+				},
+				&funcArg{expr: NumberExpr{Literal: 1}},
+			},
+			nil,
+		},
+		{
+			"seriesSliceExpr + seriesSliceExpr",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{0.1}, 100, 1),
+					},
+				},
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server2.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server2.loadavg5", []float64{0.1}, 100, 1),
+					},
+				},
+			},
+			errors.New("invalid argument type `number` to function `offset`"),
+		},
+	}
+
+	for _, tc := range tests {
+		_, err := doOffset(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(errors.Cause(err).Error(), errors.Cause(tc.err).Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+		}
+	}
+}
+
+func TestOffset(t *testing.T) {
+	tests := []struct {
+		desc                string
+		inputSeriesSlice    SeriesSlice
+		inputFactor         float64
+		expectedSeriesSlice SeriesSlice
+	}{
+		{
+			"positive factor",
+			SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{1.0, 2.0, 3.0, 4.0}, 1, 1),
+				NewSeries("server2.loadavg5", []float64{math.NaN(), 5.0}, 4, 1),
+			},
+			0.5,
+			SeriesSlice{
+				NewSeries("offset(server1.loadavg5,0.5)", []float64{1.5, 2.5, 3.5, 4.5}, 1, 1),
+				NewSeries("offset(server2.loadavg5,0.5)", []float64{math.NaN(), 5.5}, 4, 1),
+			},
+		},
+		{
+			"negative factor",
+			SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{1.0, 2.0, 3.0, 4.0}, 1, 1),
+				NewSeries("server2.loadavg5", []float64{math.NaN(), 5.0}, 4, 1),
+			},
+			-0.5,
+			SeriesSlice{
+				NewSeries("offset(server1.loadavg5,-0.5)", []float64{0.5, 1.5, 2.5, 3.5}, 1, 1),
+				NewSeries("offset(server2.loadavg5,-0.5)", []float64{math.NaN(), 4.5}, 4, 1),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		got := offset(tc.inputSeriesSlice, tc.inputFactor)
+		if diff := pretty.Compare(got, tc.expectedSeriesSlice); diff != "" {
+			t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
 		}
 	}
 }
@@ -256,6 +759,255 @@ func TestSummarize(t *testing.T) {
 		}
 		if diff := pretty.Compare(got, tc.expectedSeriesSlice); diff != "" {
 			t.Fatalf("desc: %s, diff: (-actual +expected)\n%s", tc.desc, diff)
+		}
+	}
+}
+
+func TestPercentileOfSeries(t *testing.T) {
+	ss := SeriesSlice{
+		NewSeries("server1.loadavg5", []float64{1.0, 2.0, 3.0}, 1, 1),
+		NewSeries("server2.loadavg5", []float64{4.0, 5.0, 6.0}, 1, 1),
+		NewSeries("server3.loadavg5", []float64{7.0, 8.0, 9.0}, 1, 1),
+	}
+	got := percentileOfSeries(ss, 30, false)
+	expected := NewSeries(
+		"percentileOfSeries(server1.loadavg5,server2.loadavg5,server3.loadavg5)",
+		[]float64{4.0, 5.0, 6.0}, 1, 1,
+	)
+	if diff := pretty.Compare(got, expected); diff != "" {
+		t.Fatalf("diff: (-actual +expected)\n%s", diff)
+	}
+}
+
+func TestDoSumSeriesWithWildcards(t *testing.T) {
+	tests := []struct {
+		desc string
+		args funcArgs
+		err  error
+	}{
+		{
+			"normal (SeriesListExpr + NumberExpr)",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 1},
+				},
+			},
+			nil,
+		},
+		{
+			"normal (SeriesListExpr + NumberExpr x 3)",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 1},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 2},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 3},
+				},
+			},
+			nil,
+		},
+		{
+			"too few arguments",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+			},
+			errors.New("wrong number of arguments 'sumSeriesWithWildcards' (1 for 2+)"),
+		},
+		{
+			"the type of SeriesSlice is wrong",
+			funcArgs{
+				&funcArg{
+					expr: NumberExpr{Literal: 1},
+				},
+				&funcArg{
+					expr: NumberExpr{Literal: 2},
+				},
+			},
+			errors.New("invalid argument type `SeriesList` to function `sumSeriesWithWildcards`"),
+		},
+		{
+			"the type of position is wrong",
+			funcArgs{
+				&funcArg{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				&funcArg{
+					expr: StringExpr{Literal: "1"},
+				},
+			},
+			errors.New("invalid argument type `position` to function `sumSeriesWithWildcards`"),
+		},
+	}
+
+	for _, tc := range tests {
+		_, err := doSumSeriesWithWildcards(tc.args)
+		if err != tc.err {
+			if diff := pretty.Compare(errors.Cause(err).Error(), errors.Cause(tc.err).Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+		}
+	}
+}
+
+func TestSumSeriesWithWildcards(t *testing.T) {
+	tests := []struct {
+		desc                string
+		inputSeriesSlice    SeriesSlice
+		inputPositions      []int
+		expectedSeriesSlice SeriesSlice
+	}{
+		{
+			"position 0",
+			SeriesSlice{
+				NewSeries("server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("server0.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{0},
+			SeriesSlice{
+				NewSeries("loadavg5", []float64{
+					float64(0.1) + float64(1.1),
+					float64(0.2) + float64(1.2),
+					float64(0.3) + float64(1.3),
+				}, 0, 1),
+			},
+		},
+		{
+			"position last",
+			SeriesSlice{
+				NewSeries("server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{1},
+			SeriesSlice{
+				NewSeries("server0", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("server1", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+		},
+		{
+			"position 1",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleA.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{1},
+			SeriesSlice{
+				NewSeries("roleA.loadavg5", []float64{
+					float64(0.1) + float64(1.1),
+					float64(0.2) + float64(1.2),
+					float64(0.3) + float64(1.3),
+				}, 0, 1),
+			},
+		},
+		{
+			"position 1 + two series that postion 0 is different",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleB.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{1},
+			SeriesSlice{
+				NewSeries("roleA.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleB.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+		},
+		{
+			"position {0, last}",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleA.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{0, 2},
+			SeriesSlice{
+				NewSeries("server0", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("server1", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+		},
+		{
+			"position 0,1",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleA.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{0, 1},
+			SeriesSlice{
+				NewSeries("loadavg5", []float64{
+					float64(0.1) + float64(1.1),
+					float64(0.2) + float64(1.2),
+					float64(0.3) + float64(1.3),
+				}, 0, 1),
+			},
+		},
+		{
+			"position all",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleA.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{0, 1, 2},
+			SeriesSlice{
+				NewSeries("", []float64{
+					float64(0.1) + float64(1.1),
+					float64(0.2) + float64(1.2),
+					float64(0.3) + float64(1.3),
+				}, 0, 1),
+			},
+		},
+		{
+			"position is out of range",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleB.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{100},
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleB.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+		},
+		{
+			"position includes out of range",
+			SeriesSlice{
+				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
+				NewSeries("roleA.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
+			},
+			[]int{0, 1, 100},
+			SeriesSlice{
+				NewSeries("loadavg5", []float64{
+					float64(0.1) + float64(1.1),
+					float64(0.2) + float64(1.2),
+					float64(0.3) + float64(1.3),
+				}, 0, 1),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		got := sumSeriesWithWildcards(tc.inputSeriesSlice, tc.inputPositions)
+		if diff := pretty.Compare(got, tc.expectedSeriesSlice); diff != "" {
+			t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
 		}
 	}
 }

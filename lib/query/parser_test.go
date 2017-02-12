@@ -17,6 +17,42 @@ func TestParsetTarget_SeriesListExpr(t *testing.T) {
 	}
 }
 
+var groupSeriesExprTests = []struct {
+	target          string
+	expectedPrefix  string
+	expectedRange   []string
+	expectedPostfix string
+}{
+	{"server.{foo,bar,baz}.loadavg5", "server.", []string{"foo", "bar", "baz"}, ".loadavg5"},
+	{"server.{1,2,3,4}.loadavg5", "server.", []string{"1", "2", "3", "4"}, ".loadavg5"},
+	{"server.cpu.{user,system,iowait}", "server.cpu.", []string{"user", "system", "iowait"}, ""},
+}
+
+func TestParsetTarget_GroupSeriesExpr(t *testing.T) {
+	for _, test := range groupSeriesExprTests {
+		expr, err := ParseTarget(test.target)
+		if err != nil {
+			t.Fatalf("%s", err)
+		}
+
+		v, ok := expr.(GroupSeriesExpr)
+		if !ok {
+			t.Fatalf("expr %#v should be GroupSeriesExpr", v)
+		}
+		if v.Prefix != test.expectedPrefix {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", test.expectedPrefix, v.Prefix)
+		}
+		for i, expected := range test.expectedRange {
+			if v.ValueList[i] != expected {
+				t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, v.ValueList[i])
+			}
+		}
+		if v.Postfix != test.expectedPostfix {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", test.expectedPostfix, v.Postfix)
+		}
+	}
+}
+
 func TestParsetTarget_FuncExpr(t *testing.T) {
 	expr, err := ParseTarget("averageSeries(server1.loadavg5)")
 	if err != nil {
@@ -121,6 +157,52 @@ func TestParsetTarget_FuncExprWithBoolExpr(t *testing.T) {
 	}
 	if v5.Literal != true {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", true, v5.Literal)
+	}
+}
+
+func TestParseTarget_FuncExprWithNumberExpr(t *testing.T) {
+	tests := []struct {
+		desc  string
+		input string
+		value float64
+	}{
+		{"positive integer", "offset(server1.loadavg5,10)", 10.0},
+		{"negative integer", "offset(server1.loadavg5,-10)", -10.0},
+		{"positive float", "offset(server1.loadavg5,0.5)", 0.5},
+		{"negative float", "offset(server1.loadavg5,-0.5)", -0.5},
+	}
+	for _, tc := range tests {
+		expr, err := ParseTarget(tc.input)
+		if err != nil {
+			t.Fatalf("%s", err)
+		}
+
+		v1, ok1 := expr.(FuncExpr)
+		if !ok1 {
+			t.Fatalf("expr %#v should be FuncExpr", v1)
+		}
+		if v1.Name != "offset" {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", "offset", v1.Name)
+		}
+		if l := len(v1.SubExprs); l != 2 {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", 4, l)
+		}
+
+		v2, ok2 := v1.SubExprs[0].(SeriesListExpr)
+		if !ok2 {
+			t.Fatalf("expr %#v should be SeriesListExpr", v2)
+		}
+		if v2.Literal != "server1.loadavg5" {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", "server1.loadavg5", v2.Literal)
+		}
+
+		v3, ok3 := v1.SubExprs[1].(NumberExpr)
+		if !ok3 {
+			t.Fatalf("expr %#v should be NumberExpr", v1.SubExprs[1])
+		}
+		if v3.Literal != tc.value {
+			t.Fatalf("\nExpected: %+v\nActual:   %+v", 10, v3.Literal)
+		}
 	}
 }
 

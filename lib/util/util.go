@@ -4,6 +4,7 @@ import (
 	"strings"
 )
 
+// GroupNames groups the names by count.
 func GroupNames(names []string, count int) [][]string {
 	nameGroups := make([][]string, 0, (len(names)+count-1)/count)
 	for i, name := range names {
@@ -15,7 +16,8 @@ func GroupNames(names []string, count int) [][]string {
 	return nameGroups
 }
 
-// roleA.r.{1,2,3,4}.loadavg
+// SplitName split the name into names expanded by braces.
+// ex. server{1,2,3}.loadavg5 => []string{server1.loadavg5, server2.loadavg5, server3.loadavg5}
 func SplitName(name string) []string {
 	open := strings.IndexRune(name, '{')
 	close := strings.IndexRune(name, '}')

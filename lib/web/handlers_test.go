@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/kylelemons/godebug/pretty"
+
 	"github.com/yuuki/diamondb/lib/env"
 	"github.com/yuuki/diamondb/lib/metric"
 	. "github.com/yuuki/diamondb/lib/series"
@@ -19,7 +20,7 @@ import (
 
 func TestRenderHandler(t *testing.T) {
 	fakefetcher := &storage.FakeFetcher{
-		FakeFetchSeriesSlice: func(name string, start, end time.Time) (SeriesSlice, error) {
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
 			}, nil
@@ -44,6 +45,10 @@ func TestRenderHandler(t *testing.T) {
 		}
 	} else {
 		t.Fatalf("response code should be 200")
+	}
+
+	if v := r.HeaderMap["Content-Type"][0]; v != "application/json" {
+		t.Fatalf("response code should be not %s, but application/json", v)
 	}
 }
 
