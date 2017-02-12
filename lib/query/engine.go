@@ -79,7 +79,7 @@ func EvalTarget(fetcher storage.Fetcher, target string, startTime, endTime time.
 	}
 	ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to invoke %s", e.Literal)
+		return nil, errors.Wrapf(err, "failed to invoke %s", expr)
 	}
 	return ss, err
 }
@@ -100,7 +100,7 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 		expr = SeriesListExpr{Literal: strings.Join(joinedValues, ",")}
 		ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to invoke (%s,%d,%d)", e.Literal, startTime.Unix(), endTime.Unix())
+			return nil, errors.Wrapf(err, "failed to invoke (%s,%d,%d)", e, startTime.Unix(), endTime.Unix())
 		}
 		return ss, nil
 	case FuncExpr:
@@ -116,14 +116,14 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 			case SeriesListExpr, GroupSeriesExpr:
 				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 				if err != nil {
-					return nil, errors.Wrapf(err, "failed to invoke %s", e.Literal)
+					return nil, errors.Wrapf(err, "failed to invoke %s", e2)
 				}
 				ex := SeriesListExpr{Literal: ss.FormattedName()}
 				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
 			case FuncExpr:
 				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
 				if err != nil {
-					return nil, errors.Wrapf(err, "failed to invoke %s", e.Literal)
+					return nil, errors.Wrapf(err, "failed to invoke %s", e2)
 				}
 				// Regard FuncExpr as SeriesListExpr after process function
 				ex := SeriesListExpr{Literal: fmt.Sprintf("%s(%s)", e2.Name, ss.FormattedName())}
