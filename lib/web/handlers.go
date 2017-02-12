@@ -73,11 +73,11 @@ func RenderHandler(env *env.Env) http.Handler {
 		seriesSlice, err := query.EvalTargets(env.Fetcher, targets, from, until)
 		if err != nil {
 			log.Printf("%+v", err) // Print stack trace by pkg/errors
-			switch err.(type) {
+			switch err := errors.Cause(err).(type) {
 			case *query.ParserError, *query.UnsupportedFunctionError, *query.ArgumentError:
-				badRequest(w, errors.Cause(err).Error())
+				badRequest(w, err.Error())
 			default:
-				serverError(w, errors.Cause(err).Error())
+				serverError(w, err.Error())
 			}
 			return
 		}
