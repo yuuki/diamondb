@@ -14,32 +14,19 @@ import (
 
 type ArgumentError struct {
 	funcName string
-	gotLen   int
-	wantLen  []int
-	variable bool // variable argument
+	msg      string
 }
 
 func (e *ArgumentError) Error() string {
-	var plus string
-	if e.variable {
-		plus = "+"
-	}
-	lens := make([]string, 0, len(e.wantLen))
-	for _, l := range e.wantLen {
-		lens = append(lens, fmt.Sprintf("%d", l))
-	}
-	msg := fmt.Sprintf(
-		"wrong number of arguments '%s' (%d for %s%s)",
-		e.funcName, e.gotLen,
-		strings.Join(lens, " or "),
-		plus,
-	)
-	return msg
+	return fmt.Sprintf("%s: %s", e.funcName, e.msg)
 }
 
 func doAlias(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 {
-		return nil, &ArgumentError{funcName: "alias", gotLen: len(args), wantLen: []int{2}}
+		return nil, &ArgumentError{
+			funcName: "alias",
+			msg:      fmt.Sprintf("wrong number of arguments (%d for 2)", len(args)),
+		}
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
@@ -62,7 +49,10 @@ func alias(ss series.SeriesSlice, newName string) series.SeriesSlice {
 
 func doOffset(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 {
-		return nil, &ArgumentError{funcName: "offset", gotLen: len(args), wantLen: []int{2}}
+		return nil, &ArgumentError{
+			funcName: "offset",
+			msg:      fmt.Sprintf("wrong number of arguments (%d for 2)", len(args)),
+		}
 	}
 
 	_, ok := args[0].expr.(SeriesListExpr)
@@ -258,7 +248,10 @@ func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.S
 
 func doPercentileOfSeries(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 && len(args) != 3 {
-		return nil, &ArgumentError{funcName: "percentileOfSeries", gotLen: len(args), wantLen: []int{2, 3}}
+		return nil, &ArgumentError{
+			funcName: "percentileOfSeries",
+			msg:      fmt.Sprintf("wrong number of arguments (%d for 2,3)", len(args)),
+		}
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
@@ -295,7 +288,10 @@ func percentileOfSeries(ss series.SeriesSlice, n float64, interpolate bool) seri
 
 func doSummarize(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 && len(args) != 3 {
-		return nil, &ArgumentError{funcName: "summarize", gotLen: len(args), wantLen: []int{2, 3}}
+		return nil, &ArgumentError{
+			funcName: "summarize",
+			msg:      fmt.Sprintf("wrong number of arguments (%d for 2,3)", len(args)),
+		}
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
@@ -372,9 +368,7 @@ func doSumSeriesWithWildcards(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) < 2 {
 		return nil, &ArgumentError{
 			funcName: "sumSeriesWithWildcards",
-			gotLen:   len(args),
-			wantLen:  []int{2},
-			variable: true,
+			msg:      fmt.Sprintf("wrong number of arguments (%d for 2+)", len(args)),
 		}
 	}
 	_, ok := args[0].expr.(SeriesListExpr)

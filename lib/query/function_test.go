@@ -310,7 +310,7 @@ var testDoPercentileOfSeries = []struct {
 				},
 			},
 		},
-		errors.New("wrong number of arguments 'percentileOfSeries' (1 for 2 or 3)"),
+		errors.New("percentileOfSeries: wrong number of arguments (1 for 2,3)"),
 	},
 	{
 		"SeriesListExpr + NumberExpr",
@@ -424,7 +424,7 @@ func TestDoOffset(t *testing.T) {
 					},
 				},
 			},
-			errors.New("wrong number of arguments 'offset' (1 for 2)"),
+			errors.New("offset: wrong number of arguments (1 for 2)"),
 		},
 		{
 			"seriesListExpr + numberExpr",
@@ -831,7 +831,7 @@ func TestDoSumSeriesWithWildcards(t *testing.T) {
 					},
 				},
 			},
-			errors.New("wrong number of arguments 'sumSeriesWithWildcards' (1 for 2+)"),
+			errors.New("sumSeriesWithWildcards: wrong number of arguments (1 for 2+)"),
 		},
 		{
 			"the type of SeriesSlice is wrong",
