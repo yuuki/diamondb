@@ -38,6 +38,7 @@ type Writer interface {
 type redisClient interface {
 	Ping() *goredis.StatusCmd
 	HGetAll(key string) *goredis.StringStringMapCmd
+	HSet(key, field string, value interface{}) *goredis.BoolCmd
 	HMSet(key string, fields map[string]string) *goredis.StatusCmd
 }
 
@@ -81,8 +82,8 @@ func NewRedis() Fetcher {
 
 func NewWriter() Writer {
 	return &Redis{
-		client: redis.NewClient(&redis.Options{
-			Addr:     config.Config.RedisAddr,
+		client: goredis.NewClient(&goredis.Options{
+			Addr:     config.Config.RedisAddrs[0],
 			Password: config.Config.RedisPassword,
 			DB:       config.Config.RedisDB,
 		}),

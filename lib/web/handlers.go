@@ -95,18 +95,18 @@ func WriteHandler(env *env.Env) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var wr WriteRequest
 		if r.Body == nil {
-			BadRequest(w, "No request body")
+			badRequest(w, "No request body")
 			return
 		}
 		if err := json.NewDecoder(r.Body).Decode(&wr); err != nil {
-			BadRequest(w, err.Error())
+			badRequest(w, err.Error())
 			return
 		}
 		if err := env.Writer.InsertMetric(wr.Metric); err != nil {
 			log.Printf("%+v", err) // Print stack trace by pkg/errors
 			switch err.(type) {
 			default:
-				ServerError(w, errors.Cause(err).Error())
+				serverError(w, errors.Cause(err).Error())
 			}
 			return
 		}

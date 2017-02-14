@@ -31,6 +31,12 @@ type Fetcher interface {
 	batchGet(q *query) (series.SeriesMap, error)
 }
 
+// Writer defines the interface for Redis writer.
+type Writer interface {
+	Ping() error
+	Client() dynamodbiface.DynamoDBAPI
+}
+
 // DynamoDB provides a dynamodb client.
 type DynamoDB struct {
 	svc         dynamodbiface.DynamoDBAPI

@@ -39,7 +39,7 @@ func NewFetcher() Fetcher {
 
 type WriterStore struct {
 	Redis    redis.Writer
-	DynamoDB *dynamo.DynamoDB
+	DynamoDB dynamo.Writer
 	// dynamodb client
 	// s3 client
 }
