@@ -74,7 +74,7 @@ func RenderHandler(env *env.Env) http.Handler {
 		if err != nil {
 			log.Printf("%+v", err) // Print stack trace by pkg/errors
 			switch err := errors.Cause(err).(type) {
-			case *query.ParserError, *query.UnsupportedFunctionError, *query.ArgumentError:
+			case *query.ParserError, *query.UnsupportedFunctionError, *query.NumberOfArgumentsError:
 				badRequest(w, err.Error())
 			default:
 				serverError(w, err.Error())

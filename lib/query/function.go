@@ -12,14 +12,14 @@ import (
 	"github.com/yuuki/diamondb/lib/timeparser"
 )
 
-type ArgumentError struct {
+type NumberOfArgumentsError struct {
 	funcName string
 	gotLen   int
 	wantLen  []int
 	variable bool // variable argument
 }
 
-func (e *ArgumentError) Error() string {
+func (e *NumberOfArgumentsError) Error() string {
 	var plus string
 	if e.variable {
 		plus = "+"
@@ -39,7 +39,7 @@ func (e *ArgumentError) Error() string {
 
 func doAlias(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 {
-		return nil, &ArgumentError{funcName: "alias", gotLen: len(args), wantLen: []int{2}}
+		return nil, &NumberOfArgumentsError{funcName: "alias", gotLen: len(args), wantLen: []int{2}}
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
@@ -62,7 +62,7 @@ func alias(ss series.SeriesSlice, newName string) series.SeriesSlice {
 
 func doOffset(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 {
-		return nil, &ArgumentError{funcName: "offset", gotLen: len(args), wantLen: []int{2}}
+		return nil, &NumberOfArgumentsError{funcName: "offset", gotLen: len(args), wantLen: []int{2}}
 	}
 
 	_, ok := args[0].expr.(SeriesListExpr)
@@ -258,7 +258,7 @@ func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.S
 
 func doPercentileOfSeries(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 && len(args) != 3 {
-		return nil, &ArgumentError{funcName: "percentileOfSeries", gotLen: len(args), wantLen: []int{2, 3}}
+		return nil, &NumberOfArgumentsError{funcName: "percentileOfSeries", gotLen: len(args), wantLen: []int{2, 3}}
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
@@ -295,7 +295,7 @@ func percentileOfSeries(ss series.SeriesSlice, n float64, interpolate bool) seri
 
 func doSummarize(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 && len(args) != 3 {
-		return nil, &ArgumentError{funcName: "summarize", gotLen: len(args), wantLen: []int{2, 3}}
+		return nil, &NumberOfArgumentsError{funcName: "summarize", gotLen: len(args), wantLen: []int{2, 3}}
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
@@ -370,7 +370,7 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 
 func doSumSeriesWithWildcards(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) < 2 {
-		return nil, &ArgumentError{
+		return nil, &NumberOfArgumentsError{
 			funcName: "sumSeriesWithWildcards",
 			gotLen:   len(args),
 			wantLen:  []int{2},
