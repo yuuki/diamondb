@@ -26,11 +26,11 @@ const (
 type Fetcher interface {
 	Ping() error
 	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
-	Client() redisClient
+	Client() redisAPI
 	batchGet(q *query) (series.SeriesMap, error)
 }
 
-type redisClient interface {
+type redisAPI interface {
 	Ping() *goredis.StatusCmd
 	HGetAll(key string) *goredis.StringStringMapCmd
 	HMSet(key string, fields map[string]string) *goredis.StatusCmd
@@ -38,7 +38,7 @@ type redisClient interface {
 
 // Redis provides a redis client.
 type Redis struct {
-	client redisClient
+	client redisAPI
 }
 
 type query struct {
@@ -77,7 +77,7 @@ func NewRedis() Fetcher {
 }
 
 // Client returns the redis client.
-func (r *Redis) Client() redisClient {
+func (r *Redis) Client() redisAPI {
 	return r.client
 }
 
