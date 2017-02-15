@@ -86,15 +86,11 @@ func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, er
 
 	smR, err := fredis.Get()
 	if err != nil {
-		return nil, errors.Wrapf(err, "redis.Fetch(%s,%d,%d)",
-			name, start.Unix(), end.Unix(),
-		)
+		return nil, errors.WithStack(err)
 	}
 	smD, err := fdynamodb.Get()
 	if err != nil {
-		return nil, errors.Wrapf(err, "dynamodb.Fetch(%s,%d,%d)",
-			name, start.Unix(), end.Unix(),
-		)
+		return nil, errors.WithStack(err)
 	}
 
 	ss := smR.MergePointsToSlice(smD)

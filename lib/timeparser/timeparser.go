@@ -38,7 +38,7 @@ func ParseAtTime(s string) (time.Time, error) {
 	if strings.Contains(s, ":") && len(s) == 13 {
 		t, err := time.Parse(timeFormat, s)
 		if err != nil {
-			return time.Time{}, errors.Wrapf(err, "Invalid time format %s", s)
+			return time.Time{}, errors.Wrapf(err, "invalid time format %s", s)
 		}
 		return t, nil
 	} else if strings.Contains(s, "+") {
@@ -61,11 +61,11 @@ func ParseAtTime(s string) (time.Time, error) {
 	if ref == "" || ref == "now" {
 		r = time.Now().Round(time.Second)
 	} else {
-		return time.Time{}, errors.Errorf("Unknown day reference %s", s)
+		return time.Time{}, errors.Errorf("inknown day reference %s", s)
 	}
 	o, err := ParseTimeOffset(offset)
 	if err != nil {
-		return time.Time{}, errors.Wrapf(err, "Failed to parse time offset %s", offset)
+		return time.Time{}, errors.WithStack(err)
 	}
 	return r.Add(o), nil
 }
@@ -123,7 +123,7 @@ func ParseTimeOffset(offset string) (time.Duration, error) {
 		} else if strings.HasPrefix(unit, "y") {
 			t2 *= 365 * 24 * time.Hour
 		} else {
-			return time.Duration(0), errors.Errorf("Invalid offset unit '%s'", unit)
+			return time.Duration(0), errors.Errorf("invalid offset unit (%s)", unit)
 		}
 
 		t += time.Duration(sign) * t2

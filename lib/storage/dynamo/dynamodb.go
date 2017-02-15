@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -175,8 +174,9 @@ func (d *DynamoDB) batchGet(q *query) (series.SeriesMap, error) {
 				return series.SeriesMap{}, nil
 			}
 		}
-		return nil, errors.Wrapf(err, "Failed to BatchGetItem %s %d %s %d",
-			q.slot.tableName, q.slot.itemEpoch, strings.Join(q.names, ","), q.step,
+		return nil, errors.Wrapf(err,
+			"failed to call dynamodb API batchGetItem (%s,%d,%d)",
+			q.slot.tableName, q.slot.itemEpoch, q.step,
 		)
 	}
 	return batchGetResultToMap(resp, q), nil
