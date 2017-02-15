@@ -248,7 +248,10 @@ func multiplySeries(ss series.SeriesSlice) series.Series {
 
 func doDivideSeries(args funcArgs) (series.SeriesSlice, error) {
 	if len(args) != 2 {
-		return nil, errors.New("too few arguments to function `divideSeries`")
+		return nil, &ArgumentError{
+			funcName: "divideSeries",
+			msg:      fmt.Sprintf("wrong number of arguments (%d for 2)", len(args)),
+		}
 	}
 	for i := 0; i < 2; i++ {
 		_, ok := args[i].expr.(SeriesListExpr)
