@@ -8,6 +8,8 @@ import (
 	"strings"
 	"text/scanner"
 	"unicode"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -18,7 +20,8 @@ const (
 // Lexer provides the argument of yyParse.
 type Lexer struct {
 	scanner.Scanner
-	e      *ParserError
+	target string
+	err    error
 	result Expr
 }
 
@@ -31,7 +34,7 @@ type ParserError struct {
 
 // Error returns the error message for ParserError.
 func (e *ParserError) Error() string {
-	return fmt.Sprintf("Failed to parse %s %s %d", e.Target, e.Msg, e.Column)
+	return fmt.Sprintf("failed to parse (%s,%s,%d)", e.Target, e.Msg, e.Column)
 }
 
 var (
@@ -87,7 +90,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 
 // Error returns the error message of parser.
 func (l *Lexer) Error(msg string) {
-	l.e = &ParserError{Msg: msg, Column: l.Column}
+	l.err = errors.WithStack(&ParserError{Target: l.target, Msg: msg, Column: l.Column})
 }
 
 func isIdentRune(ch rune, i int) bool {
@@ -101,9 +104,8 @@ func ParseTarget(target string) (Expr, error) {
 	l.Mode &^= scanner.ScanInts | scanner.ScanFloats | scanner.ScanRawStrings | scanner.ScanComments | scanner.SkipComments
 	l.IsIdentRune = isIdentRune
 	yyParse(l)
-	if l.e != nil {
-		l.e.Target = target
-		return l.result, l.e
+	if l.err != nil {
+		return l.result, errors.Wrap(l.err, "yyParse failed")
 	}
 	return l.result, nil
 }
