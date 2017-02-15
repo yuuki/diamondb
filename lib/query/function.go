@@ -30,11 +30,17 @@ func doAlias(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `alias`")
+		return nil, &ArgumentError{
+			funcName: "alias",
+			msg:      fmt.Sprintf("invalid argument type (%s)", args[0].expr),
+		}
 	}
 	newNameExpr, ok := args[1].expr.(StringExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `newName` to function `alias`. `newName` must be string")
+		return nil, &ArgumentError{
+			funcName: "alias",
+			msg:      fmt.Sprintf("invalid argument type (%s)", args[1].expr),
+		}
 	}
 	return alias(args[0].seriesSlice, newNameExpr.Literal), nil
 }
@@ -57,14 +63,20 @@ func doOffset(args funcArgs) (series.SeriesSlice, error) {
 
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `offset`")
+		return nil, &ArgumentError{
+			funcName: "offset",
+			msg:      fmt.Sprintf("invalid argument type (%s)", args[0].expr),
+		}
 	}
-	factor, ok := args[1].expr.(NumberExpr)
+	factorExpr, ok := args[1].expr.(NumberExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `number` to function `offset`")
+		return nil, &ArgumentError{
+			funcName: "offset",
+			msg:      fmt.Sprintf("invalid argument type (%s)", args[1].expr),
+		}
 	}
 
-	return offset(args[0].seriesSlice, float64(factor.Literal)), nil
+	return offset(args[0].seriesSlice, float64(factorExpr.Literal)), nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.offset
@@ -84,10 +96,13 @@ func offset(ss series.SeriesSlice, factor float64) series.SeriesSlice {
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.group
 func doGroup(args funcArgs) (series.SeriesSlice, error) {
 	ss := series.SeriesSlice{}
-	for _, arg := range args {
-		_, ok := args[0].expr.(SeriesListExpr)
+	for i, arg := range args {
+		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `seriesList` to function `group`")
+			return nil, &ArgumentError{
+				funcName: "group",
+				msg:      fmt.Sprintf("invalid argument type (%s)", args[i].expr),
+			}
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
@@ -96,10 +111,13 @@ func doGroup(args funcArgs) (series.SeriesSlice, error) {
 
 func doSumSeries(args funcArgs) (series.SeriesSlice, error) {
 	ss := series.SeriesSlice{}
-	for _, arg := range args {
-		_, ok := args[0].expr.(SeriesListExpr)
+	for i, arg := range args {
+		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `seriesList` to function `sumSeries`")
+			return nil, &ArgumentError{
+				funcName: "sumSeries",
+				msg:      fmt.Sprintf("invalid argument type (%s)", args[i].expr),
+			}
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
@@ -120,10 +138,13 @@ func sumSeries(ss series.SeriesSlice) series.Series {
 
 func doAverageSeries(args funcArgs) (series.SeriesSlice, error) {
 	ss := series.SeriesSlice{}
-	for _, arg := range args {
-		_, ok := args[0].expr.(SeriesListExpr)
+	for i, arg := range args {
+		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `seriesList` to function `averageSeries`")
+			return nil, &ArgumentError{
+				funcName: "averageSeries",
+				msg:      fmt.Sprintf("invalid argument type (%s)", args[i].expr),
+			}
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
@@ -144,10 +165,13 @@ func averageSeries(ss series.SeriesSlice) series.Series {
 
 func doMinSeries(args funcArgs) (series.SeriesSlice, error) {
 	ss := series.SeriesSlice{}
-	for _, arg := range args {
-		_, ok := args[0].expr.(SeriesListExpr)
+	for i, arg := range args {
+		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `seriesList` to function `minSeries`")
+			return nil, &ArgumentError{
+				funcName: "minSeries",
+				msg:      fmt.Sprintf("invalid argument type (%s)", args[i].expr),
+			}
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
@@ -168,10 +192,13 @@ func minSeries(ss series.SeriesSlice) series.Series {
 
 func doMaxSeries(args funcArgs) (series.SeriesSlice, error) {
 	ss := series.SeriesSlice{}
-	for _, arg := range args {
-		_, ok := args[0].expr.(SeriesListExpr)
+	for i, arg := range args {
+		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `seriesList` to function `maxSeries`")
+			return nil, &ArgumentError{
+				funcName: "maxSeries",
+				msg:      fmt.Sprintf("invalid argument type (%s)", args[i].expr),
+			}
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
@@ -193,10 +220,13 @@ func maxSeries(ss series.SeriesSlice) series.Series {
 
 func doMultiplySeries(args funcArgs) (series.SeriesSlice, error) {
 	ss := series.SeriesSlice{}
-	for _, arg := range args {
-		_, ok := args[0].expr.(SeriesListExpr)
+	for i, arg := range args {
+		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `seriesList` to function `multiplySeries`")
+			return nil, &ArgumentError{
+				funcName: "multiplySeries",
+				msg:      fmt.Sprintf("invalid argument type (%s)", args[i].expr),
+			}
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
@@ -223,7 +253,10 @@ func doDivideSeries(args funcArgs) (series.SeriesSlice, error) {
 	for i := 0; i < 2; i++ {
 		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `seriesList` to function `divideSeries`")
+			return nil, &ArgumentError{
+				funcName: "divideSeries",
+				msg:      fmt.Sprintf("invalid argument type (%s)", args[i].expr),
+			}
 		}
 	}
 	return divideSeries(args[0].seriesSlice, args[1].seriesSlice[0]), nil
@@ -255,11 +288,17 @@ func doPercentileOfSeries(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `percentileOfSeries`")
+		return nil, &ArgumentError{
+			funcName: "percentileOfSeries",
+			msg:      fmt.Sprintf("invalid argument type (%s)", args[0].expr),
+		}
 	}
 	n, ok := args[1].expr.(NumberExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `n` to function `percentileOfSeries`")
+		return nil, &ArgumentError{
+			funcName: "percentileOfSeries",
+			msg:      fmt.Sprintf("invalid argument type (%s)", args[1].expr),
+		}
 	}
 	interpolate := false
 	if len(args) == 3 {
@@ -295,16 +334,25 @@ func doSummarize(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `seriesList` to function `summarize`")
+		return nil, &ArgumentError{
+			funcName: "summarize",
+			msg:      fmt.Sprintf("invalid argument type (%s)", args[0].expr),
+		}
 	}
 	intervalExpr, ok := args[1].expr.(StringExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `interval` to function `summarize`")
+		return nil, &ArgumentError{
+			funcName: "summarize",
+			msg:      fmt.Sprintf("invalid argument type (%s)", args[1].expr),
+		}
 	}
 	if len(args) == 3 {
 		functionExpr, ok := args[2].expr.(StringExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `function` to function `summarize`")
+			return nil, &ArgumentError{
+				funcName: "summarize",
+				msg:      fmt.Sprintf("invalid argument type (%s)", args[2].expr),
+			}
 		}
 		return summarize(args[0].seriesSlice, intervalExpr.Literal, functionExpr.Literal)
 	}
@@ -373,13 +421,19 @@ func doSumSeriesWithWildcards(args funcArgs) (series.SeriesSlice, error) {
 	}
 	_, ok := args[0].expr.(SeriesListExpr)
 	if !ok {
-		return nil, errors.New("invalid argument type `SeriesList` to function `sumSeriesWithWildcards`")
+		return nil, &ArgumentError{
+			funcName: "sumSeriesWithWildcards",
+			msg:      fmt.Sprintf("invalid argument type (%s)", args[0].expr),
+		}
 	}
 	positions := make([]int, 0, len(args)-1)
 	for i := 1; i < len(args); i++ {
-		p, ok := args[1].expr.(NumberExpr)
+		p, ok := args[i].expr.(NumberExpr)
 		if !ok {
-			return nil, errors.New("invalid argument type `position` to function `sumSeriesWithWildcards`")
+			return nil, &ArgumentError{
+				funcName: "sumSeriesWithWildcards",
+				msg:      fmt.Sprintf("invalid argument type (%s)", args[i].expr),
+			}
 		}
 		positions = append(positions, int(p.Literal))
 	}
