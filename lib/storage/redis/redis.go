@@ -58,6 +58,7 @@ func NewRedis() Fetcher {
 			client: goredis.NewClusterClient(&goredis.ClusterOptions{
 				Addrs:    config.Config.RedisAddrs,
 				Password: config.Config.RedisPassword,
+				PoolSize: config.Config.RedisPoolSize,
 			}),
 		}
 		return &r
@@ -67,6 +68,7 @@ func NewRedis() Fetcher {
 				Addr:     config.Config.RedisAddrs[0],
 				Password: config.Config.RedisPassword,
 				DB:       config.Config.RedisDB,
+				PoolSize: config.Config.RedisPoolSize,
 			}),
 		}
 		return &r
