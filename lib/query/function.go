@@ -404,7 +404,10 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 				case "sum":
 					newValues = append(newValues, mathutil.SumFloat64(bucketVals))
 				default:
-					return nil, errors.Errorf("unsupported summarize function %s", function)
+					return nil, &ArgumentError{
+						funcName: "summarize",
+						msg:      fmt.Sprintf("unsupported function error (%s)", function),
+					}
 				}
 			}
 		}
