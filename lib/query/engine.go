@@ -190,23 +190,48 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 }
 
 func invokeSubExprs(fetcher storage.Fetcher, exprs []Expr, startTime, endTime time.Time) (funcArgs, error) {
-	args := funcArgs{}
-	for _, expr := range exprs {
-		switch e := expr.(type) {
+	type result struct {
+		value *funcArg
+		err   error
+		index int
+	}
+
+	c := make(chan *result, len(exprs))
+	args := make(funcArgs, len(exprs))
+	numTasks := 0
+
+	for i, expr := range exprs {
+		switch expr.(type) {
 		case BoolExpr, NumberExpr, StringExpr:
-			args = append(args, &funcArg{expr: e})
+			args[i] = &funcArg{expr: expr}
 		case SeriesListExpr, GroupSeriesExpr, FuncExpr:
-			ss, err := invokeExpr(fetcher, e, startTime, endTime)
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to invoke %s", e)
-			}
-			args = append(args, &funcArg{
-				expr:        SeriesListExpr{Literal: ss.FormattedName()},
-				seriesSlice: ss,
-			})
+			numTasks++
+			go func(e Expr, start, end time.Time, i int) {
+				ss, err := invokeExpr(fetcher, e, start, end)
+				c <- &result{
+					value: &funcArg{
+						expr:        SeriesListExpr{Literal: ss.FormattedName()},
+						seriesSlice: ss,
+					},
+					err:   err,
+					index: i,
+				}
+			}(expr, startTime, endTime, i)
 		default:
 			return nil, &UnknownExpressionError{expr: expr}
 		}
 	}
+
+	for i := 0; i < numTasks; i++ {
+		ret := <-c
+		if ret.err != nil {
+			// return err that is found firstly.
+			return nil, errors.Wrapf(ret.err,
+				"failed to fetch concurrently (%d, %v)", i, ret.value.expr,
+			)
+		}
+		args[ret.index] = ret.value
+	}
+
 	return args, nil
 }
