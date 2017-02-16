@@ -1,10 +1,10 @@
-hash: 7573f4797fa2d737d93f936180536e3ebd7666b5a99e69f8270d81d1289c5e27
-updated: 2017-01-14T13:49:54.926973141+09:00
+hash: d01beaa25ac25857e54d72cfdffe229efce1e2716d9486eb5713176fce72b699
+updated: 2017-02-16T22:06:51.381662763+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
 - name: github.com/aws/aws-sdk-go
-  version: 6c577e9e7b08a6d10bad1c9703227cd0403a8dd7
+  version: 7f96ce6d3bc37ec42c97a3f8d19209a134838042
   subpackages:
   - aws
   - aws/awserr
@@ -18,10 +18,10 @@ imports:
   - aws/credentials/stscreds
   - aws/defaults
   - aws/ec2metadata
+  - aws/endpoints
   - aws/request
   - aws/session
   - aws/signer/v4
-  - private/endpoints
   - private/protocol
   - private/protocol/json/jsonutil
   - private/protocol/jsonrpc
