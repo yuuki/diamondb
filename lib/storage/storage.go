@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/yuuki/diamondb/lib/series"
-	"github.com/yuuki/diamondb/lib/storage/dynamo"
+	"github.com/yuuki/diamondb/lib/storage/dynamodb"
 	"github.com/yuuki/diamondb/lib/storage/redis"
 )
 
@@ -20,7 +20,7 @@ type Fetcher interface {
 // Store provides each data store client.
 type Store struct {
 	Redis    redis.Fetcher
-	DynamoDB dynamo.Fetcher
+	DynamoDB dynamodb.Fetcher
 	// s3 client
 }
 
@@ -28,7 +28,7 @@ type Store struct {
 func NewStore() Fetcher {
 	return &Store{
 		Redis:    redis.NewRedis(),
-		DynamoDB: dynamo.NewDynamoDB(),
+		DynamoDB: dynamodb.NewDynamoDB(),
 	}
 }
 

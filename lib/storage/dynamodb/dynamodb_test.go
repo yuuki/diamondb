@@ -1,4 +1,4 @@
-package dynamo
+package dynamodb
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/yuuki/diamondb/lib/series"
@@ -17,7 +17,7 @@ func TestPing(t *testing.T) {
 	defer ctrl.Finish()
 	mock := NewMockDynamoDBAPI(ctrl)
 	mock.EXPECT().DescribeLimits(gomock.Any()).Return(
-		&dynamodb.DescribeLimitsOutput{}, nil,
+		&godynamodb.DescribeLimitsOutput{}, nil,
 	)
 	d := NewTestDynamoDB(mock)
 	err := d.Ping()
@@ -217,14 +217,14 @@ func TestFetchSeriesMap_Empty(t *testing.T) {
 	dmock := NewMockDynamoDBAPI(ctrl)
 	defer ctrl.Finish()
 
-	responses := make(map[string][]map[string]*dynamodb.AttributeValue)
-	responses[mockTableName("1m1h", 0)] = []map[string]*dynamodb.AttributeValue{}
+	responses := make(map[string][]map[string]*godynamodb.AttributeValue)
+	responses[mockTableName("1m1h", 0)] = []map[string]*godynamodb.AttributeValue{}
 	reqErr := awserr.NewRequestFailure(
 		awserr.New("ResourceNotFoundException", "resource not found", errors.New("dummy")),
 		404, "dummyID",
 	)
 	dmock.EXPECT().BatchGetItem(gomock.Any()).Return(
-		&dynamodb.BatchGetItemOutput{Responses: responses}, reqErr,
+		&godynamodb.BatchGetItemOutput{Responses: responses}, reqErr,
 	)
 	d := NewTestDynamoDB(dmock)
 
