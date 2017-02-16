@@ -79,7 +79,8 @@ func RenderHandler(env *env.Env) http.Handler {
 			errutil.PrintStackTrace(err)
 
 			switch err := errors.Cause(err).(type) {
-			case *query.ParserError, *query.UnsupportedFunctionError, *query.ArgumentError:
+			case *query.ParserError, *query.UnsupportedFunctionError,
+				*query.ArgumentError, *timeparser.TimeParserError:
 				badRequest(w, err.Error())
 			default:
 				serverError(w, err.Error())
