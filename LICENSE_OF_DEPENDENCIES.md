@@ -25,3 +25,6 @@
   - [Apache License Version 2.0](https://github.com/kylelemons/godebug/blob/master/LICENSE)
 - github.com/golang/mock
   - [Apache License Version 2.0](https://github.com/golang/mock/blob/master/LICENSE)
+- github.com/fortytw2/leaktest
+  - Copyright (c) 2012 The Go Authors. All rights reserved.
+  - [BSD License](https://github.com/fortytw2/leaktest/blob/master/LICENSE)
