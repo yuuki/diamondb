@@ -1,5 +1,5 @@
-hash: d01beaa25ac25857e54d72cfdffe229efce1e2716d9486eb5713176fce72b699
-updated: 2017-02-16T22:06:51.381662763+09:00
+hash: 844a1fd917365f3f2a22d055cf25f886396c7331c6b803edd93553f562d0672b
+updated: 2017-02-16T22:08:09.342019947+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
@@ -71,3 +71,5 @@ testImports:
   version: 1ce09fc76693fb3c1ca9b529c66f38920beb6fb8
   subpackages:
   - info
+- name: github.com/fortytw2/leaktest
+  version: 0db74e8cd5adacfcc982838c6e185789e4b44e14

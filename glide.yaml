@@ -15,3 +15,5 @@ import:
 - package: github.com/golang/mock
   subpackages:
   - gomock
+testImport:
+- package: github.com/fortytw2/leaktest
