@@ -104,33 +104,9 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 		}
 		return ss, nil
 	case FuncExpr:
-		args := funcArgs{}
-		for _, expr := range e.SubExprs {
-			switch e2 := expr.(type) {
-			case BoolExpr:
-				args = append(args, &funcArg{expr: expr})
-			case NumberExpr:
-				args = append(args, &funcArg{expr: expr})
-			case StringExpr:
-				args = append(args, &funcArg{expr: expr})
-			case SeriesListExpr, GroupSeriesExpr:
-				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
-				if err != nil {
-					return nil, errors.Wrapf(err, "failed to invoke %s", e2)
-				}
-				ex := SeriesListExpr{Literal: ss.FormattedName()}
-				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
-			case FuncExpr:
-				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
-				if err != nil {
-					return nil, errors.Wrapf(err, "failed to invoke %s", e2)
-				}
-				// Regard FuncExpr as SeriesListExpr after process function
-				ex := SeriesListExpr{Literal: fmt.Sprintf("%s(%s)", e2.Name, ss.FormattedName())}
-				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
-			default:
-				return nil, &UnknownExpressionError{expr: expr}
-			}
+		args, err := invokeSubExprs(fetcher, e.SubExprs, startTime, endTime)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to invoke arguments of (%s) function", e.Name)
 		}
 		switch e.Name {
 		case "alias":
@@ -211,4 +187,26 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 	default:
 		return nil, &UnknownExpressionError{expr: expr}
 	}
+}
+
+func invokeSubExprs(fetcher storage.Fetcher, exprs []Expr, startTime, endTime time.Time) (funcArgs, error) {
+	args := funcArgs{}
+	for _, expr := range exprs {
+		switch e := expr.(type) {
+		case BoolExpr, NumberExpr, StringExpr:
+			args = append(args, &funcArg{expr: e})
+		case SeriesListExpr, GroupSeriesExpr, FuncExpr:
+			ss, err := invokeExpr(fetcher, e, startTime, endTime)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to invoke %s", e)
+			}
+			args = append(args, &funcArg{
+				expr:        SeriesListExpr{Literal: ss.FormattedName()},
+				seriesSlice: ss,
+			})
+		default:
+			return nil, &UnknownExpressionError{expr: expr}
+		}
+	}
+	return args, nil
 }
