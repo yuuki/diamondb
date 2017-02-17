@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
@@ -99,7 +100,8 @@ func (cli *CLI) Run(args []string) int {
 
 	s := <-sigch
 	log.Printf("Received %s gracefully shutdown...\n", s)
-	if err := srv.Shutdown(context.Background()); err != nil {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := srv.Shutdown(ctx); err != nil {
 		log.Println(err)
 		return 3
 	}
