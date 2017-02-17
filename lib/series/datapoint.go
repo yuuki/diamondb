@@ -46,19 +46,11 @@ func (ds DataPoints) Len() int {
 	return len(ds)
 }
 
-// Swap is for Sort interface.
-func (ds DataPoints) Swap(i, j int) {
-	ds[i], ds[j] = ds[j], ds[i]
-}
-
-// Less is for Sort interface.
-func (ds DataPoints) Less(i, j int) bool {
-	return ds[i].Timestamp() < ds[j].Timestamp()
-}
-
 // Sort sorts DataPoints in ascending order of timestamps.
 func (ds DataPoints) Sort() DataPoints {
-	sort.Sort(ds)
+	sort.Slice(ds, func(i, j int) bool {
+		return ds[i].timestamp < ds[j].timestamp
+	})
 	return ds
 }
 
