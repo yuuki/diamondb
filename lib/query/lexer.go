@@ -1,6 +1,6 @@
 package query
 
-//go:generate go tool yacc -o parser.go parser.go.y
+//go:generate goyacc -o parser.go parser.go.y
 
 import (
 	"fmt"
