@@ -4,20 +4,22 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 )
 
 type config struct {
-	Host                string   `json:"host"`
-	Port                string   `json:"port"`
-	RedisAddrs          []string `json:"redis_addrs"`
-	RedisPassword       string   `json:"redis_password"`
-	RedisDB             int      `json:"redis_db"`
-	RedisPoolSize       int      `json:"redis_pool_size"`
-	DynamoDBRegion      string   `json:"dynamodb_region"`
-	DynamoDBTablePrefix string   `json:"dynamodb_table_prefix"`
-	DynamoDBEndpoint    string   `json:"dynamodb_endpoint"`
+	Host                string        `json:"host"`
+	Port                string        `json:"port"`
+	ShutdownTimeout     time.Duration `json:"shutdown_timeout"`
+	RedisAddrs          []string      `json:"redis_addrs"`
+	RedisPassword       string        `json:"redis_password"`
+	RedisDB             int           `json:"redis_db"`
+	RedisPoolSize       int           `json:"redis_pool_size"`
+	DynamoDBRegion      string        `json:"dynamodb_region"`
+	DynamoDBTablePrefix string        `json:"dynamodb_table_prefix"`
+	DynamoDBEndpoint    string        `json:"dynamodb_endpoint"`
 
 	Debug bool `json:"debug"`
 }
@@ -25,6 +27,8 @@ type config struct {
 const (
 	// DefaultPort is the default listening port.
 	DefaultPort = "8000"
+	// DefaultShutdownTimeout is the default timeout seconds for server shutdown.
+	DefaultShutdownTimeout = 10 * time.Second
 	// DefaultRedisAddr is the port to connect to redis-server process.
 	DefaultRedisAddr = "localhost:6379"
 	// DefaultRedisPassword is the password to connect to redis-server process.
@@ -47,6 +51,16 @@ func Load() error {
 	Config.Port = os.Getenv("DIAMONDB_PORT")
 	if Config.Port == "" {
 		Config.Port = DefaultPort
+	}
+	timeout := os.Getenv("DIAMONDB_SHUTDOWN_TIMEOUT")
+	if timeout == "" {
+		Config.ShutdownTimeout = DefaultShutdownTimeout
+	} else {
+		v, err := strconv.Atoi(timeout)
+		if err != nil {
+			return errors.New("DIAMONDB_SHUTDOWN_TIMEOUT must be an integer")
+		}
+		Config.ShutdownTimeout = time.Duration(v) * time.Second
 	}
 	Config.RedisAddrs = strings.Split(os.Getenv("DIAMONDB_REDIS_ADDRS"), ",")
 	if len(Config.RedisAddrs) == 0 {

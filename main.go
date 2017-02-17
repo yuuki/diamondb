@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
@@ -81,8 +84,23 @@ func (cli *CLI) Run(args []string) int {
 	}))
 	n.UseHandler(mux)
 
+	sigch := make(chan os.Signal, 1)
+	signal.Notify(sigch, syscall.SIGTERM, syscall.SIGINT)
+
 	log.Printf("Listening :%s ...", port)
-	if err := http.ListenAndServe(":"+port, n); err != nil {
+
+	srv := &http.Server{Addr: ":" + port, Handler: n}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Println(err)
+		}
+	}()
+
+	s := <-sigch
+	log.Printf("Received %s gracefully shutdown...\n", s)
+	ctx, _ := context.WithTimeout(context.Background(), config.Config.ShutdownTimeout)
+	if err := srv.Shutdown(ctx); err != nil {
 		log.Println(err)
 		return 3
 	}
