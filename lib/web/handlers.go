@@ -108,7 +108,7 @@ func WriteHandler(env *env.Env) http.Handler {
 			badRequest(w, err.Error())
 			return
 		}
-		if err := env.ReadWriter.InsertMetric(wr.Metric); err != nil {
+		if err := env.ReadWriter.Write(wr.Metric); err != nil {
 			log.Printf("%+v", err) // Print stack trace by pkg/errors
 			switch err.(type) {
 			default:

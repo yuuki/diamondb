@@ -26,10 +26,10 @@ const (
 // ReadWriter defines the interface for Redis reader and writer.
 type ReadWriter interface {
 	Ping() error
-	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
+	Read(string, time.Time, time.Time) (series.SeriesMap, error)
 	Client() redisAPI
 	batchGet(q *query) (series.SeriesMap, error)
-	InsertDatapoint(string, string, *metric.Datapoint) error
+	Write(string, string, *metric.Datapoint) error
 }
 
 type redisAPI interface {
@@ -94,7 +94,7 @@ func (r *Redis) Ping() error {
 }
 
 // Fetch fetches datapoints by name from start until end.
-func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
+func (r *Redis) Read(name string, start, end time.Time) (series.SeriesMap, error) {
 	slot, step := selectTimeSlot(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)
 
@@ -169,7 +169,7 @@ func (r *Redis) batchGet(q *query) (series.SeriesMap, error) {
 	return sm, nil
 }
 
-func (r *Redis) InsertDatapoint(slot string, name string, p *metric.Datapoint) error {
+func (r *Redis) Write(slot string, name string, p *metric.Datapoint) error {
 	err := r.client.HSet(slot+":"+name, fmt.Sprintf("%s", p.Timestamp), p.Value).Err()
 	if err != nil {
 		return errors.WithStack(err)

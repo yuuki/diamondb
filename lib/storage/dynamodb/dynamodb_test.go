@@ -26,7 +26,7 @@ func TestPing(t *testing.T) {
 	}
 }
 
-func TestFetchSeriesMap(t *testing.T) {
+func TestReadSeriesMap(t *testing.T) {
 	name := "roleA.r.{1,2}.loadavg"
 	expected := series.SeriesMap{
 		"roleA.r.1.loadavg": series.NewSeriesPoint(
@@ -59,7 +59,7 @@ func TestFetchSeriesMap(t *testing.T) {
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
 
 	d := NewTestDynamoDB(mock)
-	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := d.Read(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -68,7 +68,7 @@ func TestFetchSeriesMap(t *testing.T) {
 	}
 }
 
-func TestFetchSeriesMap_Concurrent(t *testing.T) {
+func TestReadSeriesMap_Concurrent(t *testing.T) {
 	tmp := dynamodbBatchLimit
 	dynamodbBatchLimit = 1
 	defer func() { dynamodbBatchLimit = tmp }()
@@ -115,7 +115,7 @@ func TestFetchSeriesMap_Concurrent(t *testing.T) {
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
 
 	d := NewTestDynamoDB(mock)
-	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := d.Read(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -142,7 +142,7 @@ func TestFetchSeriesMap_Concurrent(t *testing.T) {
 	}
 }
 
-func TestFetchSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T) {
+func TestReadSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T) {
 	tmp := dynamodbBatchLimit
 	dynamodbBatchLimit = 1
 	defer func() { dynamodbBatchLimit = tmp }()
@@ -189,7 +189,7 @@ func TestFetchSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
 
 	d := NewTestDynamoDB(mock)
-	sm, err := d.Fetch("roleA.r.1.loadavg", time.Unix(100, 0), time.Unix(4000, 0))
+	sm, err := d.Read("roleA.r.1.loadavg", time.Unix(100, 0), time.Unix(4000, 0))
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -212,7 +212,7 @@ func TestFetchSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T
 	}
 }
 
-func TestFetchSeriesMap_Empty(t *testing.T) {
+func TestReadSeriesMap_Empty(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	dmock := NewMockDynamoDBAPI(ctrl)
 	defer ctrl.Finish()
@@ -229,7 +229,7 @@ func TestFetchSeriesMap_Empty(t *testing.T) {
 	d := NewTestDynamoDB(dmock)
 
 	name := "roleA.r.{1,2}.loadavg"
-	sm, err := d.Fetch(name, time.Unix(100, 0), time.Unix(300, 0))
+	sm, err := d.Read(name, time.Unix(100, 0), time.Unix(300, 0))
 	if err != nil {
 		t.Fatalf("Should ignore NotFound error: %s", err)
 	}

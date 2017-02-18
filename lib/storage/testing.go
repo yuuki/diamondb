@@ -10,14 +10,16 @@ import (
 // FakeReadWriter is for stub testing
 type FakeReadWriter struct {
 	ReadWriter
-	FakeFetch        func(name string, start, end time.Time) (series.SeriesSlice, error)
-	FakeInsertMetric func(*metric.Metric) error
+	FakeRead  func(name string, start, end time.Time) (series.SeriesSlice, error)
+	FakeWrite func(*metric.Metric) error
 }
 
-func (s *FakeReadWriter) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
-	return s.FakeFetch(name, start, end)
+// Read is for stub testing
+func (s *FakeReadWriter) Read(name string, start, end time.Time) (series.SeriesSlice, error) {
+	return s.FakeRead(name, start, end)
 }
 
-func (r *FakeReadWriter) InsertMetric(m *metric.Metric) error {
-	return r.FakeInsertMetric(m)
+// Write is for stub testing
+func (r *FakeReadWriter) Write(m *metric.Metric) error {
+	return r.FakeWrite(m)
 }

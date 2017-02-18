@@ -89,11 +89,11 @@ func TestEvalTargets(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		fakefetcher := &storage.FakeReadWriter{
-			FakeFetch: tc.mockFunc,
+		fakereader := &storage.FakeReadWriter{
+			FakeRead: tc.mockFunc,
 		}
 		got, err := EvalTargets(
-			fakefetcher,
+			fakereader,
 			tc.targets,
 			time.Unix(0, 0),
 			time.Unix(120, 0),
@@ -110,8 +110,8 @@ func TestEvalTargets(t *testing.T) {
 }
 
 func TestEvalTarget_Func(t *testing.T) {
-	fakefetcher := &storage.FakeReadWriter{
-		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+	fakereader := &storage.FakeReadWriter{
+		FakeRead: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
 			}, nil
@@ -119,7 +119,7 @@ func TestEvalTarget_Func(t *testing.T) {
 	}
 
 	seriesSlice, err := EvalTarget(
-		fakefetcher,
+		fakereader,
 		"alias(server1.loadavg5,\"server01.loadavg5\")",
 		time.Unix(0, 0),
 		time.Unix(120, 0),
@@ -137,8 +137,8 @@ func TestEvalTarget_Func(t *testing.T) {
 }
 
 func TestEvalTarget_FuncNest(t *testing.T) {
-	fakefetcher := &storage.FakeReadWriter{
-		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+	fakereader := &storage.FakeReadWriter{
+		FakeRead: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
 			}, nil
@@ -146,7 +146,7 @@ func TestEvalTarget_FuncNest(t *testing.T) {
 	}
 
 	seriesSlice, err := EvalTarget(
-		fakefetcher,
+		fakereader,
 		"alias(alias(server1.loadavg5,\"server01.loadavg5\"),\"server001.loadavg5\")",
 		time.Unix(0, 0),
 		time.Unix(120, 0),
@@ -169,8 +169,8 @@ func TestEvalTarget_GroupSeries(t *testing.T) {
 		NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
 		NewSeries("server2.loadavg5", []float64{12.0, 13.0}, 1000, 60),
 	}
-	fakefetcher := &storage.FakeReadWriter{
-		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+	fakereader := &storage.FakeReadWriter{
+		FakeRead: func(name string, start, end time.Time) (SeriesSlice, error) {
 			if name != "server1.loadavg5,server2.loadavg5" {
 				return nil, errors.Errorf("unexpected name: %s", name)
 			}
@@ -178,7 +178,7 @@ func TestEvalTarget_GroupSeries(t *testing.T) {
 		},
 	}
 	got, err := EvalTarget(
-		fakefetcher,
+		fakereader,
 		"server{1,2}.loadavg5",
 		time.Unix(0, 0),
 		time.Unix(120, 0),
@@ -245,7 +245,7 @@ func TestInvokeSubExprs_Leak(t *testing.T) {
 	defer leaktest.Check(t)()
 
 	ff := &storage.FakeReadWriter{
-		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+		FakeRead: func(name string, start, end time.Time) (SeriesSlice, error) {
 			time.Sleep(10 * time.Millisecond)
 			ss := SeriesSlice{NewSeries(name, []float64{10.0}, 1, 60)}
 			return ss, nil
@@ -267,7 +267,7 @@ func TestInvokeSubExprs_ErrLeak(t *testing.T) {
 	defer leaktest.Check(t)()
 
 	ff := &storage.FakeReadWriter{
-		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+		FakeRead: func(name string, start, end time.Time) (SeriesSlice, error) {
 			time.Sleep(10 * time.Millisecond)
 			ss := SeriesSlice{NewSeries(name, []float64{10.0}, 1, 60)}
 			return ss, nil
