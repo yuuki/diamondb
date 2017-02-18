@@ -15,22 +15,6 @@ import (
 	"github.com/yuuki/diamondb/lib/storage/redis"
 )
 
-func TestWriterStoreInsertMetric(t *testing.T) {
-	fakeRedisWriter := &FakeRedisWriter{
-		FakeInsertDatapoint: func(slot string, name string, p *metric.Datapoint) error {
-			return nil
-		},
-	}
-	ws := &WriterStore{Redis: fakeRedisWriter}
-	err := ws.InsertMetric(&metric.Metric{
-		Name:       "server1.loadavg5",
-		Datapoints: []*metric.Datapoint{&metric.Datapoint{100, 0.1}},
-	})
-	if err != nil {
-		t.Fatalf("err: %s", err)
-	}
-}
-
 func TestStorePing(t *testing.T) {
 	// mock Redis
 	s, err := miniredis.Run()
@@ -93,5 +77,21 @@ func TestStoreFetch(t *testing.T) {
 	_, err := store.Fetch("server1.loadavg5", time.Unix(100, 0), time.Unix(1000, 0))
 	if err != nil {
 		t.Fatalf("should not raise err: %s", err)
+	}
+}
+
+func TestStoreInsertMetric(t *testing.T) {
+	fakeRedisWriter := &FakeRedisWriter{
+		FakeInsertDatapoint: func(slot string, name string, p *metric.Datapoint) error {
+			return nil
+		},
+	}
+	ws := &Store{Redis: fakeRedisWriter}
+	err := ws.InsertMetric(&metric.Metric{
+		Name:       "server1.loadavg5",
+		Datapoints: []*metric.Datapoint{&metric.Datapoint{100, 0.1}},
+	})
+	if err != nil {
+		t.Fatalf("err: %s", err)
 	}
 }

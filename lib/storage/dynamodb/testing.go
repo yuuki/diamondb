@@ -15,7 +15,7 @@ import (
 
 // FakeFetcher is for stub testing
 type FakeFetcher struct {
-	Fetcher
+	ReadWriter
 	FakeFetch func(name string, start, end time.Time) (series.SeriesMap, error)
 }
 

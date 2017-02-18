@@ -6,6 +6,5 @@ import (
 
 // Env represents a store of persistent objects such as database client
 type Env struct {
-	Fetcher storage.Fetcher
-	Writer  storage.Writer
+	ReadWriter storage.ReadWriter
 }

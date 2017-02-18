@@ -67,14 +67,13 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 
-	fetcher, err := storage.NewFetcher()
+	rw, err := storage.NewReadWriter()
 	if err != nil {
 		log.Printf("failed to start fetcher session. %s", err)
 		return -1
 	}
 	e := &env.Env{
-		Fetcher: fetcher,
-		Writer:  storage.NewWriter(),
+		ReadWriter: rw,
 	}
 
 	mux := http.NewServeMux()

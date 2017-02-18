@@ -89,7 +89,7 @@ func TestEvalTargets(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		fakefetcher := &storage.FakeFetcher{
+		fakefetcher := &storage.FakeReadWriter{
 			FakeFetch: tc.mockFunc,
 		}
 		got, err := EvalTargets(
@@ -110,7 +110,7 @@ func TestEvalTargets(t *testing.T) {
 }
 
 func TestEvalTarget_Func(t *testing.T) {
-	fakefetcher := &storage.FakeFetcher{
+	fakefetcher := &storage.FakeReadWriter{
 		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
@@ -137,7 +137,7 @@ func TestEvalTarget_Func(t *testing.T) {
 }
 
 func TestEvalTarget_FuncNest(t *testing.T) {
-	fakefetcher := &storage.FakeFetcher{
+	fakefetcher := &storage.FakeReadWriter{
 		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
@@ -169,7 +169,7 @@ func TestEvalTarget_GroupSeries(t *testing.T) {
 		NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
 		NewSeries("server2.loadavg5", []float64{12.0, 13.0}, 1000, 60),
 	}
-	fakefetcher := &storage.FakeFetcher{
+	fakefetcher := &storage.FakeReadWriter{
 		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			if name != "server1.loadavg5,server2.loadavg5" {
 				return nil, errors.Errorf("unexpected name: %s", name)
@@ -244,7 +244,7 @@ var testEvalTargetFuncTests = []struct {
 func TestInvokeSubExprs_Leak(t *testing.T) {
 	defer leaktest.Check(t)()
 
-	ff := &storage.FakeFetcher{
+	ff := &storage.FakeReadWriter{
 		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			time.Sleep(10 * time.Millisecond)
 			ss := SeriesSlice{NewSeries(name, []float64{10.0}, 1, 60)}
@@ -266,7 +266,7 @@ func TestInvokeSubExprs_Leak(t *testing.T) {
 func TestInvokeSubExprs_ErrLeak(t *testing.T) {
 	defer leaktest.Check(t)()
 
-	ff := &storage.FakeFetcher{
+	ff := &storage.FakeReadWriter{
 		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			time.Sleep(10 * time.Millisecond)
 			ss := SeriesSlice{NewSeries(name, []float64{10.0}, 1, 60)}

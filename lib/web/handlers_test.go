@@ -19,7 +19,7 @@ import (
 )
 
 func TestRenderHandler(t *testing.T) {
-	fakefetcher := &storage.FakeFetcher{
+	fakefetcher := &storage.FakeReadWriter{
 		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			return SeriesSlice{
 				NewSeries("server1.loadavg5", []float64{10.0, 11.0}, 1000, 60),
@@ -32,7 +32,7 @@ func TestRenderHandler(t *testing.T) {
 		panic(err)
 	}
 
-	RenderHandler(&env.Env{Fetcher: fakefetcher}).ServeHTTP(r, req)
+	RenderHandler(&env.Env{ReadWriter: fakefetcher}).ServeHTTP(r, req)
 
 	got, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -53,7 +53,7 @@ func TestRenderHandler(t *testing.T) {
 }
 
 func TestWriteHandler(t *testing.T) {
-	fakewriter := &storage.FakeWriter{
+	fakewriter := &storage.FakeReadWriter{
 		FakeInsertMetric: func(*metric.Metric) error {
 			return nil
 		},
@@ -73,7 +73,7 @@ func TestWriteHandler(t *testing.T) {
 		panic(err)
 	}
 
-	WriteHandler(&env.Env{Writer: fakewriter}).ServeHTTP(r, req)
+	WriteHandler(&env.Env{ReadWriter: fakewriter}).ServeHTTP(r, req)
 
 	_, err = ioutil.ReadAll(r.Body)
 	if err != nil {

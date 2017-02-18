@@ -23,15 +23,12 @@ const (
 	redisBatchLimit = 50 // TODO need to tweak
 )
 
-// Fetcher defines the interface for Redis reader.
-type Fetcher interface {
+// ReadWriter defines the interface for Redis reader and writer.
+type ReadWriter interface {
 	Ping() error
 	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
 	Client() redisAPI
 	batchGet(q *query) (series.SeriesMap, error)
-}
-
-type Writer interface {
 	InsertDatapoint(string, string, *metric.Datapoint) error
 }
 
@@ -57,7 +54,7 @@ type query struct {
 }
 
 // NewRedis creates a Redis.
-func NewRedis() Fetcher {
+func NewRedis() ReadWriter {
 	addrs := config.Config.RedisAddrs
 	if len(addrs) > 1 {
 		r := Redis{
@@ -80,16 +77,6 @@ func NewRedis() Fetcher {
 		return &r
 	}
 	return nil
-}
-
-func NewWriter() Writer {
-	return &Redis{
-		client: goredis.NewClient(&goredis.Options{
-			Addr:     config.Config.RedisAddrs[0],
-			Password: config.Config.RedisPassword,
-			DB:       config.Config.RedisDB,
-		}),
-	}
 }
 
 // Client returns the redis client.

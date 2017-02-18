@@ -22,18 +22,12 @@ import (
 
 //go:generate mockgen -source ../../../vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination dynamodb_mock.go -package dynamodb
 
-// Fetcher defines the interface for Redis reader.
-type Fetcher interface {
+// ReadWriter defines the interface for DynamoDB reader and writer.
+type ReadWriter interface {
 	Ping() error
-	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
 	Client() godynamodbiface.DynamoDBAPI
+	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
 	batchGet(q *query) (series.SeriesMap, error)
-}
-
-// Writer defines the interface for Redis writer.
-type Writer interface {
-	Ping() error
-	Client() dynamodbiface.DynamoDBAPI
 }
 
 // DynamoDB provides a dynamodb client.
@@ -71,7 +65,7 @@ var (
 )
 
 // NewDynamoDB creates a new DynamoDB.
-func NewDynamoDB() (Fetcher, error) {
+func NewDynamoDB() (ReadWriter, error) {
 	awsConf := aws.NewConfig().WithRegion(config.Config.DynamoDBRegion)
 	if config.Config.DynamoDBEndpoint != "" {
 		// For dynamodb-local configuration
