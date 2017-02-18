@@ -5,7 +5,6 @@ import (
 
 	"github.com/yuuki/diamondb/lib/metric"
 	"github.com/yuuki/diamondb/lib/series"
-	"github.com/yuuki/diamondb/lib/storage/redis"
 )
 
 // FakeReadWriter is for stub testing
@@ -21,14 +20,4 @@ func (s *FakeReadWriter) Fetch(name string, start, end time.Time) (series.Series
 
 func (r *FakeReadWriter) InsertMetric(m *metric.Metric) error {
 	return r.FakeInsertMetric(m)
-}
-
-// FakeRedisWriter is for stub testing
-type FakeRedisWriter struct {
-	redis.ReadWriter
-	FakeInsertDatapoint func(slot string, name string, p *metric.Datapoint) error
-}
-
-func (r *FakeRedisWriter) InsertDatapoint(slot string, name string, p *metric.Datapoint) error {
-	return r.FakeInsertDatapoint(slot, name, p)
 }

@@ -45,7 +45,7 @@ func TestStorePing(t *testing.T) {
 }
 
 func TestStoreFetch(t *testing.T) {
-	redisff := &redis.FakeFetcher{
+	redisff := &redis.FakeReadWriter{
 		FakeFetch: func(name string, start, end time.Time) (series.SeriesMap, error) {
 			return series.SeriesMap{
 				"server1.loadavg5": series.NewSeriesPoint(
@@ -57,7 +57,7 @@ func TestStoreFetch(t *testing.T) {
 			}, nil
 		},
 	}
-	dynamodbff := &dynamodb.FakeFetcher{
+	dynamodbff := &dynamodb.FakeReadWriter{
 		FakeFetch: func(name string, start, end time.Time) (series.SeriesMap, error) {
 			return series.SeriesMap{
 				"server1.loadavg5": series.NewSeriesPoint(
@@ -81,12 +81,12 @@ func TestStoreFetch(t *testing.T) {
 }
 
 func TestStoreInsertMetric(t *testing.T) {
-	fakeRedisWriter := &FakeRedisWriter{
+	frw := &redis.FakeReadWriter{
 		FakeInsertDatapoint: func(slot string, name string, p *metric.Datapoint) error {
 			return nil
 		},
 	}
-	ws := &Store{Redis: fakeRedisWriter}
+	ws := &Store{Redis: frw}
 	err := ws.InsertMetric(&metric.Metric{
 		Name:       "server1.loadavg5",
 		Datapoints: []*metric.Datapoint{&metric.Datapoint{100, 0.1}},
