@@ -25,11 +25,15 @@ type Store struct {
 }
 
 // NewStore create a new Store wrapped by Fetcher.
-func NewStore() Fetcher {
+func NewStore() (Fetcher, error) {
+	d, err := dynamodb.NewDynamoDB()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 	return &Store{
 		Redis:    redis.NewRedis(),
-		DynamoDB: dynamodb.NewDynamoDB(),
-	}
+		DynamoDB: d,
+	}, nil
 }
 
 // Ping pings each storage.

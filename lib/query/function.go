@@ -371,7 +371,7 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 	}
 	step := int64(delta.Seconds())
 	for _, s := range ss {
-		bucketNum := int(math.Ceil(float64((s.End() - s.Start()) / step)))
+		bucketNum := int(float64((s.End() - s.Start()) / step))
 		buckets := make(map[int64][]float64, bucketNum)
 		for _, p := range s.Points() {
 			t, val := p.Timestamp(), p.Value()

@@ -65,17 +65,25 @@ var (
 )
 
 // NewDynamoDB creates a new DynamoDB.
-func NewDynamoDB() Fetcher {
+func NewDynamoDB() (Fetcher, error) {
 	awsConf := aws.NewConfig().WithRegion(config.Config.DynamoDBRegion)
 	if config.Config.DynamoDBEndpoint != "" {
 		// For dynamodb-local configuration
 		awsConf.WithEndpoint(config.Config.DynamoDBEndpoint)
 		awsConf.WithCredentials(credentials.NewStaticCredentials("dummy", "dummy", "dummy"))
 	}
-	return &DynamoDB{
-		svc:         godynamodb.New(session.New(awsConf)),
-		tablePrefix: config.Config.DynamoDBTablePrefix,
+	sess, err := session.NewSession(awsConf)
+	if err != nil {
+		return nil, errors.Wrapf(err,
+			"failed to create session for dynamodb (%s,%s)",
+			config.Config.DynamoDBRegion,
+			config.Config.DynamoDBEndpoint,
+		)
 	}
+	return &DynamoDB{
+		svc:         godynamodb.New(sess),
+		tablePrefix: config.Config.DynamoDBTablePrefix,
+	}, nil
 }
 
 // Client returns the DynamoDB client.

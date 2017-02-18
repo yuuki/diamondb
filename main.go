@@ -67,7 +67,12 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 
-	e := &env.Env{Fetcher: storage.NewStore()}
+	store, err := storage.NewStore()
+	if err != nil {
+		log.Printf("storage session failed. %s", err)
+		return -1
+	}
+	e := &env.Env{Fetcher: store}
 
 	mux := http.NewServeMux()
 	mux.Handle("/ping", web.PingHandler(e))
