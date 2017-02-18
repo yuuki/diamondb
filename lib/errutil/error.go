@@ -14,11 +14,7 @@ type stackTracer interface {
 // PrintStackTrace prints the stack trace by pkg/errors
 func PrintStackTrace(err error) {
 	if err, ok := prevCause(err).(stackTracer); ok {
-		st := errors.StackTrace{}
-		for _, f := range err.StackTrace() {
-			st = append(st, f)
-		}
-		log.Printf("%+v", st)
+		log.Printf("%+v", err.StackTrace())
 	}
 }
 

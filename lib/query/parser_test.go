@@ -155,7 +155,7 @@ func TestParsetTarget_FuncExprWithBoolExpr(t *testing.T) {
 	if !ok5 {
 		t.Fatalf("expr %#v should be BoolExpr", v5)
 	}
-	if v5.Literal != true {
+	if !v5.Literal {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", true, v5.Literal)
 	}
 }
