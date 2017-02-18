@@ -26,7 +26,7 @@ import (
 type ReadWriter interface {
 	Ping() error
 	Client() godynamodbiface.DynamoDBAPI
-	Read(string, time.Time, time.Time) (series.SeriesMap, error)
+	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
 	batchGet(q *query) (series.SeriesMap, error)
 }
 
@@ -102,7 +102,7 @@ func (d *DynamoDB) Ping() error {
 }
 
 // Fetch fetches datapoints by name from start until end.
-func (d *DynamoDB) Read(name string, start, end time.Time) (series.SeriesMap, error) {
+func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
 	slots, step := selectTimeSlots(start, end, d.tablePrefix)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
 	numQueries := len(slots) * len(nameGroups)

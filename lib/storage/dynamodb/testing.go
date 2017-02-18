@@ -16,12 +16,11 @@ import (
 // FakeReadWriter is for stub testing
 type FakeReadWriter struct {
 	ReadWriter
-	FakeRead func(name string, start, end time.Time) (series.SeriesMap, error)
+	FakeFetch func(name string, start, end time.Time) (series.SeriesMap, error)
 }
 
-// Read is for stub testing.
-func (s *FakeReadWriter) Read(name string, start, end time.Time) (series.SeriesMap, error) {
-	return s.FakeRead(name, start, end)
+func (s *FakeReadWriter) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
+	return s.FakeFetch(name, start, end)
 }
 
 type mockDynamoDBParam struct {

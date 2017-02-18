@@ -15,8 +15,8 @@ import (
 // ReadWriter defines the interface for data store reader and writer.
 type ReadWriter interface {
 	Ping() error
-	Read(string, time.Time, time.Time) (series.SeriesSlice, error)
-	Write(*metric.Metric) error
+	Fetch(string, time.Time, time.Time) (series.SeriesSlice, error)
+	InsertMetric(*metric.Metric) error
 }
 
 // Store provides each data store client.
@@ -72,21 +72,21 @@ func (f *futureSeriesMap) Get() (series.SeriesMap, error) {
 	return f.result, f.err
 }
 
-// Read fetches series from Redis, DynamoDB and S3.
+// Fetch fetches series from Redis, DynamoDB and S3.
 // TODO S3
-func (s *Store) Read(name string, start, end time.Time) (series.SeriesSlice, error) {
+func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
 	fredis := newFutureSeriesMap()
 	fdynamodb := newFutureSeriesMap()
 
 	// Redis task
 	go func(name string, start, end time.Time) {
-		fredis.result, fredis.err = s.Redis.Read(name, start, end)
+		fredis.result, fredis.err = s.Redis.Fetch(name, start, end)
 		fredis.done <- struct{}{}
 	}(name, start, end)
 
 	// DynamoDB task
 	go func(name string, start, end time.Time) {
-		fdynamodb.result, fdynamodb.err = s.DynamoDB.Read(name, start, end)
+		fdynamodb.result, fdynamodb.err = s.DynamoDB.Fetch(name, start, end)
 		fdynamodb.done <- struct{}{}
 	}(name, start, end)
 
@@ -103,9 +103,9 @@ func (s *Store) Read(name string, start, end time.Time) (series.SeriesSlice, err
 	return ss, nil
 }
 
-func (s *Store) Write(m *metric.Metric) error {
+func (s *Store) InsertMetric(m *metric.Metric) error {
 	for _, p := range m.Datapoints {
-		if err := s.Redis.Write("1m", m.Name, p); err != nil {
+		if err := s.Redis.InsertDatapoint("1m", m.Name, p); err != nil {
 			return errors.WithStack(err)
 		}
 	}

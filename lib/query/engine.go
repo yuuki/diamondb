@@ -69,7 +69,7 @@ func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime
 	return results, nil
 }
 
-// EvalTarget evaluates the target. It parses the target into AST structure and reads datapoints from storage.
+// EvalTarget evaluates the target. It parses the target into AST structure and fetches datapoints from storage.
 //
 // ex. target: "alias(sumSeries(server1.loadavg5,server2.loadavg5),\"server_loadavg5\")"
 func EvalTarget(reader storage.ReadWriter, target string, startTime, endTime time.Time) (series.SeriesSlice, error) {
@@ -87,9 +87,9 @@ func EvalTarget(reader storage.ReadWriter, target string, startTime, endTime tim
 func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Time) (series.SeriesSlice, error) {
 	switch e := expr.(type) {
 	case SeriesListExpr:
-		ss, err := reader.Read(e.Literal, startTime, endTime)
+		ss, err := reader.Fetch(e.Literal, startTime, endTime)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to read (%s,%d,%d)", e.Literal, startTime.Unix(), endTime.Unix())
+			return nil, errors.Wrapf(err, "failed to fetch (%s,%d,%d)", e.Literal, startTime.Unix(), endTime.Unix())
 		}
 		return ss, nil
 	case GroupSeriesExpr:
@@ -227,7 +227,7 @@ func invokeSubExprs(reader storage.ReadWriter, exprs []Expr, startTime, endTime 
 		if ret.err != nil {
 			// return err that is found firstly.
 			return nil, errors.Wrapf(ret.err,
-				"failed to read concurrently (%d, %v)", i, ret.value.expr,
+				"failed to fetch concurrently (%d, %v)", i, ret.value.expr,
 			)
 		}
 		args[ret.index] = ret.value
