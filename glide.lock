@@ -1,10 +1,10 @@
-hash: 7573f4797fa2d737d93f936180536e3ebd7666b5a99e69f8270d81d1289c5e27
-updated: 2017-01-14T13:49:54.926973141+09:00
+hash: 844a1fd917365f3f2a22d055cf25f886396c7331c6b803edd93553f562d0672b
+updated: 2017-02-16T22:08:09.342019947+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
 - name: github.com/aws/aws-sdk-go
-  version: 6c577e9e7b08a6d10bad1c9703227cd0403a8dd7
+  version: 7f96ce6d3bc37ec42c97a3f8d19209a134838042
   subpackages:
   - aws
   - aws/awserr
@@ -18,10 +18,10 @@ imports:
   - aws/credentials/stscreds
   - aws/defaults
   - aws/ec2metadata
+  - aws/endpoints
   - aws/request
   - aws/session
   - aws/signer/v4
-  - private/endpoints
   - private/protocol
   - private/protocol/json/jsonutil
   - private/protocol/jsonrpc
@@ -71,3 +71,5 @@ testImports:
   version: 1ce09fc76693fb3c1ca9b529c66f38920beb6fb8
   subpackages:
   - info
+- name: github.com/fortytw2/leaktest
+  version: 0db74e8cd5adacfcc982838c6e185789e4b44e14

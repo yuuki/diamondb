@@ -48,7 +48,7 @@ var testDoSumSeriesTests = []struct {
 	{
 		"the type of the arguments is different",
 		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
-		errors.New("invalid argument type `seriesList` to function `sumSeries`"),
+		errors.New("sumSeries: invalid argument type (server1.loadavg5)"),
 	},
 }
 
@@ -105,7 +105,7 @@ var testDoAverageSeriesTests = []struct {
 	{
 		"the type of the arguments is different",
 		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
-		errors.New("invalid argument type `seriesList` to function `averageSeries`"),
+		errors.New("averageSeries: invalid argument type (server1.loadavg5)"),
 	},
 }
 
@@ -114,7 +114,7 @@ func TestDoAverageSeries(t *testing.T) {
 		_, err := doAverageSeries(tc.args)
 		if tc.err != nil {
 			if diff := pretty.Compare(err.Error(), tc.err.Error()); diff != "" {
-				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+				t.Fatalf("desc: %s, diff: (-actual +expected)\n%s", tc.desc, diff)
 			}
 			continue
 		}
@@ -162,7 +162,7 @@ var testDoMinSeriesTests = []struct {
 	{
 		"the type of the arguments is different",
 		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
-		errors.New("invalid argument type `seriesList` to function `minSeries`"),
+		errors.New("minSeries: invalid argument type (server1.loadavg5)"),
 	},
 }
 
@@ -219,7 +219,7 @@ var testDoMaxSeriesTests = []struct {
 	{
 		"the type of the arguments is different",
 		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
-		errors.New("invalid argument type `seriesList` to function `maxSeries`"),
+		errors.New("maxSeries: invalid argument type (server1.loadavg5)"),
 	},
 }
 
@@ -276,7 +276,7 @@ var testDoMultiplySeriesTests = []struct {
 	{
 		"the type of the arguments is different",
 		funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
-		errors.New("invalid argument type `seriesList` to function `multiplySeries`"),
+		errors.New("multiplySeries: invalid argument type (server1.loadavg5)"),
 	},
 }
 
@@ -310,7 +310,7 @@ var testDoPercentileOfSeries = []struct {
 				},
 			},
 		},
-		errors.New("wrong number of arguments 'percentileOfSeries' (1 for 2 or 3)"),
+		errors.New("percentileOfSeries: wrong number of arguments (1 for 2,3)"),
 	},
 	{
 		"SeriesListExpr + NumberExpr",
@@ -331,7 +331,7 @@ var testDoPercentileOfSeries = []struct {
 			&funcArg{expr: StringExpr{Literal: "hoge"}},
 			&funcArg{expr: StringExpr{Literal: "foo"}},
 		},
-		errors.New("invalid argument type `seriesList` to function `percentileOfSeries`"),
+		errors.New("percentileOfSeries: invalid argument type (hoge)"),
 	},
 	{
 		"the type of the arguments is different",
@@ -344,7 +344,7 @@ var testDoPercentileOfSeries = []struct {
 			},
 			&funcArg{expr: StringExpr{Literal: "hoge"}},
 		},
-		errors.New("invalid argument type `n` to function `percentileOfSeries`"),
+		errors.New("percentileOfSeries: invalid argument type (hoge)"),
 	},
 }
 
@@ -424,7 +424,7 @@ func TestDoOffset(t *testing.T) {
 					},
 				},
 			},
-			errors.New("wrong number of arguments 'offset' (1 for 2)"),
+			errors.New("offset: wrong number of arguments (1 for 2)"),
 		},
 		{
 			"seriesListExpr + numberExpr",
@@ -469,7 +469,7 @@ func TestDoOffset(t *testing.T) {
 					},
 				},
 			},
-			errors.New("invalid argument type `number` to function `offset`"),
+			errors.New("offset: invalid argument type (server2.loadavg5)"),
 		},
 	}
 
@@ -831,7 +831,7 @@ func TestDoSumSeriesWithWildcards(t *testing.T) {
 					},
 				},
 			},
-			errors.New("wrong number of arguments 'sumSeriesWithWildcards' (1 for 2+)"),
+			errors.New("sumSeriesWithWildcards: wrong number of arguments (1 for 2+)"),
 		},
 		{
 			"the type of SeriesSlice is wrong",
@@ -843,7 +843,7 @@ func TestDoSumSeriesWithWildcards(t *testing.T) {
 					expr: NumberExpr{Literal: 2},
 				},
 			},
-			errors.New("invalid argument type `SeriesList` to function `sumSeriesWithWildcards`"),
+			errors.New("sumSeriesWithWildcards: invalid argument type (1)"),
 		},
 		{
 			"the type of position is wrong",
@@ -858,7 +858,7 @@ func TestDoSumSeriesWithWildcards(t *testing.T) {
 					expr: StringExpr{Literal: "1"},
 				},
 			},
-			errors.New("invalid argument type `position` to function `sumSeriesWithWildcards`"),
+			errors.New("sumSeriesWithWildcards: invalid argument type (1)"),
 		},
 	}
 

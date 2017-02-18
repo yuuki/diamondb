@@ -1,18 +1,17 @@
-package dynamo
+package dynamodb
 
 import (
 	"encoding/binary"
 	"fmt"
 	"math"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
+	godynamodbiface "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/pkg/errors"
 
 	"github.com/yuuki/diamondb/lib/config"
@@ -21,13 +20,13 @@ import (
 	"github.com/yuuki/diamondb/lib/util"
 )
 
-//go:generate mockgen -source ../../../vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination dynamodb_mock.go -package dynamo
+//go:generate mockgen -source ../../../vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination dynamodb_mock.go -package dynamodb
 
 // Fetcher defines the interface for Redis reader.
 type Fetcher interface {
 	Ping() error
 	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
-	Client() dynamodbiface.DynamoDBAPI
+	Client() godynamodbiface.DynamoDBAPI
 	batchGet(q *query) (series.SeriesMap, error)
 }
 
@@ -39,7 +38,7 @@ type Writer interface {
 
 // DynamoDB provides a dynamodb client.
 type DynamoDB struct {
-	svc         dynamodbiface.DynamoDBAPI
+	svc         godynamodbiface.DynamoDBAPI
 	tablePrefix string
 }
 
@@ -72,27 +71,35 @@ var (
 )
 
 // NewDynamoDB creates a new DynamoDB.
-func NewDynamoDB() Fetcher {
+func NewDynamoDB() (Fetcher, error) {
 	awsConf := aws.NewConfig().WithRegion(config.Config.DynamoDBRegion)
 	if config.Config.DynamoDBEndpoint != "" {
 		// For dynamodb-local configuration
 		awsConf.WithEndpoint(config.Config.DynamoDBEndpoint)
 		awsConf.WithCredentials(credentials.NewStaticCredentials("dummy", "dummy", "dummy"))
 	}
-	return &DynamoDB{
-		svc:         dynamodb.New(session.New(awsConf)),
-		tablePrefix: config.Config.DynamoDBTablePrefix,
+	sess, err := session.NewSession(awsConf)
+	if err != nil {
+		return nil, errors.Wrapf(err,
+			"failed to create session for dynamodb (%s,%s)",
+			config.Config.DynamoDBRegion,
+			config.Config.DynamoDBEndpoint,
+		)
 	}
+	return &DynamoDB{
+		svc:         godynamodb.New(sess),
+		tablePrefix: config.Config.DynamoDBTablePrefix,
+	}, nil
 }
 
 // Client returns the DynamoDB client.
-func (d *DynamoDB) Client() dynamodbiface.DynamoDBAPI {
+func (d *DynamoDB) Client() godynamodbiface.DynamoDBAPI {
 	return d.svc
 }
 
 // Ping pings DynamoDB endpoint.
 func (d *DynamoDB) Ping() error {
-	var params *dynamodb.DescribeLimitsInput
+	var params *godynamodb.DescribeLimitsInput
 	_, err := d.svc.DescribeLimits(params)
 	if err != nil {
 		return errors.WithStack(err)
@@ -137,7 +144,7 @@ func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, e
 	return sm, nil
 }
 
-func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, q *query) series.SeriesMap {
+func batchGetResultToMap(resp *godynamodb.BatchGetItemOutput, q *query) series.SeriesMap {
 	sm := make(series.SeriesMap, len(resp.Responses))
 	for _, xs := range resp.Responses {
 		for _, x := range xs {
@@ -159,16 +166,16 @@ func batchGetResultToMap(resp *dynamodb.BatchGetItemOutput, q *query) series.Ser
 }
 
 func (d *DynamoDB) batchGet(q *query) (series.SeriesMap, error) {
-	var keys []map[string]*dynamodb.AttributeValue
+	var keys []map[string]*godynamodb.AttributeValue
 	for _, name := range q.names {
-		keys = append(keys, map[string]*dynamodb.AttributeValue{
+		keys = append(keys, map[string]*godynamodb.AttributeValue{
 			"MetricName": {S: aws.String(name)},
 			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", q.slot.itemEpoch))},
 		})
 	}
-	items := make(map[string]*dynamodb.KeysAndAttributes)
-	items[q.slot.tableName] = &dynamodb.KeysAndAttributes{Keys: keys}
-	params := &dynamodb.BatchGetItemInput{
+	items := make(map[string]*godynamodb.KeysAndAttributes)
+	items[q.slot.tableName] = &godynamodb.KeysAndAttributes{Keys: keys}
+	params := &godynamodb.BatchGetItemInput{
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
 	}
@@ -181,8 +188,9 @@ func (d *DynamoDB) batchGet(q *query) (series.SeriesMap, error) {
 				return series.SeriesMap{}, nil
 			}
 		}
-		return nil, errors.Wrapf(err, "Failed to BatchGetItem %s %d %s %d",
-			q.slot.tableName, q.slot.itemEpoch, strings.Join(q.names, ","), q.step,
+		return nil, errors.Wrapf(err,
+			"failed to call dynamodb API batchGetItem (%s,%d,%d)",
+			q.slot.tableName, q.slot.itemEpoch, q.step,
 		)
 	}
 	return batchGetResultToMap(resp, q), nil

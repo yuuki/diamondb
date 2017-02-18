@@ -27,7 +27,7 @@ const (
 type Fetcher interface {
 	Ping() error
 	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
-	Client() redisClient
+	Client() redisAPI
 	batchGet(q *query) (series.SeriesMap, error)
 }
 
@@ -35,7 +35,7 @@ type Writer interface {
 	InsertDatapoint(string, string, *metric.Datapoint) error
 }
 
-type redisClient interface {
+type redisAPI interface {
 	Ping() *goredis.StatusCmd
 	HGetAll(key string) *goredis.StringStringMapCmd
 	HSet(key, field string, value interface{}) *goredis.BoolCmd
@@ -44,7 +44,7 @@ type redisClient interface {
 
 // Redis provides a redis client.
 type Redis struct {
-	client redisClient
+	client redisAPI
 }
 
 type query struct {
@@ -64,6 +64,7 @@ func NewRedis() Fetcher {
 			client: goredis.NewClusterClient(&goredis.ClusterOptions{
 				Addrs:    config.Config.RedisAddrs,
 				Password: config.Config.RedisPassword,
+				PoolSize: config.Config.RedisPoolSize,
 			}),
 		}
 		return &r
@@ -73,6 +74,7 @@ func NewRedis() Fetcher {
 				Addr:     config.Config.RedisAddrs[0],
 				Password: config.Config.RedisPassword,
 				DB:       config.Config.RedisDB,
+				PoolSize: config.Config.RedisPoolSize,
 			}),
 		}
 		return &r
@@ -91,7 +93,7 @@ func NewWriter() Writer {
 }
 
 // Client returns the redis client.
-func (r *Redis) Client() redisClient {
+func (r *Redis) Client() redisAPI {
 	return r.client
 }
 
@@ -143,11 +145,11 @@ func hGetAllToMap(name string, tsval map[string]string, q *query) (*series.Serie
 	for ts, val := range tsval {
 		t, err := strconv.ParseInt(ts, 10, 64)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to ParseInt timestamp %s", ts)
+			return nil, errors.Wrapf(err, "failed to parse timestamp %s", ts)
 		}
 		v, err := strconv.ParseFloat(val, 64)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to ParseFloat value %s", v)
+			return nil, errors.Wrapf(err, "failed to parse float value %s", v)
 		}
 		// Trim datapoints out of [start, end]
 		if t < q.start.Unix() || q.end.Unix() < t {
@@ -165,7 +167,7 @@ func (r *Redis) batchGet(q *query) (series.SeriesMap, error) {
 		tsval, err := r.client.HGetAll(key).Result()
 		if err != nil {
 			return nil, errors.Wrapf(err,
-				"Failed to redis hgetall %s", strings.Join(q.names, ","),
+				"failed to hgetall api %s", strings.Join(q.names, ","),
 			)
 		}
 		if len(tsval) < 1 {
@@ -173,7 +175,7 @@ func (r *Redis) batchGet(q *query) (series.SeriesMap, error) {
 		}
 		sp, err := hGetAllToMap(name, tsval, q)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to hGetAllToMap %+v", tsval)
+			return nil, errors.WithStack(err)
 		}
 		sm[name] = sp
 	}

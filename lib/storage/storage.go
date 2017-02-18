@@ -8,7 +8,7 @@ import (
 
 	"github.com/yuuki/diamondb/lib/metric"
 	"github.com/yuuki/diamondb/lib/series"
-	"github.com/yuuki/diamondb/lib/storage/dynamo"
+	"github.com/yuuki/diamondb/lib/storage/dynamodb"
 	"github.com/yuuki/diamondb/lib/storage/redis"
 )
 
@@ -25,16 +25,20 @@ type Writer interface {
 // Store provides each data store client.
 type Store struct {
 	Redis    redis.Fetcher
-	DynamoDB dynamo.Fetcher
+	DynamoDB dynamodb.Fetcher
 	// s3 client
 }
 
 // NewFetcher create a new Store wrapped by Fetcher.
 func NewFetcher() Fetcher {
+	d, err := dynamodb.NewDynamoDB()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 	return &Store{
 		Redis:    redis.NewRedis(),
-		DynamoDB: dynamo.NewDynamoDB(),
-	}
+		DynamoDB: d,
+	}, nil
 }
 
 type WriterStore struct {
@@ -105,15 +109,11 @@ func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, er
 
 	smR, err := fredis.Get()
 	if err != nil {
-		return nil, errors.Wrapf(err, "redis.Fetch(%s,%d,%d)",
-			name, start.Unix(), end.Unix(),
-		)
+		return nil, errors.WithStack(err)
 	}
 	smD, err := fdynamodb.Get()
 	if err != nil {
-		return nil, errors.Wrapf(err, "dynamodb.Fetch(%s,%d,%d)",
-			name, start.Unix(), end.Unix(),
-		)
+		return nil, errors.WithStack(err)
 	}
 
 	ss := smR.MergePointsToSlice(smD)

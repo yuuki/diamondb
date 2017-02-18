@@ -104,33 +104,9 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 		}
 		return ss, nil
 	case FuncExpr:
-		args := funcArgs{}
-		for _, expr := range e.SubExprs {
-			switch e2 := expr.(type) {
-			case BoolExpr:
-				args = append(args, &funcArg{expr: expr})
-			case NumberExpr:
-				args = append(args, &funcArg{expr: expr})
-			case StringExpr:
-				args = append(args, &funcArg{expr: expr})
-			case SeriesListExpr, GroupSeriesExpr:
-				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
-				if err != nil {
-					return nil, errors.Wrapf(err, "failed to invoke %s", e2)
-				}
-				ex := SeriesListExpr{Literal: ss.FormattedName()}
-				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
-			case FuncExpr:
-				ss, err := invokeExpr(fetcher, expr, startTime, endTime)
-				if err != nil {
-					return nil, errors.Wrapf(err, "failed to invoke %s", e2)
-				}
-				// Regard FuncExpr as SeriesListExpr after process function
-				ex := SeriesListExpr{Literal: fmt.Sprintf("%s(%s)", e2.Name, ss.FormattedName())}
-				args = append(args, &funcArg{expr: ex, seriesSlice: ss})
-			default:
-				return nil, &UnknownExpressionError{expr: expr}
-			}
+		args, err := invokeSubExprs(fetcher, e.SubExprs, startTime, endTime)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to invoke arguments of (%s) function", e.Name)
 		}
 		switch e.Name {
 		case "alias":
@@ -211,4 +187,51 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 	default:
 		return nil, &UnknownExpressionError{expr: expr}
 	}
+}
+
+func invokeSubExprs(fetcher storage.Fetcher, exprs []Expr, startTime, endTime time.Time) (funcArgs, error) {
+	type result struct {
+		value *funcArg
+		err   error
+		index int
+	}
+
+	c := make(chan *result, len(exprs))
+	args := make(funcArgs, len(exprs))
+	numTasks := 0
+
+	for i, expr := range exprs {
+		switch expr.(type) {
+		case BoolExpr, NumberExpr, StringExpr:
+			args[i] = &funcArg{expr: expr}
+		case SeriesListExpr, GroupSeriesExpr, FuncExpr:
+			numTasks++
+			go func(e Expr, start, end time.Time, i int) {
+				ss, err := invokeExpr(fetcher, e, start, end)
+				c <- &result{
+					value: &funcArg{
+						expr:        SeriesListExpr{Literal: ss.FormattedName()},
+						seriesSlice: ss,
+					},
+					err:   err,
+					index: i,
+				}
+			}(expr, startTime, endTime, i)
+		default:
+			return nil, &UnknownExpressionError{expr: expr}
+		}
+	}
+
+	for i := 0; i < numTasks; i++ {
+		ret := <-c
+		if ret.err != nil {
+			// return err that is found firstly.
+			return nil, errors.Wrapf(ret.err,
+				"failed to fetch concurrently (%d, %v)", i, ret.value.expr,
+			)
+		}
+		args[ret.index] = ret.value
+	}
+
+	return args, nil
 }

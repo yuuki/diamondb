@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"github.com/alicebob/miniredis"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
 
 	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/metric"
 	"github.com/yuuki/diamondb/lib/series"
-	"github.com/yuuki/diamondb/lib/storage/dynamo"
+	"github.com/yuuki/diamondb/lib/storage/dynamodb"
 	"github.com/yuuki/diamondb/lib/storage/redis"
 )
 
@@ -44,11 +44,11 @@ func TestStorePing(t *testing.T) {
 	// mock DynamoDB
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mock := dynamo.NewMockDynamoDBAPI(ctrl)
+	mock := dynamodb.NewMockDynamoDBAPI(ctrl)
 	mock.EXPECT().DescribeLimits(gomock.Any()).Return(
-		&dynamodb.DescribeLimitsOutput{}, nil,
+		&godynamodb.DescribeLimitsOutput{}, nil,
 	)
-	d := dynamo.NewTestDynamoDB(mock)
+	d := dynamodb.NewTestDynamoDB(mock)
 
 	store := &Store{
 		Redis:    r,
@@ -73,7 +73,7 @@ func TestStoreFetch(t *testing.T) {
 			}, nil
 		},
 	}
-	dynamodbff := &dynamo.FakeFetcher{
+	dynamodbff := &dynamodb.FakeFetcher{
 		FakeFetch: func(name string, start, end time.Time) (series.SeriesMap, error) {
 			return series.SeriesMap{
 				"server1.loadavg5": series.NewSeriesPoint(

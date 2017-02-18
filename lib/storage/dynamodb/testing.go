@@ -1,4 +1,4 @@
-package dynamo
+package dynamodb
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
 	"github.com/yuuki/diamondb/lib/series"
 )
@@ -44,16 +44,16 @@ func mockTableName(resolution string, tableEpoch int64) string {
 }
 
 func mockExpectBatchGetItem(mock *MockDynamoDBAPI, m *mockDynamoDBParam) *gomock.Call {
-	var keys []map[string]*dynamodb.AttributeValue
+	var keys []map[string]*godynamodb.AttributeValue
 	for _, name := range m.SeriesMap.SortedNames() {
-		keys = append(keys, map[string]*dynamodb.AttributeValue{
+		keys = append(keys, map[string]*godynamodb.AttributeValue{
 			"MetricName": {S: aws.String(name)},
 			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
 		})
 	}
-	items := make(map[string]*dynamodb.KeysAndAttributes)
-	items[mockTableName(m.Resolution, m.TableEpoch)] = &dynamodb.KeysAndAttributes{Keys: keys}
-	params := &dynamodb.BatchGetItemInput{
+	items := make(map[string]*godynamodb.KeysAndAttributes)
+	items[mockTableName(m.Resolution, m.TableEpoch)] = &godynamodb.KeysAndAttributes{Keys: keys}
+	params := &godynamodb.BatchGetItemInput{
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
 	}
@@ -61,7 +61,7 @@ func mockExpectBatchGetItem(mock *MockDynamoDBAPI, m *mockDynamoDBParam) *gomock
 }
 
 func mockReturnBatchGetItem(expect *gomock.Call, m *mockDynamoDBParam) *gomock.Call {
-	responses := make(map[string][]map[string]*dynamodb.AttributeValue)
+	responses := make(map[string][]map[string]*godynamodb.AttributeValue)
 	for name, sp := range m.SeriesMap {
 		var vals [][]byte
 		for _, point := range sp.Points() {
@@ -70,7 +70,7 @@ func mockReturnBatchGetItem(expect *gomock.Call, m *mockDynamoDBParam) *gomock.C
 			binary.Write(buf, binary.BigEndian, math.Float64bits(point.Value()))
 			vals = append(vals, buf.Bytes())
 		}
-		attribute := map[string]*dynamodb.AttributeValue{
+		attribute := map[string]*godynamodb.AttributeValue{
 			"MetricName": {S: aws.String(name)},
 			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
 			"Values":     {BS: vals},
@@ -79,7 +79,7 @@ func mockReturnBatchGetItem(expect *gomock.Call, m *mockDynamoDBParam) *gomock.C
 		responses[table] = append(responses[table], attribute)
 	}
 
-	expect.Return(&dynamodb.BatchGetItemOutput{
+	expect.Return(&godynamodb.BatchGetItemOutput{
 		Responses: responses,
 	}, nil)
 	return expect

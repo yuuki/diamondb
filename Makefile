@@ -31,7 +31,7 @@ lint:
 vet:
 	go vet -v $$(glide novendor)
 
-docker-up: gen
+docker-up:
 	docker-compose up --build
 
 .PHONY: all deps gen build test cover fmt imports lint vet docker-up

@@ -10,6 +10,7 @@ import (
 
 	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/env"
+	"github.com/yuuki/diamondb/lib/errutil"
 	"github.com/yuuki/diamondb/lib/log"
 	"github.com/yuuki/diamondb/lib/metric"
 	"github.com/yuuki/diamondb/lib/query"
@@ -50,7 +51,8 @@ func RenderHandler(env *env.Env) http.Handler {
 		if v := r.FormValue("from"); v != "" {
 			t, err := timeparser.ParseAtTime(url.QueryEscape(v))
 			if err != nil {
-				log.Printf("%+v", err) // Print stack trace by pkg/errors
+				log.Println(err)
+				errutil.PrintStackTrace(err)
 				badRequest(w, errors.Cause(err).Error())
 				return
 			}
@@ -59,7 +61,8 @@ func RenderHandler(env *env.Env) http.Handler {
 		if v := r.FormValue("until"); v != "" {
 			t, err := timeparser.ParseAtTime(url.QueryEscape(v))
 			if err != nil {
-				log.Printf("%+v", err) // Print stack trace by pkg/errors
+				log.Println(err)
+				errutil.PrintStackTrace(err)
 				badRequest(w, errors.Cause(err).Error())
 				return
 			}
@@ -74,9 +77,12 @@ func RenderHandler(env *env.Env) http.Handler {
 
 		seriesSlice, err := query.EvalTargets(env.Fetcher, targets, from, until)
 		if err != nil {
-			log.Printf("%+v", err) // Print stack trace by pkg/errors
+			log.Println(err)
+			errutil.PrintStackTrace(err)
+
 			switch err := errors.Cause(err).(type) {
-			case *query.ParserError, *query.UnsupportedFunctionError, *query.ArgumentError:
+			case *query.ParserError, *query.UnsupportedFunctionError,
+				*query.ArgumentError, *timeparser.TimeParserError:
 				badRequest(w, err.Error())
 			default:
 				serverError(w, err.Error())

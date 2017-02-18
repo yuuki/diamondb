@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/fortytw2/leaktest"
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/pkg/errors"
 
@@ -238,4 +239,47 @@ var testEvalTargetFuncTests = []struct {
 			),
 		},
 	},
+}
+
+func TestInvokeSubExprs_Leak(t *testing.T) {
+	defer leaktest.Check(t)()
+
+	ff := &storage.FakeFetcher{
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+			time.Sleep(10 * time.Millisecond)
+			ss := SeriesSlice{NewSeries(name, []float64{10.0}, 1, 60)}
+			return ss, nil
+		},
+	}
+	exprs := []Expr{
+		SeriesListExpr{Literal: "server1.loadavg5"},
+		SeriesListExpr{Literal: "server2.loadavg5"},
+		BoolExpr{Literal: true}, // mix expr other than SeriesListExpr.
+	}
+	// goto infinite loop if test failures
+	_, err := invokeSubExprs(ff, exprs, time.Unix(1, 0), time.Unix(10, 0))
+	if err != nil {
+		t.Fatalf("should not raise error: %s", err)
+	}
+}
+
+func TestInvokeSubExprs_ErrLeak(t *testing.T) {
+	defer leaktest.Check(t)()
+
+	ff := &storage.FakeFetcher{
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+			time.Sleep(10 * time.Millisecond)
+			ss := SeriesSlice{NewSeries(name, []float64{10.0}, 1, 60)}
+			return ss, nil
+		},
+	}
+	exprs := []Expr{
+		SeriesListExpr{Literal: "server1.loadavg5"},
+		SeriesListExpr{Literal: "server2.loadavg5"},
+		10, // no such expr
+	}
+	_, err := invokeSubExprs(ff, exprs, time.Unix(1, 0), time.Unix(10, 0))
+	if err == nil {
+		t.Fatal("should raise error")
+	}
 }
