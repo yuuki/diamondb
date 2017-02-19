@@ -271,6 +271,37 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestMPut(t *testing.T) {
+	s, err := miniredis.Run()
+	if err != nil {
+		panic(err)
+	}
+	defer s.Close()
+
+	// Set mock
+	config.Config.RedisAddrs = []string{s.Addr()}
+	r := NewRedis()
+
+	expected := map[int64]float64{
+		100: 10.0,
+		160: 10.2,
+		220: 11.0,
+	}
+	err = r.MPut("1m", "server1.loadavg5", expected)
+	if err != nil {
+		t.Fatalf("should not raise error: %s", err)
+	}
+
+	got, err := r.Get("1m", "server1.loadavg5")
+	if err != nil {
+		panic(err)
+	}
+
+	if diff := pretty.Compare(got, expected); diff != "" {
+		t.Fatalf("redis.Get(1m, server1.loadavg5); diff (-actual +expected)\n%s", diff)
+	}
+}
+
 var selectTimeSlotTests = []struct {
 	start time.Time
 	end   time.Time

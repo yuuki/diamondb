@@ -31,6 +31,7 @@ type ReadWriter interface {
 	batchGet(q *query) (series.SeriesMap, error)
 	Get(string, string) (map[int64]float64, error)
 	Put(string, string, *metric.Datapoint) error
+	MPut(string, string, map[int64]float64) error
 }
 
 type redisAPI interface {
@@ -195,6 +196,18 @@ func (r *Redis) Put(slot string, name string, p *metric.Datapoint) error {
 	key := slot + ":" + name
 	err := r.client.HSet(key, fmt.Sprintf("%s", p.Timestamp), p.Value).Err()
 	if err != nil {
+		return errors.Wrapf(err, "failed to write (%s) from redis", key)
+	}
+	return nil
+}
+
+func (r *Redis) MPut(slot string, name string, tv map[int64]float64) error {
+	key := slot + ":" + name
+	tsval := make(map[string]string, len(tv))
+	for t, v := range tv {
+		tsval[fmt.Sprintf("%d", t)] = fmt.Sprintf("%f", v)
+	}
+	if err := r.client.HMSet(key, tsval).Err(); err != nil {
 		return errors.Wrapf(err, "failed to write (%s) from redis", key)
 	}
 	return nil
