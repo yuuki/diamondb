@@ -39,7 +39,7 @@ type funcArgs []*funcArg
 
 // EvalTargets evaluates the targets concurrently. It is guaranteed that the order
 // of the targets as input value and SeriesSlice as retuen value is the same.
-func EvalTargets(fetcher storage.Fetcher, targets []string, startTime, endTime time.Time) (series.SeriesSlice, error) {
+func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime time.Time) (series.SeriesSlice, error) {
 	type result struct {
 		value series.SeriesSlice
 		err   error
@@ -49,7 +49,7 @@ func EvalTargets(fetcher storage.Fetcher, targets []string, startTime, endTime t
 	c := make(chan *result)
 	for i, target := range targets {
 		go func(target string, start, end time.Time, i int) {
-			ss, err := EvalTarget(fetcher, target, start, end)
+			ss, err := EvalTarget(reader, target, start, end)
 			c <- &result{value: ss, err: err, index: i}
 		}(target, startTime, endTime, i)
 	}
@@ -72,22 +72,22 @@ func EvalTargets(fetcher storage.Fetcher, targets []string, startTime, endTime t
 // EvalTarget evaluates the target. It parses the target into AST structure and fetches datapoints from storage.
 //
 // ex. target: "alias(sumSeries(server1.loadavg5,server2.loadavg5),\"server_loadavg5\")"
-func EvalTarget(fetcher storage.Fetcher, target string, startTime, endTime time.Time) (series.SeriesSlice, error) {
+func EvalTarget(reader storage.ReadWriter, target string, startTime, endTime time.Time) (series.SeriesSlice, error) {
 	expr, err := ParseTarget(target)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to parse target (%s)", target)
 	}
-	ss, err := invokeExpr(fetcher, expr, startTime, endTime)
+	ss, err := invokeExpr(reader, expr, startTime, endTime)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to invoke %s", expr)
 	}
 	return ss, err
 }
 
-func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time) (series.SeriesSlice, error) {
+func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Time) (series.SeriesSlice, error) {
 	switch e := expr.(type) {
 	case SeriesListExpr:
-		ss, err := fetcher.Fetch(e.Literal, startTime, endTime)
+		ss, err := reader.Fetch(e.Literal, startTime, endTime)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to fetch (%s,%d,%d)", e.Literal, startTime.Unix(), endTime.Unix())
 		}
@@ -98,13 +98,13 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 			joinedValues = append(joinedValues, e.Prefix+value+e.Postfix)
 		}
 		expr = SeriesListExpr{Literal: strings.Join(joinedValues, ",")}
-		ss, err := invokeExpr(fetcher, expr, startTime, endTime)
+		ss, err := invokeExpr(reader, expr, startTime, endTime)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to invoke (%s,%d,%d)", e, startTime.Unix(), endTime.Unix())
 		}
 		return ss, nil
 	case FuncExpr:
-		args, err := invokeSubExprs(fetcher, e.SubExprs, startTime, endTime)
+		args, err := invokeSubExprs(reader, e.SubExprs, startTime, endTime)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to invoke arguments of (%s) function", e.Name)
 		}
@@ -189,7 +189,7 @@ func invokeExpr(fetcher storage.Fetcher, expr Expr, startTime, endTime time.Time
 	}
 }
 
-func invokeSubExprs(fetcher storage.Fetcher, exprs []Expr, startTime, endTime time.Time) (funcArgs, error) {
+func invokeSubExprs(reader storage.ReadWriter, exprs []Expr, startTime, endTime time.Time) (funcArgs, error) {
 	type result struct {
 		value *funcArg
 		err   error
@@ -207,7 +207,7 @@ func invokeSubExprs(fetcher storage.Fetcher, exprs []Expr, startTime, endTime ti
 		case SeriesListExpr, GroupSeriesExpr, FuncExpr:
 			numTasks++
 			go func(e Expr, start, end time.Time, i int) {
-				ss, err := invokeExpr(fetcher, e, start, end)
+				ss, err := invokeExpr(reader, e, start, end)
 				c <- &result{
 					value: &funcArg{
 						expr:        SeriesListExpr{Literal: ss.FormattedName()},

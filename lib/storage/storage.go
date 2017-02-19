@@ -6,26 +6,28 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/yuuki/diamondb/lib/metric"
 	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/storage/dynamodb"
 	"github.com/yuuki/diamondb/lib/storage/redis"
 )
 
-// Fetcher defines the interface for data store reader.
-type Fetcher interface {
-	Fetch(string, time.Time, time.Time) (series.SeriesSlice, error)
+// ReadWriter defines the interface for data store reader and writer.
+type ReadWriter interface {
 	Ping() error
+	Fetch(string, time.Time, time.Time) (series.SeriesSlice, error)
+	InsertMetric(*metric.Metric) error
 }
 
 // Store provides each data store client.
 type Store struct {
-	Redis    redis.Fetcher
-	DynamoDB dynamodb.Fetcher
+	Redis    redis.ReadWriter
+	DynamoDB dynamodb.ReadWriter
 	// s3 client
 }
 
-// NewStore create a new Store wrapped by Fetcher.
-func NewStore() (Fetcher, error) {
+// NewReadWriter create a new Store wrapped by ReadWriter.
+func NewReadWriter() (ReadWriter, error) {
 	d, err := dynamodb.NewDynamoDB()
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -99,4 +101,13 @@ func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, er
 
 	ss := smR.MergePointsToSlice(smD)
 	return ss, nil
+}
+
+func (s *Store) InsertMetric(m *metric.Metric) error {
+	for _, p := range m.Datapoints {
+		if err := s.Redis.InsertDatapoint("1m", m.Name, p); err != nil {
+			return errors.WithStack(err)
+		}
+	}
+	return nil
 }

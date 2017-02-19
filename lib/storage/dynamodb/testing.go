@@ -13,13 +13,13 @@ import (
 	"github.com/yuuki/diamondb/lib/series"
 )
 
-// FakeFetcher is for stub testing
-type FakeFetcher struct {
-	Fetcher
+// FakeReadWriter is for stub testing
+type FakeReadWriter struct {
+	ReadWriter
 	FakeFetch func(name string, start, end time.Time) (series.SeriesMap, error)
 }
 
-func (s *FakeFetcher) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
+func (s *FakeReadWriter) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
 	return s.FakeFetch(name, start, end)
 }
 

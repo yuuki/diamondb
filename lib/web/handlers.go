@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/yuuki/diamondb/lib/env"
 	"github.com/yuuki/diamondb/lib/errutil"
 	"github.com/yuuki/diamondb/lib/log"
+	"github.com/yuuki/diamondb/lib/metric"
 	"github.com/yuuki/diamondb/lib/query"
 	"github.com/yuuki/diamondb/lib/timeparser"
 )
@@ -23,7 +25,7 @@ const (
 // PingHandler returns a HTTP handler for the endpoint to ping storage.
 func PingHandler(env *env.Env) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if err := env.Fetcher.Ping(); err != nil {
+		if err := env.ReadWriter.Ping(); err != nil {
 			unavaliableError(w, errors.Cause(err).Error())
 			return
 		}
@@ -73,7 +75,7 @@ func RenderHandler(env *env.Env) http.Handler {
 			return
 		}
 
-		seriesSlice, err := query.EvalTargets(env.Fetcher, targets, from, until)
+		seriesSlice, err := query.EvalTargets(env.ReadWriter, targets, from, until)
 		if err != nil {
 			log.Println(err)
 			errutil.PrintStackTrace(err)
@@ -88,5 +90,33 @@ func RenderHandler(env *env.Env) http.Handler {
 			return
 		}
 		renderJSON(w, http.StatusOK, seriesSlice)
+	})
+}
+
+type WriteRequest struct {
+	Metric *metric.Metric `json:"metric"`
+}
+
+func WriteHandler(env *env.Env) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var wr WriteRequest
+		if r.Body == nil {
+			badRequest(w, "No request body")
+			return
+		}
+		if err := json.NewDecoder(r.Body).Decode(&wr); err != nil {
+			badRequest(w, err.Error())
+			return
+		}
+		if err := env.ReadWriter.InsertMetric(wr.Metric); err != nil {
+			log.Printf("%+v", err) // Print stack trace by pkg/errors
+			switch err.(type) {
+			default:
+				serverError(w, errors.Cause(err).Error())
+			}
+			return
+		}
+		w.WriteHeader(204)
+		return
 	})
 }

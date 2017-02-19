@@ -10,6 +10,7 @@ import (
 	goredis "gopkg.in/redis.v5"
 
 	"github.com/yuuki/diamondb/lib/config"
+	"github.com/yuuki/diamondb/lib/metric"
 	"github.com/yuuki/diamondb/lib/series"
 	"github.com/yuuki/diamondb/lib/util"
 )
@@ -22,17 +23,19 @@ const (
 	redisBatchLimit = 50 // TODO need to tweak
 )
 
-// Fetcher defines the interface for Redis reader.
-type Fetcher interface {
+// ReadWriter defines the interface for Redis reader and writer.
+type ReadWriter interface {
 	Ping() error
 	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
 	Client() redisAPI
 	batchGet(q *query) (series.SeriesMap, error)
+	InsertDatapoint(string, string, *metric.Datapoint) error
 }
 
 type redisAPI interface {
 	Ping() *goredis.StatusCmd
 	HGetAll(key string) *goredis.StringStringMapCmd
+	HSet(key, field string, value interface{}) *goredis.BoolCmd
 	HMSet(key string, fields map[string]string) *goredis.StatusCmd
 }
 
@@ -51,7 +54,7 @@ type query struct {
 }
 
 // NewRedis creates a Redis.
-func NewRedis() Fetcher {
+func NewRedis() ReadWriter {
 	addrs := config.Config.RedisAddrs
 	if len(addrs) > 1 {
 		r := Redis{
@@ -164,6 +167,14 @@ func (r *Redis) batchGet(q *query) (series.SeriesMap, error) {
 		sm[name] = sp
 	}
 	return sm, nil
+}
+
+func (r *Redis) InsertDatapoint(slot string, name string, p *metric.Datapoint) error {
+	err := r.client.HSet(slot+":"+name, fmt.Sprintf("%s", p.Timestamp), p.Value).Err()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
 }
 
 func selectTimeSlot(startTime, endTime time.Time) (string, int) {

@@ -67,17 +67,20 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 
-	store, err := storage.NewStore()
+	rw, err := storage.NewReadWriter()
 	if err != nil {
-		log.Printf("storage session failed. %s", err)
+		log.Printf("failed to start fetcher session. %s", err)
 		return -1
 	}
-	e := &env.Env{Fetcher: store}
+	e := &env.Env{
+		ReadWriter: rw,
+	}
 
 	mux := http.NewServeMux()
 	mux.Handle("/ping", web.PingHandler(e))
 	mux.Handle("/inspect", web.InspectHandler(e))
 	mux.Handle("/render", web.RenderHandler(e))
+	mux.Handle("/datapoints", web.WriteHandler(e))
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
