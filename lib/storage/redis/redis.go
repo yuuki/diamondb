@@ -29,6 +29,7 @@ type ReadWriter interface {
 	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
 	Client() redisAPI
 	batchGet(q *query) (series.SeriesMap, error)
+	Get(string, string) (map[int64]float64, error)
 	Put(string, string, *metric.Datapoint) error
 }
 
@@ -167,6 +168,27 @@ func (r *Redis) batchGet(q *query) (series.SeriesMap, error) {
 		sm[name] = sp
 	}
 	return sm, nil
+}
+
+func (r *Redis) Get(slot string, name string) (map[int64]float64, error) {
+	key := slot + ":" + name
+	tsval, err := r.client.HGetAll(key).Result()
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to write (%s) from redis", key)
+	}
+	tv := make(map[int64]float64, len(tsval))
+	for ts, val := range tsval {
+		t, err := strconv.ParseInt(ts, 10, 64)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to parse timestamp %s", ts)
+		}
+		v, err := strconv.ParseFloat(val, 64)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to parse float value %s", v)
+		}
+		tv[t] = v
+	}
+	return tv, nil
 }
 
 func (r *Redis) Put(slot string, name string, p *metric.Datapoint) error {
