@@ -105,7 +105,7 @@ func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, er
 
 func (s *Store) InsertMetric(m *metric.Metric) error {
 	for _, p := range m.Datapoints {
-		if err := s.Redis.InsertDatapoint("1m", m.Name, p); err != nil {
+		if err := s.Redis.Put("1m", m.Name, p); err != nil {
 			return errors.WithStack(err)
 		}
 	}

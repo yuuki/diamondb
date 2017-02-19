@@ -29,7 +29,7 @@ type ReadWriter interface {
 	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
 	Client() redisAPI
 	batchGet(q *query) (series.SeriesMap, error)
-	InsertDatapoint(string, string, *metric.Datapoint) error
+	Put(string, string, *metric.Datapoint) error
 }
 
 type redisAPI interface {
@@ -169,10 +169,11 @@ func (r *Redis) batchGet(q *query) (series.SeriesMap, error) {
 	return sm, nil
 }
 
-func (r *Redis) InsertDatapoint(slot string, name string, p *metric.Datapoint) error {
-	err := r.client.HSet(slot+":"+name, fmt.Sprintf("%s", p.Timestamp), p.Value).Err()
+func (r *Redis) Put(slot string, name string, p *metric.Datapoint) error {
+	key := slot + ":" + name
+	err := r.client.HSet(key, fmt.Sprintf("%s", p.Timestamp), p.Value).Err()
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrapf(err, "failed to write (%s) from redis", key)
 	}
 	return nil
 }
