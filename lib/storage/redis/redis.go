@@ -194,7 +194,7 @@ func (r *Redis) Get(slot string, name string) (map[int64]float64, error) {
 
 func (r *Redis) Put(slot string, name string, p *metric.Datapoint) error {
 	key := slot + ":" + name
-	err := r.client.HSet(key, fmt.Sprintf("%s", p.Timestamp), p.Value).Err()
+	err := r.client.HSet(key, fmt.Sprintf("%d", p.Timestamp), p.Value).Err()
 	if err != nil {
 		return errors.Wrapf(err, "failed to write (%s) from redis", key)
 	}
