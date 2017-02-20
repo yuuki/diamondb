@@ -19,6 +19,7 @@ build: gen
 .PHONY: test
 test: gen
 	go test -race -v $$(glide novendor)
+	make vet
 
 .PHONY: cover
 cover: gen
