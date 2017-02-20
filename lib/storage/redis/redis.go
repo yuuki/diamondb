@@ -53,8 +53,10 @@ type query struct {
 	// context
 }
 
+var _ ReadWriter = &Redis{}
+
 // NewRedis creates a Redis.
-func NewRedis() ReadWriter {
+func NewRedis() *Redis {
 	addrs := config.Config.RedisAddrs
 	if len(addrs) > 1 {
 		r := Redis{

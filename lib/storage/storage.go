@@ -26,8 +26,10 @@ type Store struct {
 	// s3 client
 }
 
+var _ ReadWriter = &Store{}
+
 // NewReadWriter create a new Store wrapped by ReadWriter.
-func NewReadWriter() (ReadWriter, error) {
+func NewReadWriter() (*Store, error) {
 	d, err := dynamodb.NewDynamoDB()
 	if err != nil {
 		return nil, errors.WithStack(err)
