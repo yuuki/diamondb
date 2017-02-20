@@ -28,14 +28,14 @@ type Store struct {
 
 var _ ReadWriter = &Store{}
 
-// NewReadWriter create a new Store wrapped by ReadWriter.
-func NewReadWriter() (*Store, error) {
-	d, err := dynamodb.NewDynamoDB()
+// New create a new Store wrapped by ReadWriter.
+func New() (*Store, error) {
+	d, err := dynamodb.New()
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	return &Store{
-		Redis:    redis.NewRedis(),
+		Redis:    redis.New(),
 		DynamoDB: d,
 	}, nil
 }

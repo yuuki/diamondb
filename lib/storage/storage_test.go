@@ -23,7 +23,7 @@ func TestStorePing(t *testing.T) {
 	}
 	defer s.Close()
 	config.Config.RedisAddrs = []string{s.Addr()}
-	r := redis.NewRedis()
+	r := redis.New()
 
 	// mock DynamoDB
 	ctrl := gomock.NewController(t)

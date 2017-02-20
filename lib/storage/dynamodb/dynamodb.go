@@ -66,8 +66,8 @@ var (
 
 var _ ReadWriter = &DynamoDB{}
 
-// NewDynamoDB creates a new DynamoDB.
-func NewDynamoDB() (*DynamoDB, error) {
+// New creates a new DynamoDB.
+func New() (*DynamoDB, error) {
 	awsConf := aws.NewConfig().WithRegion(config.Config.DynamoDBRegion)
 	if config.Config.DynamoDBEndpoint != "" {
 		// For dynamodb-local configuration
