@@ -89,7 +89,7 @@ func TestStoreInsertMetric(t *testing.T) {
 	ws := &Store{Redis: frw}
 	err := ws.InsertMetric(&metric.Metric{
 		Name:       "server1.loadavg5",
-		Datapoints: []*metric.Datapoint{&metric.Datapoint{100, 0.1}},
+		Datapoints: []*metric.Datapoint{&metric.Datapoint{Timestamp: 100, Value: 0.1}},
 	})
 	if err != nil {
 		t.Fatalf("err: %s", err)

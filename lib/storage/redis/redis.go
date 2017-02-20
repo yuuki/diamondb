@@ -172,7 +172,7 @@ func (r *Redis) batchGet(q *query) (series.SeriesMap, error) {
 }
 
 func (r *Redis) InsertDatapoint(slot string, name string, p *metric.Datapoint) error {
-	err := r.client.HSet(slot+":"+name, fmt.Sprintf("%s", p.Timestamp), p.Value).Err()
+	err := r.client.HSet(slot+":"+name, fmt.Sprintf("%d", p.Timestamp), p.Value).Err()
 	if err != nil {
 		return errors.WithStack(err)
 	}

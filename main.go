@@ -107,7 +107,8 @@ func (cli *CLI) Run(args []string) int {
 
 	s := <-sigch
 	log.Printf("Received %s gracefully shutdown...\n", s)
-	ctx, _ := context.WithTimeout(context.Background(), config.Config.ShutdownTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.Config.ShutdownTimeout)
+	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Println(err)
 		return 3
