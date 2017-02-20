@@ -7,6 +7,7 @@ import (
 	"github.com/alicebob/miniredis"
 	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
+	"github.com/kylelemons/godebug/pretty"
 
 	"github.com/yuuki/diamondb/lib/config"
 	"github.com/yuuki/diamondb/lib/metric"
@@ -81,17 +82,50 @@ func TestStoreFetch(t *testing.T) {
 }
 
 func TestStoreInsertMetric(t *testing.T) {
-	frw := &redis.FakeReadWriter{
-		FakeInsertDatapoint: func(slot string, name string, p *metric.Datapoint) error {
-			return nil
+	s := &Store{
+		Redis: &redis.FakeReadWriter{
+			FakeGet: func(slot string, name string) (map[int64]float64, error) {
+				return nil, nil
+			},
+			FakePut: func(slot string, name string, p *metric.Datapoint) error {
+				return nil
+			},
 		},
 	}
-	ws := &Store{Redis: frw}
-	err := ws.InsertMetric(&metric.Metric{
+	err := s.InsertMetric(&metric.Metric{
 		Name:       "server1.loadavg5",
 		Datapoints: []*metric.Datapoint{&metric.Datapoint{100, 0.1}},
 	})
 	if err != nil {
 		t.Fatalf("err: %s", err)
+	}
+}
+
+func TestStoreRollup(t *testing.T) {
+	s, err := miniredis.Run()
+	if err != nil {
+		panic(err)
+	}
+	defer s.Close()
+
+	// Set mock
+	config.Config.RedisAddrs = []string{s.Addr()}
+	r := redis.NewRedis()
+
+	store := &Store{Redis: r}
+	err = store.rollup("5m", "server1.loadavg5", map[int64]float64{
+		60: 0.1, 120: 0.2, 180: 0.3, 240: 0.4, 300: 0.5,
+	})
+	if err != nil {
+		t.Fatalf("should not raise err: %s", err)
+	}
+	got, err := r.Get("5m", "server1.loadavg5")
+	if err != nil {
+		panic(err)
+	}
+
+	expected := map[int64]float64{0: 0.3}
+	if diff := pretty.Compare(got, expected); diff != "" {
+		t.Fatalf("storage.rollup(5m, server1.loadavg5, ); diff (-actual +expected)\n%s", diff)
 	}
 }
