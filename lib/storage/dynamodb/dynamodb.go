@@ -199,23 +199,24 @@ func selectTimeSlots(startTime, endTime time.Time, tablePrefix string) ([]*timeS
 		tableEpochStep int
 		itemEpochStep  int
 	)
-	diffTime := endTime.Sub(startTime)
-	if oneYear <= diffTime {
+	diff := endTime.Sub(startTime)
+	switch {
+	case oneYear <= diff:
 		tableName = tablePrefix + "-1d1y"
 		tableEpochStep = oneYearSeconds
 		itemEpochStep = tableEpochStep
 		step = 60 * 60 * 24
-	} else if oneWeek <= diffTime {
+	case oneWeek <= diff:
 		tableName = tablePrefix + "-1h7d"
 		tableEpochStep = 60 * 60 * 24 * 7
 		itemEpochStep = tableEpochStep
 		step = 60 * 60
-	} else if oneDay <= diffTime {
+	case oneDay <= diff:
 		tableName = tablePrefix + "-5m1d"
 		tableEpochStep = 60 * 60 * 24
 		itemEpochStep = tableEpochStep
 		step = 5 * 60
-	} else {
+	default:
 		tableName = tablePrefix + "-1m1h"
 		tableEpochStep = 60 * 60 * 24
 		itemEpochStep = 60 * 60
