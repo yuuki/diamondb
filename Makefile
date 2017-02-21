@@ -1,4 +1,3 @@
-NAME=diamondb
 COMMIT = $$(git describe --always)
 
 all: build
@@ -14,7 +13,7 @@ gen:
 
 .PHONY: build
 build: gen
-	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" -o $(NAME)
+	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" cmd/...
 
 .PHONY: test
 test: gen
