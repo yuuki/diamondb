@@ -1,6 +1,8 @@
 DiamonDB
 ========
 
+This software is still heavily under development.
+
 # What is DiamonDB?
 
 A Reliable, Scalable, Cloud-Based Time Series Database.
@@ -10,6 +12,26 @@ A Reliable, Scalable, Cloud-Based Time Series Database.
 - __Cost optimized__
 - __Compatible with Graphite API__
 - __Written in Go__
+
+# Development
+
+## Run server with Docker
+
+```shell
+make up
+```
+
+## Build
+
+```shell
+make
+```
+
+## Test
+
+```shell
+make test
+```
 
 # LICENSE
 

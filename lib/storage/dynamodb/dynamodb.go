@@ -64,8 +64,10 @@ var (
 	oneDaySeconds  = int(oneDay.Seconds())
 )
 
-// NewDynamoDB creates a new DynamoDB.
-func NewDynamoDB() (ReadWriter, error) {
+var _ ReadWriter = &DynamoDB{}
+
+// New creates a new DynamoDB.
+func New() (*DynamoDB, error) {
 	awsConf := aws.NewConfig().WithRegion(config.Config.DynamoDBRegion)
 	if config.Config.DynamoDBEndpoint != "" {
 		// For dynamodb-local configuration

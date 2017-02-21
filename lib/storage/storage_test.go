@@ -24,7 +24,7 @@ func TestStorePing(t *testing.T) {
 	}
 	defer s.Close()
 	config.Config.RedisAddrs = []string{s.Addr()}
-	r := redis.NewRedis()
+	r := redis.New()
 
 	// mock DynamoDB
 	ctrl := gomock.NewController(t)
@@ -94,7 +94,7 @@ func TestStoreInsertMetric(t *testing.T) {
 	}
 	err := s.InsertMetric(&metric.Metric{
 		Name:       "server1.loadavg5",
-		Datapoints: []*metric.Datapoint{&metric.Datapoint{100, 0.1}},
+		Datapoints: []*metric.Datapoint{&metric.Datapoint{Timestamp: 100, Value: 0.1}},
 	})
 	if err != nil {
 		t.Fatalf("err: %s", err)

@@ -67,13 +67,13 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 
-	rw, err := storage.NewReadWriter()
+	store, err := storage.New()
 	if err != nil {
 		log.Printf("failed to start fetcher session. %s", err)
 		return -1
 	}
 	e := &env.Env{
-		ReadWriter: rw,
+		ReadWriter: store,
 	}
 
 	mux := http.NewServeMux()
@@ -107,7 +107,8 @@ func (cli *CLI) Run(args []string) int {
 
 	s := <-sigch
 	log.Printf("Received %s gracefully shutdown...\n", s)
-	ctx, _ := context.WithTimeout(context.Background(), config.Config.ShutdownTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.Config.ShutdownTimeout)
+	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Println(err)
 		return 3

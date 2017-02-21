@@ -32,7 +32,7 @@ func TestNewRedis(t *testing.T) {
 	}
 	for _, tc := range tests {
 		config.Config.RedisAddrs = tc.in
-		r := NewRedis()
+		r := New()
 		if v := reflect.TypeOf(r.Client()); v != tc.expectedType {
 			t.Fatalf("desc: %s , Redis client type should be %s, not %s",
 				tc.desc, tc.expectedType, v)
@@ -49,7 +49,7 @@ func TestPing(t *testing.T) {
 
 	// Set mock
 	config.Config.RedisAddrs = []string{s.Addr()}
-	r := NewRedis()
+	r := New()
 
 	err = r.Ping()
 	if err != nil {
@@ -66,7 +66,7 @@ func TestFetchSeriesMap(t *testing.T) {
 
 	// Set mock
 	config.Config.RedisAddrs = []string{s.Addr()}
-	r := NewRedis()
+	r := New()
 
 	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "160": "10.2", "220": "11.0",
@@ -112,7 +112,7 @@ func TestBatchGet(t *testing.T) {
 
 	// Set mock
 	config.Config.RedisAddrs = []string{s.Addr()}
-	r := NewRedis()
+	r := New()
 
 	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "130": "10.2", "160": "11.0",
@@ -163,7 +163,7 @@ func TestBatchGet_Empty(t *testing.T) {
 
 	// Set mock
 	config.Config.RedisAddrs = []string{s.Addr()}
-	r := NewRedis()
+	r := New()
 
 	metrics, err := r.batchGet(&query{
 		names: []string{"server1.loadavg5", "server2.loadavg5"},
