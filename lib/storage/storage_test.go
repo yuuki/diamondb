@@ -110,7 +110,7 @@ func TestStoreRollup(t *testing.T) {
 
 	// Set mock
 	config.Config.RedisAddrs = []string{s.Addr()}
-	r := redis.NewRedis()
+	r := redis.New()
 
 	store := &Store{Redis: r}
 	err = store.rollup("5m", "server1.loadavg5", map[int64]float64{

@@ -248,7 +248,7 @@ func TestGet(t *testing.T) {
 
 	// Set mock
 	config.Config.RedisAddrs = []string{s.Addr()}
-	r := NewRedis()
+	r := New()
 
 	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "160": "10.2", "220": "11.0",
@@ -280,7 +280,7 @@ func TestMPut(t *testing.T) {
 
 	// Set mock
 	config.Config.RedisAddrs = []string{s.Addr()}
-	r := NewRedis()
+	r := New()
 
 	expected := map[int64]float64{
 		100: 10.0,
