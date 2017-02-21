@@ -223,7 +223,7 @@ func selectTimeSlots(startTime, endTime time.Time, tablePrefix string) ([]*timeS
 		step = 60
 	}
 
-	slots := make([]*timeSlot, 0, 5)
+	slots := []*timeSlot{}
 	startTableEpoch := startTime.Unix() - startTime.Unix()%int64(tableEpochStep)
 	endTableEpoch := endTime.Unix()
 	for tableEpoch := startTableEpoch; tableEpoch < endTableEpoch; tableEpoch += int64(tableEpochStep) {
