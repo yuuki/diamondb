@@ -17,7 +17,7 @@ import (
 	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/mathutil"
 	"github.com/yuuki/diamondb/pkg/series"
-	"github.com/yuuki/diamondb/pkg/util"
+	"github.com/yuuki/diamondb/pkg/storage/util"
 )
 
 //go:generate mockgen -source ../../../vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination dynamodb_mock.go -package dynamodb

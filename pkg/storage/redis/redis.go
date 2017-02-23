@@ -12,7 +12,7 @@ import (
 	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/metric"
 	"github.com/yuuki/diamondb/pkg/series"
-	"github.com/yuuki/diamondb/pkg/util"
+	"github.com/yuuki/diamondb/pkg/storage/util"
 )
 
 const (
