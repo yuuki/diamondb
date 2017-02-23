@@ -80,7 +80,7 @@ func RenderHandler(env *env.Env) http.Handler {
 				log.Println(err)
 				badRequest(w, err.Error())
 			default:
-				log.Printf("%+v\n")
+				log.Printf("%+v\n", err)
 				serverError(w, err.Error())
 			}
 			return
