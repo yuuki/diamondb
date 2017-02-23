@@ -14,6 +14,7 @@ services:
   redis:
     image: redis:3.2.7
   dynamodb:
-    image: deangiberson/aws-dynamodb-local:latest
+    image: dwmkerr/dynamodb:latest
+    command: [-dbPath, /data]
     volumes:
-      - ./tmp/dynamodb:/var/dynamodb_local
+      - ./tmp/dynamodb:/data
