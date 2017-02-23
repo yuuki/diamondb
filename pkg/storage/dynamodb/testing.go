@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
-	"github.com/yuuki/diamondb/lib/series"
+	"github.com/yuuki/diamondb/pkg/series"
 )
 
 // FakeReadWriter is for stub testing

@@ -13,11 +13,11 @@ import (
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
 
-	"github.com/yuuki/diamondb/lib/config"
-	"github.com/yuuki/diamondb/lib/env"
-	"github.com/yuuki/diamondb/lib/log"
-	"github.com/yuuki/diamondb/lib/storage"
-	"github.com/yuuki/diamondb/lib/web"
+	"github.com/yuuki/diamondb/pkg/config"
+	"github.com/yuuki/diamondb/pkg/env"
+	"github.com/yuuki/diamondb/pkg/log"
+	"github.com/yuuki/diamondb/pkg/storage"
+	"github.com/yuuki/diamondb/pkg/web"
 )
 
 // CLI is the command line object.

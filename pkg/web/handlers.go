@@ -8,13 +8,13 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/diamondb/lib/config"
-	"github.com/yuuki/diamondb/lib/env"
-	"github.com/yuuki/diamondb/lib/errutil"
-	"github.com/yuuki/diamondb/lib/log"
-	"github.com/yuuki/diamondb/lib/metric"
-	"github.com/yuuki/diamondb/lib/query"
-	"github.com/yuuki/diamondb/lib/timeparser"
+	"github.com/yuuki/diamondb/pkg/config"
+	"github.com/yuuki/diamondb/pkg/env"
+	"github.com/yuuki/diamondb/pkg/errutil"
+	"github.com/yuuki/diamondb/pkg/log"
+	"github.com/yuuki/diamondb/pkg/metric"
+	"github.com/yuuki/diamondb/pkg/query"
+	"github.com/yuuki/diamondb/pkg/timeparser"
 )
 
 const (

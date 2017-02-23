@@ -6,10 +6,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/diamondb/lib/metric"
-	"github.com/yuuki/diamondb/lib/series"
-	"github.com/yuuki/diamondb/lib/storage/dynamodb"
-	"github.com/yuuki/diamondb/lib/storage/redis"
+	"github.com/yuuki/diamondb/pkg/metric"
+	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/storage/dynamodb"
+	"github.com/yuuki/diamondb/pkg/storage/redis"
 )
 
 // ReadWriter defines the interface for data store reader and writer.

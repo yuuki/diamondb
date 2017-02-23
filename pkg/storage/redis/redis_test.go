@@ -9,8 +9,8 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	goredis "gopkg.in/redis.v5"
 
-	"github.com/yuuki/diamondb/lib/config"
-	"github.com/yuuki/diamondb/lib/series"
+	"github.com/yuuki/diamondb/pkg/config"
+	"github.com/yuuki/diamondb/pkg/series"
 )
 
 func TestNewRedis(t *testing.T) {

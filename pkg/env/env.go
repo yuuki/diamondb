@@ -1,7 +1,7 @@
 package env
 
 import (
-	"github.com/yuuki/diamondb/lib/storage"
+	"github.com/yuuki/diamondb/pkg/storage"
 )
 
 // Env represents a store of persistent objects such as database client

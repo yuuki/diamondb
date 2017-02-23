@@ -7,9 +7,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/diamondb/lib/mathutil"
-	"github.com/yuuki/diamondb/lib/series"
-	"github.com/yuuki/diamondb/lib/timeparser"
+	"github.com/yuuki/diamondb/pkg/mathutil"
+	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/timeparser"
 )
 
 type ArgumentError struct {

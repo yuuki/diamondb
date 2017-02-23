@@ -2,7 +2,7 @@
 package errutil
 
 import (
-	"github.com/yuuki/diamondb/lib/log"
+	"github.com/yuuki/diamondb/pkg/log"
 
 	"github.com/pkg/errors"
 )

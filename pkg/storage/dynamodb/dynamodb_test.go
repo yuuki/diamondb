@@ -9,7 +9,7 @@ import (
 	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
 	"github.com/kylelemons/godebug/pretty"
-	"github.com/yuuki/diamondb/lib/series"
+	"github.com/yuuki/diamondb/pkg/series"
 )
 
 func TestPing(t *testing.T) {

@@ -3,8 +3,8 @@ package storage
 import (
 	"time"
 
-	"github.com/yuuki/diamondb/lib/metric"
-	"github.com/yuuki/diamondb/lib/series"
+	"github.com/yuuki/diamondb/pkg/metric"
+	"github.com/yuuki/diamondb/pkg/series"
 )
 
 // FakeReadWriter is for stub testing

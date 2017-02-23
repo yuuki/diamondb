@@ -8,11 +8,11 @@ import (
 	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
 
-	"github.com/yuuki/diamondb/lib/config"
-	"github.com/yuuki/diamondb/lib/metric"
-	"github.com/yuuki/diamondb/lib/series"
-	"github.com/yuuki/diamondb/lib/storage/dynamodb"
-	"github.com/yuuki/diamondb/lib/storage/redis"
+	"github.com/yuuki/diamondb/pkg/config"
+	"github.com/yuuki/diamondb/pkg/metric"
+	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/storage/dynamodb"
+	"github.com/yuuki/diamondb/pkg/storage/redis"
 )
 
 func TestStorePing(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/yuuki/diamondb/lib/mathutil"
+	"github.com/yuuki/diamondb/pkg/mathutil"
 )
 
 // SeriesSlice represents a slice of Series.

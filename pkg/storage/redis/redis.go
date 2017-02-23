@@ -9,10 +9,10 @@ import (
 	"github.com/pkg/errors"
 	goredis "gopkg.in/redis.v5"
 
-	"github.com/yuuki/diamondb/lib/config"
-	"github.com/yuuki/diamondb/lib/metric"
-	"github.com/yuuki/diamondb/lib/series"
-	"github.com/yuuki/diamondb/lib/util"
+	"github.com/yuuki/diamondb/pkg/config"
+	"github.com/yuuki/diamondb/pkg/metric"
+	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/util"
 )
 
 const (

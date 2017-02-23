@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/diamondb/lib/series"
-	"github.com/yuuki/diamondb/lib/storage"
+	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/storage"
 )
 
 // UnsupportedFunctionError represents the error of unsupported query function.

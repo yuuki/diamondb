@@ -8,8 +8,8 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/pkg/errors"
 
-	. "github.com/yuuki/diamondb/lib/series"
-	"github.com/yuuki/diamondb/lib/storage"
+	. "github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/storage"
 )
 
 func TestEvalTargets(t *testing.T) {
