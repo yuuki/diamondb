@@ -17,4 +17,4 @@ services:
     image: dwmkerr/dynamodb:latest
     command: [-dbPath, /data]
     volumes:
-      - ./tmp/dynamodb:/data
+      - /tmp/dynamodb:/data
