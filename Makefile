@@ -1,5 +1,5 @@
 COMMIT = $$(git describe --always)
-PKG = github/yuuki/diamondb
+PKG = github.com/yuuki/diamondb
 
 all: build
 
