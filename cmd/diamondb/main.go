@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/env"
-	"github.com/yuuki/diamondb/pkg/log"
 	"github.com/yuuki/diamondb/pkg/storage"
 	"github.com/yuuki/diamondb/pkg/web"
 )
@@ -42,7 +42,6 @@ func (cli *CLI) Run(args []string) int {
 	var (
 		port    string
 		version bool
-		debug   bool
 	)
 
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
@@ -54,13 +53,10 @@ func (cli *CLI) Run(args []string) int {
 	flags.StringVar(&port, "P", config.Config.Port, "")
 	flags.BoolVar(&version, "version", false, "")
 	flags.BoolVar(&version, "v", false, "")
-	flags.BoolVar(&debug, "debug", config.Config.Debug, "")
-	flags.BoolVar(&debug, "d", config.Config.Debug, "")
 
 	if err := flags.Parse(args[1:]); err != nil {
 		return 1
 	}
-	log.SetDebug(debug)
 
 	if version {
 		fmt.Fprintf(cli.errStream, "%s version %s, build %s \n", Name, Version, GitCommit)
@@ -124,6 +120,4 @@ Usage: diamondb [options]
 
 Options:
   --port, -P           Listen port
-
-  --debug, -d          Run with debug print
 `

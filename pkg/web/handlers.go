@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/env"
-	"github.com/yuuki/diamondb/pkg/log"
 	"github.com/yuuki/diamondb/pkg/metric"
 	"github.com/yuuki/diamondb/pkg/query"
 	"github.com/yuuki/diamondb/pkg/timeparser"
