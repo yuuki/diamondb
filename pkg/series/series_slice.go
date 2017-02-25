@@ -8,7 +8,7 @@ import (
 )
 
 // SeriesSlice represents a slice of Series.
-type SeriesSlice []Series
+type SeriesSlice []*Series
 
 // FormattedName returns the joined names in ss.
 func (ss SeriesSlice) FormattedName() string {

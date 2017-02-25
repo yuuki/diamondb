@@ -98,7 +98,7 @@ func TestMarshalJSON(t *testing.T) {
 
 var testSeriesPointsTests = []struct {
 	desc     string
-	s        Series
+	s        *Series
 	expected DataPoints
 }{
 	{

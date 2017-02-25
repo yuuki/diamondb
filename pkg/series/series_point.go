@@ -78,6 +78,6 @@ func (s *SeriesPoint) Len() int {
 }
 
 // ToSeries converts s into Series.
-func (s *SeriesPoint) ToSeries() Series {
+func (s *SeriesPoint) ToSeries() *Series {
 	return NewSeries(s.Name(), s.Values(), s.Start(), s.Step())
 }

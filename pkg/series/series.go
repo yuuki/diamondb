@@ -2,24 +2,8 @@ package series
 
 import "encoding/json"
 
-// Series provides the interface for time series.
-type Series interface {
-	Name() string
-	Values() []float64
-	Start() int64
-	End() int64
-	Step() int
-	Len() int
-	SetName(name string)
-	SetAlias(s string)
-	SetAliasWith(s string) Series
-	Alias() string
-	MarshalJSON() ([]byte, error)
-	Points() DataPoints
-}
-
-// series represents time series.
-type series struct {
+// Series represents time series.
+type Series struct {
 	name   string
 	values []float64
 	start  int64 // timestamp of start.
@@ -28,8 +12,8 @@ type series struct {
 }
 
 // NewSeries returns the Series object.
-func NewSeries(name string, values []float64, start int64, step int) Series {
-	return &series{
+func NewSeries(name string, values []float64, start int64, step int) *Series {
+	return &Series{
 		name:   name,
 		values: values,
 		start:  start,
@@ -38,22 +22,22 @@ func NewSeries(name string, values []float64, start int64, step int) Series {
 }
 
 // Name returns the name.
-func (s *series) Name() string {
+func (s *Series) Name() string {
 	return s.name
 }
 
 // Values returns the values.
-func (s *series) Values() []float64 {
+func (s *Series) Values() []float64 {
 	return s.values
 }
 
 // Start returns the start timestamp.
-func (s *series) Start() int64 {
+func (s *Series) Start() int64 {
 	return s.start
 }
 
 // End returns the end timestamp.
-func (s *series) End() int64 {
+func (s *Series) End() int64 {
 	if s.Len() == 0 {
 		return -1
 	}
@@ -61,33 +45,33 @@ func (s *series) End() int64 {
 }
 
 // Step returns the step.
-func (s *series) Step() int {
+func (s *Series) Step() int {
 	return s.step
 }
 
 // Len returns the length of series.
-func (s *series) Len() int {
+func (s *Series) Len() int {
 	return len(s.Values())
 }
 
 // SetName sets the name
-func (s *series) SetName(name string) {
+func (s *Series) SetName(name string) {
 	s.name = name
 }
 
 // SetAlias set alias with a.
-func (s *series) SetAlias(a string) {
+func (s *Series) SetAlias(a string) {
 	s.alias = a
 }
 
 // SetAliasWith set alias with a and return the pointer of series.
-func (s *series) SetAliasWith(a string) Series {
+func (s *Series) SetAliasWith(a string) *Series {
 	s.alias = a
 	return s
 }
 
 // Alias returns the alias.
-func (s *series) Alias() string {
+func (s *Series) Alias() string {
 	if s.alias == "" {
 		return s.Name()
 	}
@@ -95,7 +79,7 @@ func (s *series) Alias() string {
 }
 
 // Points returns DataPoints converted from values.
-func (s *series) Points() DataPoints {
+func (s *Series) Points() DataPoints {
 	if s.Len() == 0 {
 		return DataPoints{}
 	}
@@ -133,7 +117,7 @@ type jsonMarshallableSeries struct {
 }
 
 // MarshalJSON marshals Series as JSON.
-func (s *series) MarshalJSON() ([]byte, error) {
+func (s *Series) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&jsonMarshallableSeries{
 		Target:     s.Alias(),
 		DataPoints: s.Points(),

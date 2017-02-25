@@ -125,7 +125,7 @@ func doSumSeries(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeries
-func sumSeries(ss series.SeriesSlice) series.Series {
+func sumSeries(ss series.SeriesSlice) *series.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -152,7 +152,7 @@ func doAverageSeries(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.averageSeries
-func averageSeries(ss series.SeriesSlice) series.Series {
+func averageSeries(ss series.SeriesSlice) *series.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -179,7 +179,7 @@ func doMinSeries(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.minSeries
-func minSeries(ss series.SeriesSlice) series.Series {
+func minSeries(ss series.SeriesSlice) *series.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -206,7 +206,7 @@ func doMaxSeries(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.maxSeries
-func maxSeries(ss series.SeriesSlice) series.Series {
+func maxSeries(ss series.SeriesSlice) *series.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -234,7 +234,7 @@ func doMultiplySeries(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.multiplySeries
-func multiplySeries(ss series.SeriesSlice) series.Series {
+func multiplySeries(ss series.SeriesSlice) *series.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -266,7 +266,7 @@ func doDivideSeries(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.divideSeries
-func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries series.Series) series.SeriesSlice {
+func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries *series.Series) series.SeriesSlice {
 	result := make(series.SeriesSlice, 0, len(dividendSeriesSlice))
 	for _, s := range dividendSeriesSlice {
 		bothSeriesSlice := series.SeriesSlice{s, divisorSeries}
@@ -317,7 +317,7 @@ func doPercentileOfSeries(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.percentileOfSeries
-func percentileOfSeries(ss series.SeriesSlice, n float64, interpolate bool) series.Series {
+func percentileOfSeries(ss series.SeriesSlice, n float64, interpolate bool) *series.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -448,7 +448,7 @@ func doSumSeriesWithWildcards(args funcArgs) (series.SeriesSlice, error) {
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeriesWithWildcards
 func sumSeriesWithWildcards(ss series.SeriesSlice, positions []int) series.SeriesSlice {
-	newSeries := make(map[string]series.Series, len(ss))
+	newSeries := make(map[string]*series.Series, len(ss))
 	newNames := make([]string, 0, len(ss))
 	for _, s := range ss {
 		nameParts := []string{}
