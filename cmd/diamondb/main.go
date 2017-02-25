@@ -1,22 +1,15 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/rs/cors"
-	"github.com/urfave/negroni"
-
 	"github.com/yuuki/diamondb/pkg/config"
-	"github.com/yuuki/diamondb/pkg/env"
-	"github.com/yuuki/diamondb/pkg/storage"
 	"github.com/yuuki/diamondb/pkg/web"
 )
 
@@ -63,49 +56,13 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 
-	store, err := storage.New()
-	if err != nil {
-		log.Printf("failed to start fetcher session. %s", err)
-		return -1
-	}
-	e := &env.Env{
-		ReadWriter: store,
-	}
-
-	mux := http.NewServeMux()
-	mux.Handle("/ping", web.PingHandler(e))
-	mux.Handle("/inspect", web.InspectHandler(e))
-	mux.Handle("/render", web.RenderHandler(e))
-	mux.Handle("/datapoints", web.WriteHandler(e))
-
-	n := negroni.New()
-	n.Use(negroni.NewRecovery())
-	n.Use(negroni.NewLogger())
-	n.Use(cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST"},
-		AllowedHeaders: []string{"Origin", "Accept", "Content-Type"},
-	}))
-	n.UseHandler(mux)
+	handler := web.New(port)
+	go handler.Run()
 
 	sigch := make(chan os.Signal, 1)
 	signal.Notify(sigch, syscall.SIGTERM, syscall.SIGINT)
-
-	log.Printf("Listening :%s ...\n", port)
-
-	srv := &http.Server{Addr: ":" + port, Handler: n}
-
-	go func() {
-		if err := srv.ListenAndServe(); err != nil {
-			log.Println(err)
-		}
-	}()
-
 	s := <-sigch
-	log.Printf("Received %s gracefully shutdown...\n", s)
-	ctx, cancel := context.WithTimeout(context.Background(), config.Config.ShutdownTimeout)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := handler.Shutdown(s); err != nil {
 		log.Println(err)
 		return 3
 	}
