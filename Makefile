@@ -1,4 +1,5 @@
 COMMIT = $$(git describe --always)
+PKG = github.com/yuuki/diamondb
 
 all: build
 
@@ -13,7 +14,7 @@ gen:
 
 .PHONY: build
 build: gen
-	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" cmd/...
+	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" $(PKG)/cmd/...
 
 .PHONY: test
 test: gen
@@ -43,3 +44,7 @@ vet:
 .PHONY: up
 up:
 	docker-compose up --build
+
+.PHONY: down
+down:
+	docker-compose down
