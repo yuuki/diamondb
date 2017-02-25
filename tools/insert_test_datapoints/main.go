@@ -37,7 +37,7 @@ func request(name string, timestamp int64, value float64, endpoint string) error
 		return err
 	}
 	if resp.StatusCode != 204 {
-		log.Printf("http request error (%s,%d,%f) %d\n", name, timestamp, value, resp.Status)
+		log.Printf("http request error (%s,%d,%f) %s\n", name, timestamp, value, resp.Status)
 		return nil
 	}
 	log.Printf("http success (%s,%d,%f)\n", name, timestamp, value)
