@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/yuuki/diamondb/pkg/config"
+	"github.com/yuuki/diamondb/pkg/storage"
 	"github.com/yuuki/diamondb/pkg/web"
 )
 
@@ -56,7 +57,16 @@ func (cli *CLI) Run(args []string) int {
 		return 0
 	}
 
-	handler := web.New(port)
+	store, err := storage.New()
+	if err != nil {
+		log.Printf("failed to start fetcher session. %s", err)
+		return -1
+	}
+
+	handler := web.New(&web.Option{
+		Port:  port,
+		Store: store,
+	})
 	go handler.Run()
 
 	sigch := make(chan os.Signal, 1)

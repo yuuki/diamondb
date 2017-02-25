@@ -30,13 +30,12 @@ type Handler struct {
 	store  storage.ReadWriter
 }
 
-func New(port string) *Handler {
-	store, err := storage.New()
-	if err != nil {
-		log.Printf("failed to start fetcher session. %s", err)
-		return nil
-	}
+type Option struct {
+	Port  string
+	Store storage.ReadWriter
+}
 
+func New(o *Option) *Handler {
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	n.Use(negroni.NewLogger())
@@ -46,11 +45,11 @@ func New(port string) *Handler {
 		AllowedHeaders: []string{"Origin", "Accept", "Content-Type"},
 	}))
 
-	srv := &http.Server{Addr: ":" + port, Handler: n}
+	srv := &http.Server{Addr: ":" + o.Port, Handler: n}
 
 	h := &Handler{
 		server: srv,
-		store:  store,
+		store:  o.Store,
 	}
 
 	mux := http.NewServeMux()

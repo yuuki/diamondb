@@ -12,7 +12,6 @@ import (
 
 	"github.com/kylelemons/godebug/pretty"
 
-	"github.com/yuuki/diamondb/pkg/env"
 	"github.com/yuuki/diamondb/pkg/metric"
 	. "github.com/yuuki/diamondb/pkg/series"
 	"github.com/yuuki/diamondb/pkg/storage"
@@ -32,7 +31,11 @@ func TestRenderHandler(t *testing.T) {
 		panic(err)
 	}
 
-	RenderHandler(&env.Env{ReadWriter: fakefetcher}).ServeHTTP(r, req)
+	h := New(&Option{
+		Store: fakefetcher,
+		Port:  "dummy",
+	})
+	h.RenderHandler().ServeHTTP(r, req)
 
 	got, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -73,7 +76,11 @@ func TestWriteHandler(t *testing.T) {
 		panic(err)
 	}
 
-	WriteHandler(&env.Env{ReadWriter: fakewriter}).ServeHTTP(r, req)
+	h := New(&Option{
+		Store: fakewriter,
+		Port:  "dummy",
+	})
+	h.WriteHandler().ServeHTTP(r, req)
 
 	_, err = ioutil.ReadAll(r.Body)
 	if err != nil {
