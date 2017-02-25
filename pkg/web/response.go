@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -14,7 +15,11 @@ func renderJSON(w http.ResponseWriter, status int, v interface{}) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Write(res)
+	if _, err := w.Write(res); err != nil {
+		log.Println(err)
+		return
+	}
+	return
 }
 
 func ok(w http.ResponseWriter, msg string) {
