@@ -87,6 +87,9 @@ func TestStoreInsertMetric(t *testing.T) {
 			FakeGet: func(slot string, name string) (map[int64]float64, error) {
 				return nil, nil
 			},
+			FakeLen: func(slot string, name string) (int64, error) {
+				return 0, nil
+			},
 			FakePut: func(slot string, name string, p *metric.Datapoint) error {
 				return nil
 			},
