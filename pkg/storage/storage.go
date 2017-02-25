@@ -107,16 +107,31 @@ func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, er
 }
 
 var (
+	timeSlots   = []string{"1m", "5m", "1h", "1d"}
 	timeSlotMap = map[string]map[string]int{
 		"1m": {
 			"timestampStep":  60,
 			"itemEpochStep":  60 * 60,
 			"tableEpochStep": 60 * 60 * 24,
+			"numberOfPoints": 5,
 		},
 		"5m": {
-			"timestampStep":  5 * 60,
+			"timestampStep":  60 * 5,
 			"itemEpochStep":  60 * 60 * 24,
 			"tableEpochStep": 60 * 60 * 24,
+			"numberOfPoints": 12,
+		},
+		"1h": {
+			"timestampStep":  60 * 60,
+			"itemEpochStep":  60 * 60 * 24 * 7,
+			"tableEpochStep": 60 * 60 * 24 * 7,
+			"numberOfPoints": 24,
+		},
+		"1d": {
+			"timestampStep":  60 * 60 * 24,
+			"itemEpochStep":  60 * 60 * 24 * 365,
+			"tableEpochStep": 60 * 60 * 24 * 365,
+			"numberOfPoints": -1,
 		},
 	}
 )
@@ -126,20 +141,30 @@ func itemEpochFromTimestamp(slot string, timestamp int64) int64 {
 	return timestamp - timestamp%int64(itemEpochStep)
 }
 
+func alignedTimestamp(slot string, timestamp int64) int64 {
+	timestampStep := timeSlotMap[slot]["timestampStep"]
+	return timestamp - timestamp%int64(timestampStep)
+}
+
 // InsertMetric inserts datapoints to Redis with rollup aggregation
 // to DynamoDB if needed.
 func (s *Store) InsertMetric(m *metric.Metric) error {
 	for _, p := range m.Datapoints {
-		tv, err := s.Redis.Get("1m", m.Name)
-		if err != nil {
-			return errors.WithStack(err)
-		}
-		if len(tv) >= 5 {
-			if err := s.rollup("5m", m.Name, tv); err != nil {
+		for i, slot := range timeSlots {
+			if i == (len(timeSlots) - 1) {
+				break
+			}
+			tv, err := s.Redis.Get(slot, m.Name)
+			if err != nil {
 				return errors.WithStack(err)
 			}
+			if len(tv) >= timeSlotMap[slot]["numberOfPoints"] {
+				if err := s.rollup(timeSlots[i+1], m.Name, tv); err != nil {
+					return errors.WithStack(err)
+				}
+			}
 		}
-		if err := s.Redis.Put("1m", m.Name, p); err != nil {
+		if err := s.Redis.Put(timeSlots[0], m.Name, p); err != nil {
 			return errors.WithStack(err)
 		}
 	}
@@ -147,26 +172,40 @@ func (s *Store) InsertMetric(m *metric.Metric) error {
 }
 
 func (s *Store) rollup(slot string, name string, tvmap map[int64]float64) error {
-	for itemEpoch, vals := range groupByItemEpoch(slot, tvmap) {
-		p := &metric.Datapoint{
-			Timestamp: itemEpoch,
-			Value:     mathutil.AvgFloat64(vals),
-		}
-		if err := s.Redis.Put(slot, name, p); err != nil {
-			return errors.WithStack(err)
+	for _, tv := range groupByItemEpoch(slot, tvmap) {
+		for t, vals := range groupByAlignedTimestamp(slot, tv) {
+			p := &metric.Datapoint{
+				Timestamp: t,
+				Value:     mathutil.AvgFloat64(vals),
+			}
+			if err := s.Redis.Put(slot, name, p); err != nil {
+				return errors.WithStack(err)
+			}
 		}
 	}
 	return nil
 }
 
-func groupByItemEpoch(slot string, tv map[int64]float64) map[int64][]float64 {
+func groupByAlignedTimestamp(slot string, tv map[int64]float64) map[int64][]float64 {
 	groups := map[int64][]float64{}
+	for t, v := range tv {
+		aligned := alignedTimestamp(slot, t)
+		if _, ok := groups[aligned]; !ok {
+			groups[aligned] = []float64{}
+		}
+		groups[aligned] = append(groups[aligned], v)
+	}
+	return groups
+}
+
+func groupByItemEpoch(slot string, tv map[int64]float64) map[int64]map[int64]float64 {
+	groups := map[int64]map[int64]float64{}
 	for t, v := range tv {
 		itemEpoch := itemEpochFromTimestamp(slot, t)
 		if _, ok := groups[itemEpoch]; !ok {
-			groups[itemEpoch] = []float64{}
+			groups[itemEpoch] = map[int64]float64{}
 		}
-		groups[itemEpoch] = append(groups[itemEpoch], v)
+		groups[itemEpoch][t] = v
 	}
 	return groups
 }

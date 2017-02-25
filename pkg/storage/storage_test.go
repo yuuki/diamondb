@@ -114,7 +114,7 @@ func TestStoreRollup(t *testing.T) {
 
 	store := &Store{Redis: r}
 	err = store.rollup("5m", "server1.loadavg5", map[int64]float64{
-		60: 0.1, 120: 0.2, 180: 0.3, 240: 0.4, 300: 0.5,
+		0: 0.1, 60: 0.2, 120: 0.3, 180: 0.4, 240: 0.5,
 	})
 	if err != nil {
 		t.Fatalf("should not raise err: %s", err)
