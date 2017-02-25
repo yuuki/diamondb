@@ -53,10 +53,10 @@ func New(o *Option) *Handler {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/ping", h.PingHandler())
-	mux.Handle("/inspect", h.InspectHandler())
-	mux.Handle("/render", h.RenderHandler())
-	mux.Handle("/datapoints", h.WriteHandler())
+	mux.Handle("/ping", h.pingHandler())
+	mux.Handle("/inspect", h.inspectHandler())
+	mux.Handle("/render", h.renderHandler())
+	mux.Handle("/datapoints", h.writeHandler())
 	n.UseHandler(mux)
 
 	return h
@@ -80,7 +80,7 @@ func (h *Handler) Shutdown(sig os.Signal) error {
 }
 
 // PingHandler returns a HTTP handler for the endpoint to ping storage.
-func (h *Handler) PingHandler() http.Handler {
+func (h *Handler) pingHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := h.store.Ping(); err != nil {
 			unavaliableError(w, errors.Cause(err).Error())
@@ -92,7 +92,7 @@ func (h *Handler) PingHandler() http.Handler {
 }
 
 // InspectHandler returns a HTTP handler for the endpoint to inspect information.
-func (h *Handler) InspectHandler() http.Handler {
+func (h *Handler) inspectHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		renderJSON(w, http.StatusOK, config.Config)
 		return
@@ -100,7 +100,7 @@ func (h *Handler) InspectHandler() http.Handler {
 }
 
 // RenderHandler returns a HTTP handler for the endpoint to read data.
-func (h *Handler) RenderHandler() http.Handler {
+func (h *Handler) renderHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		until := time.Now().Round(time.Second)
 		from := until.Add(-DayTime)
@@ -151,7 +151,7 @@ type WriteRequest struct {
 	Metric *metric.Metric `json:"metric"`
 }
 
-func (h *Handler) WriteHandler() http.Handler {
+func (h *Handler) writeHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var wr WriteRequest
 		if r.Body == nil {

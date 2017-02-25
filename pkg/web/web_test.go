@@ -35,7 +35,7 @@ func TestRenderHandler(t *testing.T) {
 		Store: fakefetcher,
 		Port:  "dummy",
 	})
-	h.RenderHandler().ServeHTTP(r, req)
+	h.renderHandler().ServeHTTP(r, req)
 
 	got, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -80,7 +80,7 @@ func TestWriteHandler(t *testing.T) {
 		Store: fakewriter,
 		Port:  "dummy",
 	})
-	h.WriteHandler().ServeHTTP(r, req)
+	h.writeHandler().ServeHTTP(r, req)
 
 	_, err = ioutil.ReadAll(r.Body)
 	if err != nil {
