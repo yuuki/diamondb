@@ -29,7 +29,10 @@ type ReadWriter interface {
 	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
 	Client() redisAPI
 	batchGet(q *query) (series.SeriesMap, error)
-	InsertDatapoint(string, string, *metric.Datapoint) error
+	Get(string, string) (map[int64]float64, error)
+	Len(string, string) (int64, error)
+	Put(string, string, *metric.Datapoint) error
+	MPut(string, string, map[int64]float64) error
 }
 
 type redisAPI interface {
@@ -37,6 +40,7 @@ type redisAPI interface {
 	HGetAll(key string) *goredis.StringStringMapCmd
 	HSet(key, field string, value interface{}) *goredis.BoolCmd
 	HMSet(key string, fields map[string]string) *goredis.StatusCmd
+	HLen(key string) *goredis.IntCmd
 }
 
 // Redis provides a redis client.
@@ -171,10 +175,53 @@ func (r *Redis) batchGet(q *query) (series.SeriesMap, error) {
 	return sm, nil
 }
 
-func (r *Redis) InsertDatapoint(slot string, name string, p *metric.Datapoint) error {
-	err := r.client.HSet(slot+":"+name, fmt.Sprintf("%d", p.Timestamp), p.Value).Err()
+func (r *Redis) Get(slot string, name string) (map[int64]float64, error) {
+	key := slot + ":" + name
+	tsval, err := r.client.HGetAll(key).Result()
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, errors.Wrapf(err, "failed to write (%s) from redis", key)
+	}
+	tv := make(map[int64]float64, len(tsval))
+	for ts, val := range tsval {
+		t, err := strconv.ParseInt(ts, 10, 64)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to parse timestamp %s", ts)
+		}
+		v, err := strconv.ParseFloat(val, 64)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to parse float value %s", v)
+		}
+		tv[t] = v
+	}
+	return tv, nil
+}
+
+func (r *Redis) Len(slot string, name string) (int64, error) {
+	key := slot + ":" + name
+	n, err := r.client.HLen(key).Result()
+	if err != nil {
+		return -1, errors.Wrapf(err, "failed to get length (%s) from redis", key)
+	}
+	return n, nil
+}
+
+func (r *Redis) Put(slot string, name string, p *metric.Datapoint) error {
+	key := slot + ":" + name
+	err := r.client.HSet(key, fmt.Sprintf("%d", p.Timestamp), p.Value).Err()
+	if err != nil {
+		return errors.Wrapf(err, "failed to write (%s) from redis", key)
+	}
+	return nil
+}
+
+func (r *Redis) MPut(slot string, name string, tv map[int64]float64) error {
+	key := slot + ":" + name
+	tsval := make(map[string]string, len(tv))
+	for t, v := range tv {
+		tsval[fmt.Sprintf("%d", t)] = fmt.Sprintf("%f", v)
+	}
+	if err := r.client.HMSet(key, tsval).Err(); err != nil {
+		return errors.Wrapf(err, "failed to write (%s) from redis", key)
 	}
 	return nil
 }

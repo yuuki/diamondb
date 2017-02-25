@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/yuuki/diamondb/pkg/mathutil"
 	"github.com/yuuki/diamondb/pkg/metric"
 	"github.com/yuuki/diamondb/pkg/series"
 	"github.com/yuuki/diamondb/pkg/storage/dynamodb"
@@ -105,11 +106,110 @@ func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, er
 	return ss, nil
 }
 
+var (
+	timeSlots   = []string{"1m", "5m", "1h", "1d"}
+	timeSlotMap = map[string]map[string]int{
+		"1m": {
+			"timestampStep":  60,
+			"itemEpochStep":  60 * 60,
+			"tableEpochStep": 60 * 60 * 24,
+			"numberOfPoints": 5,
+		},
+		"5m": {
+			"timestampStep":  60 * 5,
+			"itemEpochStep":  60 * 60 * 24,
+			"tableEpochStep": 60 * 60 * 24,
+			"numberOfPoints": 12,
+		},
+		"1h": {
+			"timestampStep":  60 * 60,
+			"itemEpochStep":  60 * 60 * 24 * 7,
+			"tableEpochStep": 60 * 60 * 24 * 7,
+			"numberOfPoints": 24,
+		},
+		"1d": {
+			"timestampStep":  60 * 60 * 24,
+			"itemEpochStep":  60 * 60 * 24 * 365,
+			"tableEpochStep": 60 * 60 * 24 * 365,
+			"numberOfPoints": -1,
+		},
+	}
+)
+
+func itemEpochFromTimestamp(slot string, timestamp int64) int64 {
+	itemEpochStep := timeSlotMap[slot]["itemEpochStep"]
+	return timestamp - timestamp%int64(itemEpochStep)
+}
+
+func alignedTimestamp(slot string, timestamp int64) int64 {
+	timestampStep := timeSlotMap[slot]["timestampStep"]
+	return timestamp - timestamp%int64(timestampStep)
+}
+
+// InsertMetric inserts datapoints to Redis with rollup aggregation
+// to DynamoDB if needed.
 func (s *Store) InsertMetric(m *metric.Metric) error {
 	for _, p := range m.Datapoints {
-		if err := s.Redis.InsertDatapoint("1m", m.Name, p); err != nil {
+		for i, slot := range timeSlots {
+			if i == (len(timeSlots) - 1) {
+				break
+			}
+			n, err := s.Redis.Len(slot, m.Name)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			if n >= int64(timeSlotMap[slot]["numberOfPoints"]) {
+				tv, err := s.Redis.Get(slot, m.Name)
+				if err != nil {
+					return errors.WithStack(err)
+				}
+				if err := s.rollup(timeSlots[i+1], m.Name, tv); err != nil {
+					return errors.WithStack(err)
+				}
+			}
+		}
+		if err := s.Redis.Put(timeSlots[0], m.Name, p); err != nil {
 			return errors.WithStack(err)
 		}
 	}
 	return nil
+}
+
+func (s *Store) rollup(slot string, name string, tvmap map[int64]float64) error {
+	for _, tv := range groupByItemEpoch(slot, tvmap) {
+		for t, vals := range groupByAlignedTimestamp(slot, tv) {
+			p := &metric.Datapoint{
+				Timestamp: t,
+				Value:     mathutil.AvgFloat64(vals),
+			}
+			if err := s.Redis.Put(slot, name, p); err != nil {
+				return errors.WithStack(err)
+			}
+		}
+	}
+	return nil
+}
+
+func groupByAlignedTimestamp(slot string, tv map[int64]float64) map[int64][]float64 {
+	groups := map[int64][]float64{}
+	for t, v := range tv {
+		aligned := alignedTimestamp(slot, t)
+		if _, ok := groups[aligned]; !ok {
+			groups[aligned] = []float64{}
+		}
+		groups[aligned] = append(groups[aligned], v)
+	}
+	return groups
+}
+
+func groupByItemEpoch(slot string, tv map[int64]float64) map[int64]map[int64]float64 {
+	groups := map[int64]map[int64]float64{}
+	for t, v := range tv {
+		itemEpoch := itemEpochFromTimestamp(slot, t)
+		if _, ok := groups[itemEpoch]; !ok {
+			groups[itemEpoch] = map[int64]float64{}
+		}
+		groups[itemEpoch][t] = v
+	}
+	return groups
 }

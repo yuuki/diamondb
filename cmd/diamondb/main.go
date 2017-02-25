@@ -91,7 +91,7 @@ func (cli *CLI) Run(args []string) int {
 	sigch := make(chan os.Signal, 1)
 	signal.Notify(sigch, syscall.SIGTERM, syscall.SIGINT)
 
-	log.Printf("Listening :%s ...", port)
+	log.Printf("Listening :%s ...\n", port)
 
 	srv := &http.Server{Addr: ":" + port, Handler: n}
 
