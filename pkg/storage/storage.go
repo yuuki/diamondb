@@ -154,11 +154,15 @@ func (s *Store) InsertMetric(m *metric.Metric) error {
 			if i == (len(timeSlots) - 1) {
 				break
 			}
-			tv, err := s.Redis.Get(slot, m.Name)
+			n, err := s.Redis.Len(slot, m.Name)
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			if len(tv) >= timeSlotMap[slot]["numberOfPoints"] {
+			if n >= int64(timeSlotMap[slot]["numberOfPoints"]) {
+				tv, err := s.Redis.Get(slot, m.Name)
+				if err != nil {
+					return errors.WithStack(err)
+				}
 				if err := s.rollup(timeSlots[i+1], m.Name, tv); err != nil {
 					return errors.WithStack(err)
 				}

@@ -271,6 +271,34 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestLen(t *testing.T) {
+	s, err := miniredis.Run()
+	if err != nil {
+		panic(err)
+	}
+	defer s.Close()
+
+	// Set mock
+	config.Config.RedisAddrs = []string{s.Addr()}
+	r := New()
+
+	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
+		"100": "10.0", "160": "10.2", "220": "11.0",
+	}).Result()
+	if err != nil {
+		panic(err)
+	}
+
+	n, err := r.Len("1m", "server1.loadavg5")
+	if err != nil {
+		panic(err)
+	}
+
+	if n != 3 {
+		t.Fatalf("redis.Len(1m, server1.loadavg5) = %d; want 3\n", n)
+	}
+}
+
 func TestMPut(t *testing.T) {
 	s, err := miniredis.Run()
 	if err != nil {

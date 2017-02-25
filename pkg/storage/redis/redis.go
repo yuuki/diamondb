@@ -30,6 +30,7 @@ type ReadWriter interface {
 	Client() redisAPI
 	batchGet(q *query) (series.SeriesMap, error)
 	Get(string, string) (map[int64]float64, error)
+	Len(string, string) (int64, error)
 	Put(string, string, *metric.Datapoint) error
 	MPut(string, string, map[int64]float64) error
 }
@@ -39,6 +40,7 @@ type redisAPI interface {
 	HGetAll(key string) *goredis.StringStringMapCmd
 	HSet(key, field string, value interface{}) *goredis.BoolCmd
 	HMSet(key string, fields map[string]string) *goredis.StatusCmd
+	HLen(key string) *goredis.IntCmd
 }
 
 // Redis provides a redis client.
@@ -192,6 +194,15 @@ func (r *Redis) Get(slot string, name string) (map[int64]float64, error) {
 		tv[t] = v
 	}
 	return tv, nil
+}
+
+func (r *Redis) Len(slot string, name string) (int64, error) {
+	key := slot + ":" + name
+	n, err := r.client.HLen(key).Result()
+	if err != nil {
+		return -1, errors.Wrapf(err, "failed to get length (%s) from redis", key)
+	}
+	return n, nil
 }
 
 func (r *Redis) Put(slot string, name string, p *metric.Datapoint) error {
