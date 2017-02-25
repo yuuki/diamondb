@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/yuuki/diamondb/pkg/metric"
@@ -19,42 +20,68 @@ func init() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 }
 
-func write(name string, n int, step int, start int64, endpoint string) error {
-	rand.Seed(time.Now().UnixNano())
-	for i := 0; i < n; i++ {
-		timestamp := start + int64(step*i)
-		value := rand.Float64() * 10.0
-
-		wr := &web.WriteRequest{
-			Metric: &metric.Metric{
-				Name: name,
-				Datapoints: []*metric.Datapoint{
-					&metric.Datapoint{Timestamp: timestamp, Value: value},
-				},
+func request(name string, timestamp int64, value float64, endpoint string) error {
+	wr := &web.WriteRequest{
+		Metric: &metric.Metric{
+			Name: name,
+			Datapoints: []*metric.Datapoint{
+				&metric.Datapoint{Timestamp: timestamp, Value: value},
 			},
-		}
-		jsonData := new(bytes.Buffer)
-		json.NewEncoder(jsonData).Encode(wr)
-
-		resp, err := http.Post(fmt.Sprintf("%s/datapoints", endpoint), "application/json", jsonData)
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode != 204 {
-			log.Printf("http request error (%s,%d,%f) %d\n", name, timestamp, value, resp.Status)
-			continue
-		}
-		log.Printf("http success (%s,%d,%f)\n", name, timestamp, value)
+		},
 	}
+	jsonData := new(bytes.Buffer)
+	json.NewEncoder(jsonData).Encode(wr)
+
+	resp, err := http.Post(fmt.Sprintf("%s/datapoints", endpoint), "application/json", jsonData)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 204 {
+		log.Printf("http request error (%s,%d,%f) %d\n", name, timestamp, value, resp.Status)
+		return nil
+	}
+	log.Printf("http success (%s,%d,%f)\n", name, timestamp, value)
 	return nil
+}
+
+func write(name string, n int, step int, start int64, endpoint string, concurrency int) {
+	rand.Seed(time.Now().UnixNano())
+
+	sem := make(chan struct{}, concurrency)
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		i := i
+		go func() {
+			defer wg.Done()
+
+		RETRY:
+			select {
+			case sem <- struct{}{}:
+			default:
+				time.Sleep(100 * time.Millisecond)
+				goto RETRY
+			}
+			defer func() { <-sem }()
+
+			timestamp := start + int64(step*i)
+			value := rand.Float64() * 10.0
+			if err := request(name, timestamp, value, endpoint); err != nil {
+				log.Println(err)
+			}
+		}()
+	}
+	wg.Wait()
+	return
 }
 
 func main() {
 	var (
-		name  string
-		n     int
-		step  int
-		start int64
+		name        string
+		n           int
+		step        int
+		start       int64
+		concurrency int
 	)
 
 	flags := flag.NewFlagSet("insert_test_datapoints", flag.ContinueOnError)
@@ -62,6 +89,7 @@ func main() {
 	flags.IntVar(&n, "num", 100, "number of datapoints")
 	flags.IntVar(&step, "step", 60, "step")
 	flags.Int64Var(&start, "start", 0, "start epoch time")
+	flags.IntVar(&concurrency, "c", 1, "concurrency")
 
 	if err := flags.Parse(os.Args[1:]); err != nil {
 		log.Fatalln(err)
@@ -72,9 +100,7 @@ func main() {
 	}
 	endpoint := flags.Arg(0)
 
-	if err := write(name, n, step, start, endpoint); err != nil {
-		log.Fatalln(err)
-	}
+	write(name, n, step, start, endpoint, concurrency)
 
 	os.Exit(0)
 }
