@@ -10,8 +10,6 @@ import (
 )
 
 type config struct {
-	Host                string        `json:"host"`
-	Port                string        `json:"port"`
 	ShutdownTimeout     time.Duration `json:"shutdown_timeout"`
 	RedisAddrs          []string      `json:"redis_addrs"`
 	RedisPassword       string        `json:"redis_password"`
@@ -48,10 +46,6 @@ var Config = &config{}
 
 // Load loads into Config from environment values.
 func Load() error {
-	Config.Port = os.Getenv("DIAMONDB_PORT")
-	if Config.Port == "" {
-		Config.Port = DefaultPort
-	}
 	timeout := os.Getenv("DIAMONDB_SHUTDOWN_TIMEOUT")
 	if timeout == "" {
 		Config.ShutdownTimeout = DefaultShutdownTimeout

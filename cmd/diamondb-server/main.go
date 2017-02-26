@@ -43,8 +43,8 @@ func (cli *CLI) Run(args []string) int {
 	flags.Usage = func() {
 		fmt.Fprint(cli.errStream, helpText)
 	}
-	flags.StringVar(&port, "port", config.Config.Port, "")
-	flags.StringVar(&port, "P", config.Config.Port, "")
+	flags.StringVar(&port, "port", config.DefaultPort, "")
+	flags.StringVar(&port, "P", config.DefaultPort, "")
 	flags.BoolVar(&version, "version", false, "")
 	flags.BoolVar(&version, "v", false, "")
 
