@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/yuuki/diamondb/pkg/model"
+	"github.com/yuuki/diamondb/pkg/timeparser"
 	"github.com/yuuki/diamondb/pkg/web"
 )
 
@@ -80,7 +81,7 @@ func main() {
 		name        string
 		n           int
 		step        int
-		start       int64
+		start       string
 		concurrency int
 	)
 
@@ -88,10 +89,15 @@ func main() {
 	flags.StringVar(&name, "name", "server1.loadavg5", "number of datapoints")
 	flags.IntVar(&n, "num", 100, "number of datapoints")
 	flags.IntVar(&step, "step", 60, "step")
-	flags.Int64Var(&start, "start", 0, "start epoch time")
+	flags.StringVar(&start, "start", "now-1d", "start time (eg. now-1d)")
 	flags.IntVar(&concurrency, "c", 1, "concurrency")
 
 	if err := flags.Parse(os.Args[1:]); err != nil {
+		log.Fatalln(err)
+	}
+
+	startTime, err := timeparser.ParseAtTime(start)
+	if err != nil {
 		log.Fatalln(err)
 	}
 
@@ -100,7 +106,7 @@ func main() {
 	}
 	endpoint := flags.Arg(0)
 
-	write(name, n, step, start, endpoint, concurrency)
+	write(name, n, step, startTime.Unix(), endpoint, concurrency)
 
 	os.Exit(0)
 }
