@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage"
 )
 
@@ -32,16 +32,16 @@ func (e *UnknownExpressionError) Error() string {
 
 type funcArg struct {
 	expr        Expr
-	seriesSlice series.SeriesSlice
+	seriesSlice model.SeriesSlice
 }
 
 type funcArgs []*funcArg
 
 // EvalTargets evaluates the targets concurrently. It is guaranteed that the order
 // of the targets as input value and SeriesSlice as retuen value is the same.
-func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime time.Time) (series.SeriesSlice, error) {
+func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime time.Time) (model.SeriesSlice, error) {
 	type result struct {
-		value series.SeriesSlice
+		value model.SeriesSlice
 		err   error
 		index int
 	}
@@ -53,7 +53,7 @@ func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime
 			c <- &result{value: ss, err: err, index: i}
 		}(target, startTime, endTime, i)
 	}
-	ordered := make([]series.SeriesSlice, len(targets))
+	ordered := make([]model.SeriesSlice, len(targets))
 	for i := 0; i < len(targets); i++ {
 		ret := <-c
 		if ret.err != nil {
@@ -62,7 +62,7 @@ func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime
 		}
 		ordered[ret.index] = ret.value
 	}
-	results := series.SeriesSlice{}
+	results := model.SeriesSlice{}
 	for _, ss := range ordered {
 		results = append(results, ss...)
 	}
@@ -72,7 +72,7 @@ func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime
 // EvalTarget evaluates the target. It parses the target into AST structure and fetches datapoints from storage.
 //
 // ex. target: "alias(sumSeries(server1.loadavg5,server2.loadavg5),\"server_loadavg5\")"
-func EvalTarget(reader storage.ReadWriter, target string, startTime, endTime time.Time) (series.SeriesSlice, error) {
+func EvalTarget(reader storage.ReadWriter, target string, startTime, endTime time.Time) (model.SeriesSlice, error) {
 	expr, err := ParseTarget(target)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to parse target (%s)", target)
@@ -84,7 +84,7 @@ func EvalTarget(reader storage.ReadWriter, target string, startTime, endTime tim
 	return ss, err
 }
 
-func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Time) (series.SeriesSlice, error) {
+func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Time) (model.SeriesSlice, error) {
 	switch e := expr.(type) {
 	case SeriesListExpr:
 		ss, err := reader.Fetch(e.Literal, startTime, endTime)

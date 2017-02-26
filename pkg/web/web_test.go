@@ -13,7 +13,7 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 
 	"github.com/yuuki/diamondb/pkg/metric"
-	. "github.com/yuuki/diamondb/pkg/series"
+	. "github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage"
 )
 

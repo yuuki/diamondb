@@ -10,16 +10,16 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
-	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/model"
 )
 
 // FakeReadWriter is for stub testing
 type FakeReadWriter struct {
 	ReadWriter
-	FakeFetch func(name string, start, end time.Time) (series.SeriesMap, error)
+	FakeFetch func(name string, start, end time.Time) (model.SeriesMap, error)
 }
 
-func (s *FakeReadWriter) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
+func (s *FakeReadWriter) Fetch(name string, start, end time.Time) (model.SeriesMap, error) {
 	return s.FakeFetch(name, start, end)
 }
 
@@ -27,7 +27,7 @@ type mockDynamoDBParam struct {
 	Resolution string
 	TableEpoch int64
 	ItemEpoch  int64
-	SeriesMap  series.SeriesMap
+	SeriesMap  model.SeriesMap
 }
 
 var testTableNamePrefix = "diamondb_datapoints_test"

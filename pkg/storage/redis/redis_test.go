@@ -10,7 +10,7 @@ import (
 	goredis "gopkg.in/redis.v5"
 
 	"github.com/yuuki/diamondb/pkg/config"
-	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/model"
 )
 
 func TestNewRedis(t *testing.T) {
@@ -86,16 +86,16 @@ func TestFetchSeriesMap(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	expected := series.SeriesMap{
-		"server1.loadavg5": series.NewSeriesPoint("server1.loadavg5", series.DataPoints{
-			series.NewDataPoint(100, 10.0),
-			series.NewDataPoint(160, 10.2),
-			series.NewDataPoint(220, 11.0),
+	expected := model.SeriesMap{
+		"server1.loadavg5": model.NewSeriesPoint("server1.loadavg5", model.DataPoints{
+			model.NewDataPoint(100, 10.0),
+			model.NewDataPoint(160, 10.2),
+			model.NewDataPoint(220, 11.0),
 		}, 60),
-		"server2.loadavg5": series.NewSeriesPoint("server2.loadavg5", series.DataPoints{
-			series.NewDataPoint(100, 8.0),
-			series.NewDataPoint(160, 5.0),
-			series.NewDataPoint(220, 6.0),
+		"server2.loadavg5": model.NewSeriesPoint("server2.loadavg5", model.DataPoints{
+			model.NewDataPoint(100, 8.0),
+			model.NewDataPoint(160, 5.0),
+			model.NewDataPoint(220, 6.0),
 		}, 60),
 	}
 	if diff := pretty.Compare(sm, expected); diff != "" {
@@ -137,16 +137,16 @@ func TestBatchGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	expected := series.SeriesMap{
-		"server1.loadavg5": series.NewSeriesPoint("server1.loadavg5", series.DataPoints{
-			series.NewDataPoint(100, 10.0),
-			series.NewDataPoint(130, 10.2),
-			series.NewDataPoint(160, 11.0),
+	expected := model.SeriesMap{
+		"server1.loadavg5": model.NewSeriesPoint("server1.loadavg5", model.DataPoints{
+			model.NewDataPoint(100, 10.0),
+			model.NewDataPoint(130, 10.2),
+			model.NewDataPoint(160, 11.0),
 		}, 30),
-		"server2.loadavg5": series.NewSeriesPoint("server2.loadavg5", series.DataPoints{
-			series.NewDataPoint(100, 8.0),
-			series.NewDataPoint(130, 5.0),
-			series.NewDataPoint(160, 6.0),
+		"server2.loadavg5": model.NewSeriesPoint("server2.loadavg5", model.DataPoints{
+			model.NewDataPoint(100, 8.0),
+			model.NewDataPoint(130, 5.0),
+			model.NewDataPoint(160, 6.0),
 		}, 30),
 	}
 	if diff := pretty.Compare(metrics, expected); diff != "" {
@@ -185,7 +185,7 @@ var testHGetAllToMapTests = []struct {
 	name     string
 	tsval    map[string]string
 	query    *query
-	expected *series.SeriesPoint
+	expected *model.SeriesPoint
 }{
 	{
 		"all datapoints within time range",
@@ -198,11 +198,11 @@ var testHGetAllToMapTests = []struct {
 			slot:  "1m",
 			step:  60,
 		},
-		series.NewSeriesPoint(
-			"server1.loadavg5", series.DataPoints{
-				series.NewDataPoint(100, 10.0),
-				series.NewDataPoint(160, 11.0),
-				series.NewDataPoint(240, 12.0),
+		model.NewSeriesPoint(
+			"server1.loadavg5", model.DataPoints{
+				model.NewDataPoint(100, 10.0),
+				model.NewDataPoint(160, 11.0),
+				model.NewDataPoint(240, 12.0),
 			}, 60,
 		),
 	},
@@ -217,11 +217,11 @@ var testHGetAllToMapTests = []struct {
 			slot:  "1m",
 			step:  60,
 		},
-		series.NewSeriesPoint(
-			"server1.loadavg5", series.DataPoints{
-				series.NewDataPoint(100, 10.0),
-				series.NewDataPoint(160, 11.0),
-				series.NewDataPoint(240, 12.0),
+		model.NewSeriesPoint(
+			"server1.loadavg5", model.DataPoints{
+				model.NewDataPoint(100, 10.0),
+				model.NewDataPoint(160, 11.0),
+				model.NewDataPoint(240, 12.0),
 			}, 60,
 		),
 	},

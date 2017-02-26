@@ -1,4 +1,4 @@
-package series
+package model
 
 func GenerateSeriesSlice() SeriesSlice {
 	values1 := make([]float64, 0, 100)

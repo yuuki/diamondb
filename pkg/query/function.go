@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/yuuki/diamondb/pkg/mathutil"
-	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/timeparser"
 )
 
@@ -21,7 +21,7 @@ func (e *ArgumentError) Error() string {
 	return fmt.Sprintf("%s: %s", e.funcName, e.msg)
 }
 
-func doAlias(args funcArgs) (series.SeriesSlice, error) {
+func doAlias(args funcArgs) (model.SeriesSlice, error) {
 	if len(args) != 2 {
 		return nil, &ArgumentError{
 			funcName: "alias",
@@ -46,14 +46,14 @@ func doAlias(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.alias
-func alias(ss series.SeriesSlice, newName string) series.SeriesSlice {
+func alias(ss model.SeriesSlice, newName string) model.SeriesSlice {
 	for _, series := range ss {
 		series.SetAlias(newName)
 	}
 	return ss
 }
 
-func doOffset(args funcArgs) (series.SeriesSlice, error) {
+func doOffset(args funcArgs) (model.SeriesSlice, error) {
 	if len(args) != 2 {
 		return nil, &ArgumentError{
 			funcName: "offset",
@@ -80,22 +80,22 @@ func doOffset(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.offset
-func offset(ss series.SeriesSlice, factor float64) series.SeriesSlice {
-	result := make(series.SeriesSlice, 0, len(ss))
+func offset(ss model.SeriesSlice, factor float64) model.SeriesSlice {
+	result := make(model.SeriesSlice, 0, len(ss))
 	for _, s := range ss {
 		name := fmt.Sprintf("offset(%s,%g)", s.Name(), factor)
 		vals := s.Values()
 		for i := 0; i < len(vals); i++ {
 			vals[i] += factor
 		}
-		result = append(result, series.NewSeries(name, vals, s.Start(), s.Step()))
+		result = append(result, model.NewSeries(name, vals, s.Start(), s.Step()))
 	}
 	return result
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.group
-func doGroup(args funcArgs) (series.SeriesSlice, error) {
-	ss := series.SeriesSlice{}
+func doGroup(args funcArgs) (model.SeriesSlice, error) {
+	ss := model.SeriesSlice{}
 	for i, arg := range args {
 		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
@@ -109,8 +109,8 @@ func doGroup(args funcArgs) (series.SeriesSlice, error) {
 	return ss, nil
 }
 
-func doSumSeries(args funcArgs) (series.SeriesSlice, error) {
-	ss := series.SeriesSlice{}
+func doSumSeries(args funcArgs) (model.SeriesSlice, error) {
+	ss := model.SeriesSlice{}
 	for i, arg := range args {
 		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
@@ -121,11 +121,11 @@ func doSumSeries(args funcArgs) (series.SeriesSlice, error) {
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
-	return series.SeriesSlice{sumSeries(ss)}, nil
+	return model.SeriesSlice{sumSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeries
-func sumSeries(ss series.SeriesSlice) *series.Series {
+func sumSeries(ss model.SeriesSlice) *model.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -133,11 +133,11 @@ func sumSeries(ss series.SeriesSlice) *series.Series {
 		vals = append(vals, mathutil.SumFloat64(row))
 	}
 	name := fmt.Sprintf("sumSeries(%s)", ss.FormattedName())
-	return series.NewSeries(name, vals, start, step)
+	return model.NewSeries(name, vals, start, step)
 }
 
-func doAverageSeries(args funcArgs) (series.SeriesSlice, error) {
-	ss := series.SeriesSlice{}
+func doAverageSeries(args funcArgs) (model.SeriesSlice, error) {
+	ss := model.SeriesSlice{}
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
 		if !ok {
@@ -148,11 +148,11 @@ func doAverageSeries(args funcArgs) (series.SeriesSlice, error) {
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
-	return series.SeriesSlice{averageSeries(ss)}, nil
+	return model.SeriesSlice{averageSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.averageSeries
-func averageSeries(ss series.SeriesSlice) *series.Series {
+func averageSeries(ss model.SeriesSlice) *model.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -160,11 +160,11 @@ func averageSeries(ss series.SeriesSlice) *series.Series {
 		vals = append(vals, mathutil.AvgFloat64(row))
 	}
 	name := fmt.Sprintf("averageSeries(%s)", ss.FormattedName())
-	return series.NewSeries(name, vals, start, step)
+	return model.NewSeries(name, vals, start, step)
 }
 
-func doMinSeries(args funcArgs) (series.SeriesSlice, error) {
-	ss := series.SeriesSlice{}
+func doMinSeries(args funcArgs) (model.SeriesSlice, error) {
+	ss := model.SeriesSlice{}
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
 		if !ok {
@@ -175,11 +175,11 @@ func doMinSeries(args funcArgs) (series.SeriesSlice, error) {
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
-	return series.SeriesSlice{minSeries(ss)}, nil
+	return model.SeriesSlice{minSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.minSeries
-func minSeries(ss series.SeriesSlice) *series.Series {
+func minSeries(ss model.SeriesSlice) *model.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -187,11 +187,11 @@ func minSeries(ss series.SeriesSlice) *series.Series {
 		vals = append(vals, mathutil.MinFloat64(row))
 	}
 	name := fmt.Sprintf("minSeries(%s)", ss.FormattedName())
-	return series.NewSeries(name, vals, start, step)
+	return model.NewSeries(name, vals, start, step)
 }
 
-func doMaxSeries(args funcArgs) (series.SeriesSlice, error) {
-	ss := series.SeriesSlice{}
+func doMaxSeries(args funcArgs) (model.SeriesSlice, error) {
+	ss := model.SeriesSlice{}
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
 		if !ok {
@@ -202,11 +202,11 @@ func doMaxSeries(args funcArgs) (series.SeriesSlice, error) {
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
-	return series.SeriesSlice{maxSeries(ss)}, nil
+	return model.SeriesSlice{maxSeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.maxSeries
-func maxSeries(ss series.SeriesSlice) *series.Series {
+func maxSeries(ss model.SeriesSlice) *model.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -215,11 +215,11 @@ func maxSeries(ss series.SeriesSlice) *series.Series {
 		vals = append(vals, avg)
 	}
 	name := fmt.Sprintf("maxSeries(%s)", ss.FormattedName())
-	return series.NewSeries(name, vals, start, step)
+	return model.NewSeries(name, vals, start, step)
 }
 
-func doMultiplySeries(args funcArgs) (series.SeriesSlice, error) {
-	ss := series.SeriesSlice{}
+func doMultiplySeries(args funcArgs) (model.SeriesSlice, error) {
+	ss := model.SeriesSlice{}
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
 		if !ok {
@@ -230,11 +230,11 @@ func doMultiplySeries(args funcArgs) (series.SeriesSlice, error) {
 		}
 		ss = append(ss, arg.seriesSlice...)
 	}
-	return series.SeriesSlice{multiplySeries(ss)}, nil
+	return model.SeriesSlice{multiplySeries(ss)}, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.multiplySeries
-func multiplySeries(ss series.SeriesSlice) *series.Series {
+func multiplySeries(ss model.SeriesSlice) *model.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -243,10 +243,10 @@ func multiplySeries(ss series.SeriesSlice) *series.Series {
 		vals = append(vals, avg)
 	}
 	name := fmt.Sprintf("multiplySeries(%s)", ss.FormattedName())
-	return series.NewSeries(name, vals, start, step)
+	return model.NewSeries(name, vals, start, step)
 }
 
-func doDivideSeries(args funcArgs) (series.SeriesSlice, error) {
+func doDivideSeries(args funcArgs) (model.SeriesSlice, error) {
 	if len(args) != 2 {
 		return nil, &ArgumentError{
 			funcName: "divideSeries",
@@ -266,10 +266,10 @@ func doDivideSeries(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.divideSeries
-func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries *series.Series) series.SeriesSlice {
-	result := make(series.SeriesSlice, 0, len(dividendSeriesSlice))
+func divideSeries(dividendSeriesSlice model.SeriesSlice, divisorSeries *model.Series) model.SeriesSlice {
+	result := make(model.SeriesSlice, 0, len(dividendSeriesSlice))
 	for _, s := range dividendSeriesSlice {
-		bothSeriesSlice := series.SeriesSlice{s, divisorSeries}
+		bothSeriesSlice := model.SeriesSlice{s, divisorSeries}
 		start, _, step := bothSeriesSlice.Normalize()
 		vals := make([]float64, 0, len(bothSeriesSlice))
 		iter := bothSeriesSlice.Zip()
@@ -277,12 +277,12 @@ func divideSeries(dividendSeriesSlice series.SeriesSlice, divisorSeries *series.
 			vals = append(vals, mathutil.DivideFloat64(row[0], row[1]))
 		}
 		name := fmt.Sprintf("divideSeries(%s,%s)", s.Name(), divisorSeries.Name())
-		result = append(result, series.NewSeries(name, vals, start, step))
+		result = append(result, model.NewSeries(name, vals, start, step))
 	}
 	return result
 }
 
-func doPercentileOfSeries(args funcArgs) (series.SeriesSlice, error) {
+func doPercentileOfSeries(args funcArgs) (model.SeriesSlice, error) {
 	if len(args) != 2 && len(args) != 3 {
 		return nil, &ArgumentError{
 			funcName: "percentileOfSeries",
@@ -310,14 +310,14 @@ func doPercentileOfSeries(args funcArgs) (series.SeriesSlice, error) {
 			interpolate = i.Literal
 		}
 	}
-	ss := series.SeriesSlice{
+	ss := model.SeriesSlice{
 		percentileOfSeries(args[0].seriesSlice, float64(n.Literal), interpolate),
 	}
 	return ss, nil
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.percentileOfSeries
-func percentileOfSeries(ss series.SeriesSlice, n float64, interpolate bool) *series.Series {
+func percentileOfSeries(ss model.SeriesSlice, n float64, interpolate bool) *model.Series {
 	start, _, step := ss.Normalize()
 	vals := make([]float64, 0, len(ss))
 	iter := ss.Zip()
@@ -325,10 +325,10 @@ func percentileOfSeries(ss series.SeriesSlice, n float64, interpolate bool) *ser
 		vals = append(vals, mathutil.Percentile(row, n, interpolate))
 	}
 	name := fmt.Sprintf("percentileOfSeries(%s)", ss.FormattedName())
-	return series.NewSeries(name, vals, start, step)
+	return model.NewSeries(name, vals, start, step)
 }
 
-func doSummarize(args funcArgs) (series.SeriesSlice, error) {
+func doSummarize(args funcArgs) (model.SeriesSlice, error) {
 	if len(args) != 2 && len(args) != 3 {
 		return nil, &ArgumentError{
 			funcName: "summarize",
@@ -363,8 +363,8 @@ func doSummarize(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.summarize
-func summarize(ss series.SeriesSlice, interval string, function string) (series.SeriesSlice, error) {
-	result := make(series.SeriesSlice, 0, len(ss))
+func summarize(ss model.SeriesSlice, interval string, function string) (model.SeriesSlice, error) {
+	result := make(model.SeriesSlice, 0, len(ss))
 	delta, err := timeparser.ParseTimeOffset(interval)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -412,13 +412,13 @@ func summarize(ss series.SeriesSlice, interval string, function string) (series.
 			}
 		}
 		newName := fmt.Sprintf("summarize(%s, \"%s\", \"%s\")", s.Name(), interval, function)
-		newSeries := series.NewSeries(newName, newValues, newStart, int(step))
+		newSeries := model.NewSeries(newName, newValues, newStart, int(step))
 		result = append(result, newSeries)
 	}
 	return result, nil
 }
 
-func doSumSeriesWithWildcards(args funcArgs) (series.SeriesSlice, error) {
+func doSumSeriesWithWildcards(args funcArgs) (model.SeriesSlice, error) {
 	if len(args) < 2 {
 		return nil, &ArgumentError{
 			funcName: "sumSeriesWithWildcards",
@@ -447,8 +447,8 @@ func doSumSeriesWithWildcards(args funcArgs) (series.SeriesSlice, error) {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.sumSeriesWithWildcards
-func sumSeriesWithWildcards(ss series.SeriesSlice, positions []int) series.SeriesSlice {
-	newSeries := make(map[string]*series.Series, len(ss))
+func sumSeriesWithWildcards(ss model.SeriesSlice, positions []int) model.SeriesSlice {
+	newSeries := make(map[string]*model.Series, len(ss))
 	newNames := make([]string, 0, len(ss))
 	for _, s := range ss {
 		nameParts := []string{}
@@ -467,14 +467,14 @@ func sumSeriesWithWildcards(ss series.SeriesSlice, positions []int) series.Serie
 		}
 		newName := strings.Join(nameParts, ".")
 		if _, ok := newSeries[newName]; ok {
-			newSeries[newName] = sumSeries(series.SeriesSlice{s, newSeries[newName]})
+			newSeries[newName] = sumSeries(model.SeriesSlice{s, newSeries[newName]})
 		} else {
 			newSeries[newName] = s
 			newNames = append(newNames, newName)
 		}
 		newSeries[newName].SetName(newName)
 	}
-	results := make(series.SeriesSlice, 0, len(newSeries))
+	results := make(model.SeriesSlice, 0, len(newSeries))
 	for _, name := range newNames {
 		results = append(results, newSeries[name])
 	}

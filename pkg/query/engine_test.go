@@ -8,7 +8,7 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/pkg/errors"
 
-	. "github.com/yuuki/diamondb/pkg/series"
+	. "github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage"
 )
 
@@ -215,7 +215,7 @@ var testEvalTargetFuncTests = []struct {
 		},
 	},
 	{
-		"the type of arguments is group series.",
+		"the type of arguments is group model.",
 		"sumSeries(server{1,2}.loadavg5)",
 		SeriesSlice{
 			NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60),

@@ -1,4 +1,4 @@
-package series
+package model
 
 import (
 	"sort"

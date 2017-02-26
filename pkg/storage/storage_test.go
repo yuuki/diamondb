@@ -11,7 +11,7 @@ import (
 
 	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/metric"
-	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage/dynamodb"
 	"github.com/yuuki/diamondb/pkg/storage/redis"
 )
@@ -47,24 +47,24 @@ func TestStorePing(t *testing.T) {
 
 func TestStoreFetch(t *testing.T) {
 	redisff := &redis.FakeReadWriter{
-		FakeFetch: func(name string, start, end time.Time) (series.SeriesMap, error) {
-			return series.SeriesMap{
-				"server1.loadavg5": series.NewSeriesPoint(
-					"server1.loadavg5", series.DataPoints{
-						series.NewDataPoint(120, 10.0),
-						series.NewDataPoint(180, 11.0),
+		FakeFetch: func(name string, start, end time.Time) (model.SeriesMap, error) {
+			return model.SeriesMap{
+				"server1.loadavg5": model.NewSeriesPoint(
+					"server1.loadavg5", model.DataPoints{
+						model.NewDataPoint(120, 10.0),
+						model.NewDataPoint(180, 11.0),
 					}, 60,
 				),
 			}, nil
 		},
 	}
 	dynamodbff := &dynamodb.FakeReadWriter{
-		FakeFetch: func(name string, start, end time.Time) (series.SeriesMap, error) {
-			return series.SeriesMap{
-				"server1.loadavg5": series.NewSeriesPoint(
-					"server1.loadavg5", series.DataPoints{
-						series.NewDataPoint(120, 10.0),
-						series.NewDataPoint(180, 11.0),
+		FakeFetch: func(name string, start, end time.Time) (model.SeriesMap, error) {
+			return model.SeriesMap{
+				"server1.loadavg5": model.NewSeriesPoint(
+					"server1.loadavg5", model.DataPoints{
+						model.NewDataPoint(120, 10.0),
+						model.NewDataPoint(180, 11.0),
 					}, 60,
 				),
 			}, nil

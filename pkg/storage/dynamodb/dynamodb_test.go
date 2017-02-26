@@ -9,7 +9,7 @@ import (
 	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
 	"github.com/kylelemons/godebug/pretty"
-	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/model"
 )
 
 func TestPing(t *testing.T) {
@@ -28,21 +28,21 @@ func TestPing(t *testing.T) {
 
 func TestFetchSeriesMap(t *testing.T) {
 	name := "roleA.r.{1,2}.loadavg"
-	expected := series.SeriesMap{
-		"roleA.r.1.loadavg": series.NewSeriesPoint(
+	expected := model.SeriesMap{
+		"roleA.r.1.loadavg": model.NewSeriesPoint(
 			"roleA.r.1.loadavg",
-			series.DataPoints{
-				series.NewDataPoint(120, 10.0),
-				series.NewDataPoint(180, 11.2),
-				series.NewDataPoint(240, 13.1),
+			model.DataPoints{
+				model.NewDataPoint(120, 10.0),
+				model.NewDataPoint(180, 11.2),
+				model.NewDataPoint(240, 13.1),
 			}, 60,
 		),
-		"roleA.r.2.loadavg": series.NewSeriesPoint(
+		"roleA.r.2.loadavg": model.NewSeriesPoint(
 			"roleA.r.2.loadavg",
-			series.DataPoints{
-				series.NewDataPoint(120, 1.0),
-				series.NewDataPoint(180, 1.2),
-				series.NewDataPoint(240, 1.1),
+			model.DataPoints{
+				model.NewDataPoint(120, 1.0),
+				model.NewDataPoint(180, 1.2),
+				model.NewDataPoint(240, 1.1),
 			}, 60,
 		),
 	}
@@ -73,23 +73,23 @@ func TestFetchSeriesMap_Concurrent(t *testing.T) {
 	dynamodbBatchLimit = 1
 	defer func() { dynamodbBatchLimit = tmp }()
 	name := "roleA.r.{1,2}.loadavg"
-	expected1 := series.SeriesMap{
-		"roleA.r.1.loadavg": series.NewSeriesPoint(
+	expected1 := model.SeriesMap{
+		"roleA.r.1.loadavg": model.NewSeriesPoint(
 			"roleA.r.1.loadavg",
-			series.DataPoints{
-				series.NewDataPoint(120, 10.0),
-				series.NewDataPoint(180, 11.2),
-				series.NewDataPoint(240, 13.1),
+			model.DataPoints{
+				model.NewDataPoint(120, 10.0),
+				model.NewDataPoint(180, 11.2),
+				model.NewDataPoint(240, 13.1),
 			}, 60,
 		),
 	}
-	expected2 := series.SeriesMap{
-		"roleA.r.2.loadavg": series.NewSeriesPoint(
+	expected2 := model.SeriesMap{
+		"roleA.r.2.loadavg": model.NewSeriesPoint(
 			"roleA.r.2.loadavg",
-			series.DataPoints{
-				series.NewDataPoint(120, 1.0),
-				series.NewDataPoint(180, 1.2),
-				series.NewDataPoint(240, 1.1),
+			model.DataPoints{
+				model.NewDataPoint(120, 1.0),
+				model.NewDataPoint(180, 1.2),
+				model.NewDataPoint(240, 1.1),
 			}, 60,
 		),
 	}
@@ -119,21 +119,21 @@ func TestFetchSeriesMap_Concurrent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	expected := series.SeriesMap{
-		"roleA.r.1.loadavg": series.NewSeriesPoint(
+	expected := model.SeriesMap{
+		"roleA.r.1.loadavg": model.NewSeriesPoint(
 			"roleA.r.1.loadavg",
-			series.DataPoints{
-				series.NewDataPoint(120, 10.0),
-				series.NewDataPoint(180, 11.2),
-				series.NewDataPoint(240, 13.1),
+			model.DataPoints{
+				model.NewDataPoint(120, 10.0),
+				model.NewDataPoint(180, 11.2),
+				model.NewDataPoint(240, 13.1),
 			}, 60,
 		),
-		"roleA.r.2.loadavg": series.NewSeriesPoint(
+		"roleA.r.2.loadavg": model.NewSeriesPoint(
 			"roleA.r.2.loadavg",
-			series.DataPoints{
-				series.NewDataPoint(120, 1.0),
-				series.NewDataPoint(180, 1.2),
-				series.NewDataPoint(240, 1.1),
+			model.DataPoints{
+				model.NewDataPoint(120, 1.0),
+				model.NewDataPoint(180, 1.2),
+				model.NewDataPoint(240, 1.1),
 			}, 60,
 		),
 	}
@@ -146,24 +146,24 @@ func TestFetchSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T
 	tmp := dynamodbBatchLimit
 	dynamodbBatchLimit = 1
 	defer func() { dynamodbBatchLimit = tmp }()
-	expected1 := series.SeriesMap{
-		"roleA.r.1.loadavg": series.NewSeriesPoint(
+	expected1 := model.SeriesMap{
+		"roleA.r.1.loadavg": model.NewSeriesPoint(
 			"roleA.r.1.loadavg",
-			series.DataPoints{
-				series.NewDataPoint(120, 10.0),
-				series.NewDataPoint(180, 11.2),
-				series.NewDataPoint(240, 13.1),
+			model.DataPoints{
+				model.NewDataPoint(120, 10.0),
+				model.NewDataPoint(180, 11.2),
+				model.NewDataPoint(240, 13.1),
 			}, 60,
 		),
 	}
-	expected2 := series.SeriesMap{
-		"roleA.r.1.loadavg": series.NewSeriesPoint(
+	expected2 := model.SeriesMap{
+		"roleA.r.1.loadavg": model.NewSeriesPoint(
 			"roleA.r.1.loadavg",
-			series.DataPoints{
-				series.NewDataPoint(3600, 1.0),
-				series.NewDataPoint(3660, 1.2),
-				series.NewDataPoint(3720, 1.1),
-				series.NewDataPoint(3780, 1.1),
+			model.DataPoints{
+				model.NewDataPoint(3600, 1.0),
+				model.NewDataPoint(3660, 1.2),
+				model.NewDataPoint(3720, 1.1),
+				model.NewDataPoint(3780, 1.1),
 			}, 60,
 		),
 	}
@@ -193,17 +193,17 @@ func TestFetchSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	expected := series.SeriesMap{
-		"roleA.r.1.loadavg": series.NewSeriesPoint(
+	expected := model.SeriesMap{
+		"roleA.r.1.loadavg": model.NewSeriesPoint(
 			"roleA.r.1.loadavg",
-			series.DataPoints{
-				series.NewDataPoint(120, 10.0),
-				series.NewDataPoint(180, 11.2),
-				series.NewDataPoint(240, 13.1),
-				series.NewDataPoint(3600, 1.0),
-				series.NewDataPoint(3660, 1.2),
-				series.NewDataPoint(3720, 1.1),
-				series.NewDataPoint(3780, 1.1),
+			model.DataPoints{
+				model.NewDataPoint(120, 10.0),
+				model.NewDataPoint(180, 11.2),
+				model.NewDataPoint(240, 13.1),
+				model.NewDataPoint(3600, 1.0),
+				model.NewDataPoint(3660, 1.2),
+				model.NewDataPoint(3720, 1.1),
+				model.NewDataPoint(3780, 1.1),
 			}, 60,
 		),
 	}
@@ -239,18 +239,18 @@ func TestFetchSeriesMap_Empty(t *testing.T) {
 }
 
 func TestBatchGet(t *testing.T) {
-	expected := series.SeriesMap{
-		"server1.loadavg5": series.NewSeriesPoint(
+	expected := model.SeriesMap{
+		"server1.loadavg5": model.NewSeriesPoint(
 			"server1.loadavg5",
-			series.DataPoints{
-				series.NewDataPoint(1100, 10.0),
+			model.DataPoints{
+				model.NewDataPoint(1100, 10.0),
 			},
 			60,
 		),
-		"server2.loadavg5": series.NewSeriesPoint(
+		"server2.loadavg5": model.NewSeriesPoint(
 			"server2.loadavg5",
-			series.DataPoints{
-				series.NewDataPoint(1100, 15.0),
+			model.DataPoints{
+				model.NewDataPoint(1100, 15.0),
 			},
 			60,
 		),

@@ -16,7 +16,7 @@ import (
 
 	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/mathutil"
-	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage/util"
 )
 
@@ -26,8 +26,8 @@ import (
 type ReadWriter interface {
 	Ping() error
 	Client() godynamodbiface.DynamoDBAPI
-	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
-	batchGet(q *query) (series.SeriesMap, error)
+	Fetch(string, time.Time, time.Time) (model.SeriesMap, error)
+	batchGet(q *query) (model.SeriesMap, error)
 }
 
 // DynamoDB provides a dynamodb client.
@@ -104,13 +104,13 @@ func (d *DynamoDB) Ping() error {
 }
 
 // Fetch fetches datapoints by name from start until end.
-func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
+func (d *DynamoDB) Fetch(name string, start, end time.Time) (model.SeriesMap, error) {
 	slots, step := selectTimeSlots(start, end, d.tablePrefix)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
 	numQueries := len(slots) * len(nameGroups)
 
 	type result struct {
-		value series.SeriesMap
+		value model.SeriesMap
 		err   error
 	}
 	c := make(chan *result, numQueries)
@@ -129,7 +129,7 @@ func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, e
 			}(q)
 		}
 	}
-	sm := make(series.SeriesMap, len(nameGroups))
+	sm := make(model.SeriesMap, len(nameGroups))
 	for i := 0; i < numQueries; i++ {
 		ret := <-c
 		if ret.err != nil {
@@ -140,12 +140,12 @@ func (d *DynamoDB) Fetch(name string, start, end time.Time) (series.SeriesMap, e
 	return sm, nil
 }
 
-func batchGetResultToMap(resp *godynamodb.BatchGetItemOutput, q *query) series.SeriesMap {
-	sm := make(series.SeriesMap, len(resp.Responses))
+func batchGetResultToMap(resp *godynamodb.BatchGetItemOutput, q *query) model.SeriesMap {
+	sm := make(model.SeriesMap, len(resp.Responses))
 	for _, xs := range resp.Responses {
 		for _, x := range xs {
 			name := (*x["MetricName"].S)
-			points := make(series.DataPoints, 0, len(x["Values"].BS))
+			points := make(model.DataPoints, 0, len(x["Values"].BS))
 			for _, y := range x["Values"].BS {
 				t := int64(binary.BigEndian.Uint64(y[0:8]))
 				v := math.Float64frombits(binary.BigEndian.Uint64(y[8:]))
@@ -153,15 +153,15 @@ func batchGetResultToMap(resp *godynamodb.BatchGetItemOutput, q *query) series.S
 				if t < q.start.Unix() || q.end.Unix() < t {
 					continue
 				}
-				points = append(points, series.NewDataPoint(t, v))
+				points = append(points, model.NewDataPoint(t, v))
 			}
-			sm[name] = series.NewSeriesPoint(name, points, q.step)
+			sm[name] = model.NewSeriesPoint(name, points, q.step)
 		}
 	}
 	return sm
 }
 
-func (d *DynamoDB) batchGet(q *query) (series.SeriesMap, error) {
+func (d *DynamoDB) batchGet(q *query) (model.SeriesMap, error) {
 	var keys []map[string]*godynamodb.AttributeValue
 	for _, name := range q.names {
 		keys = append(keys, map[string]*godynamodb.AttributeValue{
@@ -181,7 +181,7 @@ func (d *DynamoDB) batchGet(q *query) (series.SeriesMap, error) {
 			if awsErr.Code() == "ResourceNotFoundException" {
 				// Don't handle ResourceNotFoundException as error
 				// bacause diamondb web return length 0 series as 200.
-				return series.SeriesMap{}, nil
+				return model.SeriesMap{}, nil
 			}
 		}
 		return nil, errors.Wrapf(err,

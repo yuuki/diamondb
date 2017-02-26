@@ -8,7 +8,7 @@ import (
 
 	"github.com/yuuki/diamondb/pkg/mathutil"
 	"github.com/yuuki/diamondb/pkg/metric"
-	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage/dynamodb"
 	"github.com/yuuki/diamondb/pkg/storage/redis"
 )
@@ -16,7 +16,7 @@ import (
 // ReadWriter defines the interface for data store reader and writer.
 type ReadWriter interface {
 	Ping() error
-	Fetch(string, time.Time, time.Time) (series.SeriesSlice, error)
+	Fetch(string, time.Time, time.Time) (model.SeriesSlice, error)
 	InsertMetric(*metric.Metric) error
 }
 
@@ -59,7 +59,7 @@ func (s *Store) Ping() error {
 }
 
 type futureSeriesMap struct {
-	result series.SeriesMap
+	result model.SeriesMap
 	err    error
 	done   chan struct{}
 }
@@ -70,14 +70,14 @@ func newFutureSeriesMap() *futureSeriesMap {
 	}
 }
 
-func (f *futureSeriesMap) Get() (series.SeriesMap, error) {
+func (f *futureSeriesMap) Get() (model.SeriesMap, error) {
 	<-f.done
 	return f.result, f.err
 }
 
 // Fetch fetches series from Redis, DynamoDB and S3.
 // TODO S3
-func (s *Store) Fetch(name string, start, end time.Time) (series.SeriesSlice, error) {
+func (s *Store) Fetch(name string, start, end time.Time) (model.SeriesSlice, error) {
 	fredis := newFutureSeriesMap()
 	fdynamodb := newFutureSeriesMap()
 

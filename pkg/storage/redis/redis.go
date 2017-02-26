@@ -11,7 +11,7 @@ import (
 
 	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/metric"
-	"github.com/yuuki/diamondb/pkg/series"
+	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage/util"
 )
 
@@ -26,9 +26,9 @@ const (
 // ReadWriter defines the interface for Redis reader and writer.
 type ReadWriter interface {
 	Ping() error
-	Fetch(string, time.Time, time.Time) (series.SeriesMap, error)
+	Fetch(string, time.Time, time.Time) (model.SeriesMap, error)
 	Client() redisAPI
-	batchGet(q *query) (series.SeriesMap, error)
+	batchGet(q *query) (model.SeriesMap, error)
 	Get(string, string) (map[int64]float64, error)
 	Len(string, string) (int64, error)
 	Put(string, string, *metric.Datapoint) error
@@ -100,12 +100,12 @@ func (r *Redis) Ping() error {
 }
 
 // Fetch fetches datapoints by name from start until end.
-func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, error) {
+func (r *Redis) Fetch(name string, start, end time.Time) (model.SeriesMap, error) {
 	slot, step := selectTimeSlot(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), redisBatchLimit)
 
 	type result struct {
-		value series.SeriesMap
+		value model.SeriesMap
 		err   error
 	}
 	c := make(chan *result, len(nameGroups))
@@ -122,7 +122,7 @@ func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, erro
 			c <- &result{value: sm, err: err}
 		}(q)
 	}
-	sm := make(series.SeriesMap, len(nameGroups))
+	sm := make(model.SeriesMap, len(nameGroups))
 	for i := 0; i < len(nameGroups); i++ {
 		ret := <-c
 		if ret.err != nil {
@@ -133,8 +133,8 @@ func (r *Redis) Fetch(name string, start, end time.Time) (series.SeriesMap, erro
 	return sm, nil
 }
 
-func hGetAllToMap(name string, tsval map[string]string, q *query) (*series.SeriesPoint, error) {
-	points := make(series.DataPoints, 0, len(tsval))
+func hGetAllToMap(name string, tsval map[string]string, q *query) (*model.SeriesPoint, error) {
+	points := make(model.DataPoints, 0, len(tsval))
 	for ts, val := range tsval {
 		t, err := strconv.ParseInt(ts, 10, 64)
 		if err != nil {
@@ -148,13 +148,13 @@ func hGetAllToMap(name string, tsval map[string]string, q *query) (*series.Serie
 		if t < q.start.Unix() || q.end.Unix() < t {
 			continue
 		}
-		points = append(points, series.NewDataPoint(t, v))
+		points = append(points, model.NewDataPoint(t, v))
 	}
-	return series.NewSeriesPoint(name, points, q.step), nil
+	return model.NewSeriesPoint(name, points, q.step), nil
 }
 
-func (r *Redis) batchGet(q *query) (series.SeriesMap, error) {
-	sm := make(series.SeriesMap, len(q.names))
+func (r *Redis) batchGet(q *query) (model.SeriesMap, error) {
+	sm := make(model.SeriesMap, len(q.names))
 	for _, name := range q.names {
 		key := fmt.Sprintf("%s:%s", q.slot, name)
 		tsval, err := r.client.HGetAll(key).Result()
