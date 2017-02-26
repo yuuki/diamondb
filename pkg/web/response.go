@@ -40,10 +40,6 @@ func badRequest(w http.ResponseWriter, msg string) {
 	return
 }
 
-func notFound(w http.ResponseWriter) {
-	http.Error(w, "404 Not Found", http.StatusNotFound)
-}
-
 func serverError(w http.ResponseWriter, msg string) {
 	var data struct {
 		Error string `json:"error"`
