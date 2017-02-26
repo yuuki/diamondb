@@ -81,7 +81,7 @@ func (cli *CLI) Run(args []string) int {
 }
 
 var helpText = `
-Usage: diamondb [options]
+Usage: diamondb-server [options]
 
   A Reliable, Scalable, Cloud-Based Time Series Database.
 
