@@ -22,9 +22,11 @@
   - Copyright (c) 2014 Harmen
   - [MIT LICENSE](https://github.com/alicebob/miniredis/blob/master/LICENSE)
 - github.com/kylelemons/godebug
+  - Copyright 2013 Google Inc.
   - [Apache License Version 2.0](https://github.com/kylelemons/godebug/blob/master/LICENSE)
 - github.com/golang/mock
+  - Copyright 2010 Google Inc.
   - [Apache License Version 2.0](https://github.com/golang/mock/blob/master/LICENSE)
 - github.com/fortytw2/leaktest
-  - Copyright (c) 2012 The Go Authors. All rights reserved.
+  - Copyright (c) 2012 The Go Authors.
   - [BSD License](https://github.com/fortytw2/leaktest/blob/master/LICENSE)
