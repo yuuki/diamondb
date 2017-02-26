@@ -149,6 +149,10 @@ func alignedTimestamp(slot string, timestamp int64) int64 {
 // to DynamoDB if needed.
 func (s *Store) InsertMetric(m *model.Metric) error {
 	for _, p := range m.Datapoints {
+		if err := s.Redis.Put(timeSlots[0], m.Name, p); err != nil {
+			return errors.WithStack(err)
+		}
+
 		for i, slot := range timeSlots {
 			if i == (len(timeSlots) - 1) {
 				break
@@ -166,9 +170,6 @@ func (s *Store) InsertMetric(m *model.Metric) error {
 					return errors.WithStack(err)
 				}
 			}
-		}
-		if err := s.Redis.Put(timeSlots[0], m.Name, p); err != nil {
-			return errors.WithStack(err)
 		}
 	}
 	return nil
