@@ -10,7 +10,6 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 
 	"github.com/yuuki/diamondb/pkg/config"
-	"github.com/yuuki/diamondb/pkg/metric"
 	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage/dynamodb"
 	"github.com/yuuki/diamondb/pkg/storage/redis"
@@ -90,14 +89,14 @@ func TestStoreInsertMetric(t *testing.T) {
 			FakeLen: func(slot string, name string) (int64, error) {
 				return 0, nil
 			},
-			FakePut: func(slot string, name string, p *metric.Datapoint) error {
+			FakePut: func(slot string, name string, p *model.Datapoint) error {
 				return nil
 			},
 		},
 	}
-	err := s.InsertMetric(&metric.Metric{
+	err := s.InsertMetric(&model.Metric{
 		Name:       "server1.loadavg5",
-		Datapoints: []*metric.Datapoint{&metric.Datapoint{Timestamp: 100, Value: 0.1}},
+		Datapoints: []*model.Datapoint{&model.Datapoint{Timestamp: 100, Value: 0.1}},
 	})
 	if err != nil {
 		t.Fatalf("err: %s", err)

@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/yuuki/diamondb/pkg/mathutil"
-	"github.com/yuuki/diamondb/pkg/metric"
 	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage/dynamodb"
 	"github.com/yuuki/diamondb/pkg/storage/redis"
@@ -17,7 +16,7 @@ import (
 type ReadWriter interface {
 	Ping() error
 	Fetch(string, time.Time, time.Time) (model.SeriesSlice, error)
-	InsertMetric(*metric.Metric) error
+	InsertMetric(*model.Metric) error
 }
 
 // Store provides each data store client.
@@ -148,7 +147,7 @@ func alignedTimestamp(slot string, timestamp int64) int64 {
 
 // InsertMetric inserts datapoints to Redis with rollup aggregation
 // to DynamoDB if needed.
-func (s *Store) InsertMetric(m *metric.Metric) error {
+func (s *Store) InsertMetric(m *model.Metric) error {
 	for _, p := range m.Datapoints {
 		for i, slot := range timeSlots {
 			if i == (len(timeSlots) - 1) {
@@ -178,7 +177,7 @@ func (s *Store) InsertMetric(m *metric.Metric) error {
 func (s *Store) rollup(slot string, name string, tvmap map[int64]float64) error {
 	for _, tv := range groupByItemEpoch(slot, tvmap) {
 		for t, vals := range groupByAlignedTimestamp(slot, tv) {
-			p := &metric.Datapoint{
+			p := &model.Datapoint{
 				Timestamp: t,
 				Value:     mathutil.AvgFloat64(vals),
 			}

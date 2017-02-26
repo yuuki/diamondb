@@ -1,4 +1,4 @@
-package metric
+package model
 
 type Metric struct {
 	Name       string       `json:"name"`

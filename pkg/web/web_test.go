@@ -12,7 +12,7 @@ import (
 
 	"github.com/kylelemons/godebug/pretty"
 
-	"github.com/yuuki/diamondb/pkg/metric"
+	"github.com/yuuki/diamondb/pkg/model"
 	. "github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage"
 )
@@ -57,14 +57,14 @@ func TestRenderHandler(t *testing.T) {
 
 func TestWriteHandler(t *testing.T) {
 	fakewriter := &storage.FakeReadWriter{
-		FakeInsertMetric: func(*metric.Metric) error {
+		FakeInsertMetric: func(*model.Metric) error {
 			return nil
 		},
 	}
 	wr := &WriteRequest{
-		Metric: &metric.Metric{
+		Metric: &model.Metric{
 			Name:       "server1.loadavg5",
-			Datapoints: []*metric.Datapoint{&metric.Datapoint{Timestamp: 100, Value: 0.1}},
+			Datapoints: []*model.Datapoint{&model.Datapoint{Timestamp: 100, Value: 0.1}},
 		},
 	}
 	b := new(bytes.Buffer)

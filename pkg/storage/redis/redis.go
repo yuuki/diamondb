@@ -10,7 +10,6 @@ import (
 	goredis "gopkg.in/redis.v5"
 
 	"github.com/yuuki/diamondb/pkg/config"
-	"github.com/yuuki/diamondb/pkg/metric"
 	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage/util"
 )
@@ -31,7 +30,7 @@ type ReadWriter interface {
 	batchGet(q *query) (model.SeriesMap, error)
 	Get(string, string) (map[int64]float64, error)
 	Len(string, string) (int64, error)
-	Put(string, string, *metric.Datapoint) error
+	Put(string, string, *model.Datapoint) error
 	MPut(string, string, map[int64]float64) error
 }
 
@@ -205,7 +204,7 @@ func (r *Redis) Len(slot string, name string) (int64, error) {
 	return n, nil
 }
 
-func (r *Redis) Put(slot string, name string, p *metric.Datapoint) error {
+func (r *Redis) Put(slot string, name string, p *model.Datapoint) error {
 	key := slot + ":" + name
 	err := r.client.HSet(key, fmt.Sprintf("%d", p.Timestamp), p.Value).Err()
 	if err != nil {

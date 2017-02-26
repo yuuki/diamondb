@@ -14,7 +14,7 @@ import (
 	"github.com/urfave/negroni"
 
 	"github.com/yuuki/diamondb/pkg/config"
-	"github.com/yuuki/diamondb/pkg/metric"
+	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/query"
 	"github.com/yuuki/diamondb/pkg/storage"
 	"github.com/yuuki/diamondb/pkg/timeparser"
@@ -148,7 +148,7 @@ func (h *Handler) renderHandler() http.Handler {
 }
 
 type WriteRequest struct {
-	Metric *metric.Metric `json:"metric"`
+	Metric *model.Metric `json:"metric"`
 }
 
 func (h *Handler) writeHandler() http.Handler {

@@ -3,7 +3,6 @@ package storage
 import (
 	"time"
 
-	"github.com/yuuki/diamondb/pkg/metric"
 	"github.com/yuuki/diamondb/pkg/model"
 )
 
@@ -11,13 +10,13 @@ import (
 type FakeReadWriter struct {
 	ReadWriter
 	FakeFetch        func(name string, start, end time.Time) (model.SeriesSlice, error)
-	FakeInsertMetric func(*metric.Metric) error
+	FakeInsertMetric func(*model.Metric) error
 }
 
 func (s *FakeReadWriter) Fetch(name string, start, end time.Time) (model.SeriesSlice, error) {
 	return s.FakeFetch(name, start, end)
 }
 
-func (r *FakeReadWriter) InsertMetric(m *metric.Metric) error {
+func (r *FakeReadWriter) InsertMetric(m *model.Metric) error {
 	return r.FakeInsertMetric(m)
 }

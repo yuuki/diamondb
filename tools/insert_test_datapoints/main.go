@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yuuki/diamondb/pkg/metric"
+	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/web"
 )
 
@@ -22,10 +22,10 @@ func init() {
 
 func request(name string, timestamp int64, value float64, endpoint string) error {
 	wr := &web.WriteRequest{
-		Metric: &metric.Metric{
+		Metric: &model.Metric{
 			Name: name,
-			Datapoints: []*metric.Datapoint{
-				&metric.Datapoint{Timestamp: timestamp, Value: value},
+			Datapoints: []*model.Datapoint{
+				&model.Datapoint{Timestamp: timestamp, Value: value},
 			},
 		},
 	}
