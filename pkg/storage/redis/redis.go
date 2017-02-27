@@ -141,7 +141,7 @@ func hGetAllToMap(name string, tsval map[string]string, q *query) (*model.Series
 		}
 		v, err := strconv.ParseFloat(val, 64)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to parse float value %s", v)
+			return nil, errors.Wrapf(err, "failed to parse float value %s", val)
 		}
 		// Trim datapoints out of [start, end]
 		if t < q.start.Unix() || q.end.Unix() < t {
@@ -188,7 +188,7 @@ func (r *Redis) Get(slot string, name string) (map[int64]float64, error) {
 		}
 		v, err := strconv.ParseFloat(val, 64)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to parse float value %s", v)
+			return nil, errors.Wrapf(err, "failed to parse float value %s", val)
 		}
 		tv[t] = v
 	}
