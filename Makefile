@@ -39,7 +39,7 @@ lint:
 
 .PHONY: vet
 vet:
-	go vet -v $$(glide novendor)
+	go tool vet -all -printfuncs=Wrap,Wrapf,Errorf $$(find . -type d -d 1 | grep -v -e "^\.\/\." -e vendor)
 
 .PHONY: up
 up:
