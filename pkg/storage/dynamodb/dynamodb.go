@@ -1,6 +1,7 @@
 package dynamodb
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"math"
@@ -28,6 +29,7 @@ type ReadWriter interface {
 	Client() godynamodbiface.DynamoDBAPI
 	Fetch(string, time.Time, time.Time) (model.SeriesMap, error)
 	batchGet(q *query) (model.SeriesMap, error)
+	Put(string, string, int64, int64, map[int64]float64) error
 }
 
 // DynamoDB provides a dynamodb client.
@@ -190,6 +192,38 @@ func (d *DynamoDB) batchGet(q *query) (model.SeriesMap, error) {
 		)
 	}
 	return batchGetResultToMap(resp, q), nil
+}
+
+func (d *DynamoDB) Put(name, retention string, tableEpoch, itemEpoch int64, tv map[int64]float64) error {
+	tableName := fmt.Sprintf("%s-%s-%d", d.tablePrefix, retention, tableEpoch)
+
+	vals := make([][]byte, 0, len(tv))
+	for timestamp, value := range tv {
+		buf := new(bytes.Buffer)
+		binary.Write(buf, binary.BigEndian, timestamp)
+		binary.Write(buf, binary.BigEndian, math.Float64bits(value))
+		vals = append(vals, buf.Bytes())
+	}
+	params := &godynamodb.UpdateItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]*godynamodb.AttributeValue{
+			"MetricName": {S: aws.String(name)},
+			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", itemEpoch))},
+		},
+		UpdateExpression: aws.String("ADD #values_set :new_values"),
+		ExpressionAttributeNames: map[string]*string{
+			"#values_set": aws.String("Values"),
+		},
+		ExpressionAttributeValues: map[string]*godynamodb.AttributeValue{
+			":new_values": {BS: vals},
+		},
+		ReturnValues: aws.String("NONE"),
+	}
+	if _, err := d.svc.UpdateItem(params); err != nil {
+		return errors.Wrapf(err, "failed to call dynamodb API putItem (%s,%s,%d)",
+			tableName, name, itemEpoch)
+	}
+	return nil
 }
 
 func selectTimeSlots(startTime, endTime time.Time, tablePrefix string) ([]*timeSlot, int) {

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -106,34 +107,43 @@ func (s *Store) Fetch(name string, start, end time.Time) (model.SeriesSlice, err
 }
 
 var (
-	timeSlots   = []string{"1m", "5m", "1h", "1d"}
+	retentions  = []string{"1m:1h", "5m:1d", "1h:7d", "1d:1y"}
 	timeSlotMap = map[string]map[string]int{
 		"1m": {
 			"timestampStep":  60,
 			"itemEpochStep":  60 * 60,
 			"tableEpochStep": 60 * 60 * 24,
 			"numberOfPoints": 5,
+			"flushPoints":    5,
 		},
 		"5m": {
 			"timestampStep":  60 * 5,
 			"itemEpochStep":  60 * 60 * 24,
 			"tableEpochStep": 60 * 60 * 24,
 			"numberOfPoints": 12,
+			"flushPoints":    12,
 		},
 		"1h": {
 			"timestampStep":  60 * 60,
 			"itemEpochStep":  60 * 60 * 24 * 7,
 			"tableEpochStep": 60 * 60 * 24 * 7,
 			"numberOfPoints": 24,
+			"flushPoints":    24,
 		},
 		"1d": {
 			"timestampStep":  60 * 60 * 24,
 			"itemEpochStep":  60 * 60 * 24 * 365,
 			"tableEpochStep": 60 * 60 * 24 * 365,
 			"numberOfPoints": -1,
+			"flushPoints":    1,
 		},
 	}
 )
+
+func tableEpochFromTimestamp(slot string, timestamp int64) int64 {
+	tableEpochStep := timeSlotMap[slot]["tableEpochStep"]
+	return timestamp - timestamp%int64(tableEpochStep)
+}
 
 func itemEpochFromTimestamp(slot string, timestamp int64) int64 {
 	itemEpochStep := timeSlotMap[slot]["itemEpochStep"]
@@ -149,14 +159,19 @@ func alignedTimestamp(slot string, timestamp int64) int64 {
 // to DynamoDB if needed.
 func (s *Store) InsertMetric(m *model.Metric) error {
 	for _, p := range m.Datapoints {
-		if err := s.Redis.Put(timeSlots[0], m.Name, p); err != nil {
+		slot := strings.SplitN(retentions[0], ":", 2)[0]
+		if err := s.Redis.Put(slot, m.Name, p); err != nil {
 			return errors.WithStack(err)
 		}
 
-		for i, slot := range timeSlots {
-			if i == (len(timeSlots) - 1) {
+		for i, retention := range retentions {
+			if i == (len(retentions) - 1) {
 				break
 			}
+
+			parts := strings.SplitN(retention, ":", 2)
+			slot, history := parts[0], parts[1]
+
 			n, err := s.Redis.Len(slot, m.Name)
 			if err != nil {
 				return errors.WithStack(err)
@@ -166,7 +181,13 @@ func (s *Store) InsertMetric(m *model.Metric) error {
 				if err != nil {
 					return errors.WithStack(err)
 				}
-				if err := s.rollup(timeSlots[i+1], m.Name, tv); err != nil {
+				nextSlot := strings.SplitN(retentions[i+1], ":", 2)[0]
+				if err := s.rollup(nextSlot, m.Name, tv); err != nil {
+					return errors.WithStack(err)
+				}
+			}
+			if n >= int64(timeSlotMap[slot]["flushPoints"]) {
+				if err := s.flush(slot, history, m.Name); err != nil {
 					return errors.WithStack(err)
 				}
 			}
@@ -190,6 +211,23 @@ func (s *Store) rollup(slot string, name string, tvmap map[int64]float64) error 
 	return nil
 }
 
+func (s *Store) flush(slot, history, name string) error {
+	tv, err := s.Redis.Get(slot, name)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	for tableEpoch, tv1 := range groupByTableEpoch(slot, tv) {
+		for itemEpoch, tv2 := range groupByItemEpoch(slot, tv1) {
+			retention := slot + history
+			if err := s.DynamoDB.Put(name, retention, tableEpoch, itemEpoch, tv2); err != nil {
+				return err
+			}
+		}
+	}
+	//TODO delete from redis
+	return nil
+}
+
 func groupByAlignedTimestamp(slot string, tv map[int64]float64) map[int64][]float64 {
 	groups := map[int64][]float64{}
 	for t, v := range tv {
@@ -198,6 +236,18 @@ func groupByAlignedTimestamp(slot string, tv map[int64]float64) map[int64][]floa
 			groups[aligned] = []float64{}
 		}
 		groups[aligned] = append(groups[aligned], v)
+	}
+	return groups
+}
+
+func groupByTableEpoch(slot string, tv map[int64]float64) map[int64]map[int64]float64 {
+	groups := map[int64]map[int64]float64{}
+	for t, v := range tv {
+		tableEpoch := tableEpochFromTimestamp(slot, t)
+		if _, ok := groups[tableEpoch]; !ok {
+			groups[tableEpoch] = map[int64]float64{}
+		}
+		groups[tableEpoch][t] = v
 	}
 	return groups
 }
