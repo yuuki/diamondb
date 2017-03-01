@@ -1,5 +1,6 @@
 COMMIT = $$(git describe --always)
 PKG = github.com/yuuki/diamondb
+PKGS = $$(go list ./... | grep -v vendor)
 
 all: build
 
@@ -10,7 +11,7 @@ deps:
 
 .PHONY: gen
 gen:
-	go generate $$(glide novendor)
+	go generate $(PKGS)
 
 .PHONY: build
 build: gen
@@ -18,12 +19,12 @@ build: gen
 
 .PHONY: test
 test: gen
-	go test -race -v $$(glide novendor)
+	go test -race -v $(PKGS)
 	make vet
 
 .PHONY: cover
 cover: gen
-	go test -cover $$(glide novendor)
+	go test -cover $(PKGS)
 
 .PHONY: fmt
 fmt:
@@ -35,7 +36,7 @@ imports:
 
 .PHONY: lint
 lint:
-	golint $$(glide novendor)
+	golint $(PKGS)
 
 .PHONY: vet
 vet:
