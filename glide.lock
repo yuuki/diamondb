@@ -1,10 +1,10 @@
-hash: 844a1fd917365f3f2a22d055cf25f886396c7331c6b803edd93553f562d0672b
-updated: 2017-02-16T22:08:09.342019947+09:00
+hash: 7e1909c90f30d538d7f9e19b4e34fcf8c31a514916a1d22426ea977e0f645a75
+updated: 2017-03-02T04:15:14.286602316+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
 - name: github.com/aws/aws-sdk-go
-  version: 7f96ce6d3bc37ec42c97a3f8d19209a134838042
+  version: 6669bce73b4e3bc922ff5ea3a3983ede26e02b39
   subpackages:
   - aws
   - aws/awserr
