@@ -62,7 +62,7 @@ func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime
 		}
 		ordered[ret.index] = ret.value
 	}
-	results := model.SeriesSlice{}
+	var results model.SeriesSlice
 	for _, ss := range ordered {
 		results = append(results, ss...)
 	}
