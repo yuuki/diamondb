@@ -46,7 +46,7 @@ func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime
 		index int
 	}
 
-	c := make(chan *result)
+	c := make(chan *result, len(targets))
 	for i, target := range targets {
 		go func(target string, start, end time.Time, i int) {
 			ss, err := EvalTarget(reader, target, start, end)
