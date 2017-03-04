@@ -358,7 +358,7 @@ func TestDelete(t *testing.T) {
 		panic(err)
 	}
 	if len(got) != 0 {
-		t.Fatalf("the result of redis.Get should be 0 after redis.Delete", len(got))
+		t.Fatalf("the result of redis.Get should be 0, not %d after redis.Delete", len(got))
 	}
 }
 
