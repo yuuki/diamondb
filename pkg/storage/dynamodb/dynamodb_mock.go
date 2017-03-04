@@ -194,6 +194,28 @@ func (_mr *_MockDynamoDBAPIRecorder) DescribeTable(arg0 interface{}) *gomock.Cal
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTable", arg0)
 }
 
+func (_m *MockDynamoDBAPI) DescribeTimeToLiveRequest(_param0 *dynamodb.DescribeTimeToLiveInput) (*request.Request, *dynamodb.DescribeTimeToLiveOutput) {
+	ret := _m.ctrl.Call(_m, "DescribeTimeToLiveRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.DescribeTimeToLiveOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) DescribeTimeToLiveRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTimeToLiveRequest", arg0)
+}
+
+func (_m *MockDynamoDBAPI) DescribeTimeToLive(_param0 *dynamodb.DescribeTimeToLiveInput) (*dynamodb.DescribeTimeToLiveOutput, error) {
+	ret := _m.ctrl.Call(_m, "DescribeTimeToLive", _param0)
+	ret0, _ := ret[0].(*dynamodb.DescribeTimeToLiveOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) DescribeTimeToLive(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTimeToLive", arg0)
+}
+
 func (_m *MockDynamoDBAPI) GetItemRequest(_param0 *dynamodb.GetItemInput) (*request.Request, *dynamodb.GetItemOutput) {
 	ret := _m.ctrl.Call(_m, "GetItemRequest", _param0)
 	ret0, _ := ret[0].(*request.Request)
@@ -442,6 +464,28 @@ func (_m *MockDynamoDBAPI) UpdateTable(_param0 *dynamodb.UpdateTableInput) (*dyn
 
 func (_mr *_MockDynamoDBAPIRecorder) UpdateTable(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTable", arg0)
+}
+
+func (_m *MockDynamoDBAPI) UpdateTimeToLiveRequest(_param0 *dynamodb.UpdateTimeToLiveInput) (*request.Request, *dynamodb.UpdateTimeToLiveOutput) {
+	ret := _m.ctrl.Call(_m, "UpdateTimeToLiveRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.UpdateTimeToLiveOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) UpdateTimeToLiveRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTimeToLiveRequest", arg0)
+}
+
+func (_m *MockDynamoDBAPI) UpdateTimeToLive(_param0 *dynamodb.UpdateTimeToLiveInput) (*dynamodb.UpdateTimeToLiveOutput, error) {
+	ret := _m.ctrl.Call(_m, "UpdateTimeToLive", _param0)
+	ret0, _ := ret[0].(*dynamodb.UpdateTimeToLiveOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) UpdateTimeToLive(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTimeToLive", arg0)
 }
 
 func (_m *MockDynamoDBAPI) WaitUntilTableExists(_param0 *dynamodb.DescribeTableInput) error {
