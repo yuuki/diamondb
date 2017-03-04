@@ -34,8 +34,7 @@ type ReadWriter interface {
 
 // DynamoDB provides a dynamodb client.
 type DynamoDB struct {
-	svc         godynamodbiface.DynamoDBAPI
-	tablePrefix string
+	svc godynamodbiface.DynamoDBAPI
 }
 
 type timeSlot struct {
@@ -85,8 +84,7 @@ func New() (*DynamoDB, error) {
 		)
 	}
 	return &DynamoDB{
-		svc:         godynamodb.New(sess),
-		tablePrefix: config.Config.DynamoDBTablePrefix,
+		svc: godynamodb.New(sess),
 	}, nil
 }
 
@@ -107,7 +105,7 @@ func (d *DynamoDB) Ping() error {
 
 // Fetch fetches datapoints by name from start until end.
 func (d *DynamoDB) Fetch(name string, start, end time.Time) (model.SeriesMap, error) {
-	slots, step := selectTimeSlots(start, end, d.tablePrefix)
+	slots, step := selectTimeSlots(start, end, config.Config.DynamoDBTablePrefix)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
 	numQueries := len(slots) * len(nameGroups)
 
@@ -195,7 +193,7 @@ func (d *DynamoDB) batchGet(q *query) (model.SeriesMap, error) {
 }
 
 func (d *DynamoDB) Put(name, retention string, tableEpoch, itemEpoch int64, tv map[int64]float64) error {
-	tableName := fmt.Sprintf("%s-%s-%d", d.tablePrefix, retention, tableEpoch)
+	tableName := fmt.Sprintf("%s-%s-%d", config.Config.DynamoDBTablePrefix, retention, tableEpoch)
 
 	vals := make([][]byte, 0, len(tv))
 	for timestamp, value := range tv {

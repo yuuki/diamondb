@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
+	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/model"
 )
 
@@ -33,10 +34,8 @@ type mockDynamoDBParam struct {
 var testTableNamePrefix = "diamondb_datapoints_test"
 
 func NewTestDynamoDB(mock *MockDynamoDBAPI) *DynamoDB {
-	return &DynamoDB{
-		svc:         mock,
-		tablePrefix: testTableNamePrefix,
-	}
+	config.Config.DynamoDBTablePrefix = testTableNamePrefix
+	return &DynamoDB{svc: mock}
 }
 
 func mockTableName(resolution string, tableEpoch int64) string {
