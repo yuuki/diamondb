@@ -330,6 +330,38 @@ func TestMPut(t *testing.T) {
 	}
 }
 
+func TestDelete(t *testing.T) {
+	s, err := miniredis.Run()
+	if err != nil {
+		panic(err)
+	}
+	defer s.Close()
+
+	// Set mock
+	config.Config.RedisAddrs = []string{s.Addr()}
+	r := New()
+
+	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
+		"100": "10.0", "160": "10.2", "220": "11.0",
+	}).Result()
+	if err != nil {
+		panic(err)
+	}
+
+	err = r.Delete("1m", "server1.loadavg5")
+	if err != nil {
+		t.Fatalf("shoud not raise error: %s", err)
+	}
+
+	got, err := r.Get("1m", "server1.loadavg5")
+	if err != nil {
+		panic(err)
+	}
+	if len(got) != 0 {
+		t.Fatalf("the result of redis.Get should be 0 after redis.Delete", len(got))
+	}
+}
+
 var selectTimeSlotTests = []struct {
 	start time.Time
 	end   time.Time

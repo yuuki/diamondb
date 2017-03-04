@@ -32,10 +32,12 @@ type ReadWriter interface {
 	Len(string, string) (int64, error)
 	Put(string, string, *model.Datapoint) error
 	MPut(string, string, map[int64]float64) error
+	Delete(string, string) error
 }
 
 type redisAPI interface {
 	Ping() *goredis.StatusCmd
+	Del(key ...string) *goredis.IntCmd
 	HGetAll(key string) *goredis.StringStringMapCmd
 	HSet(key, field string, value interface{}) *goredis.BoolCmd
 	HMSet(key string, fields map[string]string) *goredis.StatusCmd
@@ -220,6 +222,14 @@ func (r *Redis) MPut(slot string, name string, tv map[int64]float64) error {
 		tsval[fmt.Sprintf("%d", t)] = fmt.Sprintf("%f", v)
 	}
 	if err := r.client.HMSet(key, tsval).Err(); err != nil {
+		return errors.Wrapf(err, "failed to write (%s) from redis", key)
+	}
+	return nil
+}
+
+func (r *Redis) Delete(slot string, name string) error {
+	key := slot + ":" + name
+	if err := r.client.Del(key).Err(); err != nil {
 		return errors.Wrapf(err, "failed to write (%s) from redis", key)
 	}
 	return nil
