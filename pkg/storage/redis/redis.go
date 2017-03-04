@@ -95,7 +95,7 @@ func (r *Redis) Client() redisAPI {
 func (r *Redis) Ping() error {
 	_, err := r.client.Ping().Result()
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrapf(err, "failed to ping redis")
 	}
 	return nil
 }

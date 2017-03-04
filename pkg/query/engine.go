@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage"
 )
@@ -58,7 +56,7 @@ func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime
 		ret := <-c
 		if ret.err != nil {
 			// return err that is found firstly.
-			return nil, errors.Wrapf(ret.err, "failed to evaluate target (%s)", targets[i])
+			return nil, ret.err
 		}
 		ordered[ret.index] = ret.value
 	}
@@ -75,11 +73,11 @@ func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime
 func EvalTarget(reader storage.ReadWriter, target string, startTime, endTime time.Time) (model.SeriesSlice, error) {
 	expr, err := ParseTarget(target)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse target (%s)", target)
+		return nil, err
 	}
 	ss, err := invokeExpr(reader, expr, startTime, endTime)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to invoke %s", expr)
+		return nil, err
 	}
 	return ss, err
 }
@@ -89,7 +87,7 @@ func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Ti
 	case SeriesListExpr:
 		ss, err := reader.Fetch(e.Literal, startTime, endTime)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to fetch (%s,%d,%d)", e.Literal, startTime.Unix(), endTime.Unix())
+			return nil, err
 		}
 		return ss, nil
 	case GroupSeriesExpr:
@@ -100,85 +98,85 @@ func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Ti
 		expr = SeriesListExpr{Literal: strings.Join(joinedValues, ",")}
 		ss, err := invokeExpr(reader, expr, startTime, endTime)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to invoke (%s,%d,%d)", e, startTime.Unix(), endTime.Unix())
+			return nil, err
 		}
 		return ss, nil
 	case FuncExpr:
 		args, err := invokeSubExprs(reader, e.SubExprs, startTime, endTime)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to invoke arguments of (%s) function", e.Name)
+			return nil, err
 		}
 		switch e.Name {
 		case "alias":
 			ss, err := doAlias(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "offset":
 			ss, err := doOffset(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "group":
 			ss, err := doGroup(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "averageSeries", "avg":
 			ss, err := doAverageSeries(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "sumSeries", "sum":
 			ss, err := doSumSeries(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "minSeries":
 			ss, err := doMinSeries(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "maxSeries":
 			ss, err := doMaxSeries(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "multiplySeries":
 			ss, err := doMultiplySeries(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "divideSeries":
 			ss, err := doDivideSeries(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "percentileOfSeries":
 			ss, err := doPercentileOfSeries(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "summarize":
 			ss, err := doSummarize(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		case "sumSeriesWithWildcards":
 			ss, err := doSumSeriesWithWildcards(args)
 			if err != nil {
-				return nil, errors.WithStack(err)
+				return nil, err
 			}
 			return ss, err
 		default:
@@ -226,9 +224,7 @@ func invokeSubExprs(reader storage.ReadWriter, exprs []Expr, startTime, endTime 
 		ret := <-c
 		if ret.err != nil {
 			// return err that is found firstly.
-			return nil, errors.Wrapf(ret.err,
-				"failed to fetch concurrently (%d, %v)", i, ret.value.expr,
-			)
+			return nil, ret.err
 		}
 		args[ret.index] = ret.value
 	}

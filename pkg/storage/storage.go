@@ -33,7 +33,7 @@ var _ ReadWriter = &Store{}
 func New() (*Store, error) {
 	d, err := dynamodb.New()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	return &Store{
 		Redis:    redis.New(),
@@ -95,11 +95,11 @@ func (s *Store) Fetch(name string, start, end time.Time) (model.SeriesSlice, err
 
 	smR, err := fredis.Get()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	smD, err := fdynamodb.Get()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	ss := smR.MergePointsToSlice(smD)
@@ -161,7 +161,7 @@ func (s *Store) InsertMetric(m *model.Metric) error {
 	for _, p := range m.Datapoints {
 		slot := strings.SplitN(retentions[0], ":", 2)[0]
 		if err := s.Redis.Put(slot, m.Name, p); err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 
 		for i, retention := range retentions {
@@ -174,21 +174,21 @@ func (s *Store) InsertMetric(m *model.Metric) error {
 
 			n, err := s.Redis.Len(slot, m.Name)
 			if err != nil {
-				return errors.WithStack(err)
+				return err
 			}
 			if n >= int64(timeSlotMap[slot]["numberOfPoints"]) {
 				tv, err := s.Redis.Get(slot, m.Name)
 				if err != nil {
-					return errors.WithStack(err)
+					return err
 				}
 				nextSlot := strings.SplitN(retentions[i+1], ":", 2)[0]
 				if err := s.rollup(nextSlot, m.Name, tv); err != nil {
-					return errors.WithStack(err)
+					return err
 				}
 			}
 			if n >= int64(timeSlotMap[slot]["flushPoints"]) {
 				if err := s.flush(slot, history, m.Name); err != nil {
-					return errors.WithStack(err)
+					return err
 				}
 			}
 		}
@@ -204,7 +204,7 @@ func (s *Store) rollup(slot string, name string, tvmap map[int64]float64) error 
 				Value:     mathutil.AvgFloat64(vals),
 			}
 			if err := s.Redis.Put(slot, name, p); err != nil {
-				return errors.WithStack(err)
+				return err
 			}
 		}
 	}
@@ -214,7 +214,7 @@ func (s *Store) rollup(slot string, name string, tvmap map[int64]float64) error 
 func (s *Store) flush(slot, history, name string) error {
 	tv, err := s.Redis.Get(slot, name)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	for tableEpoch, tv1 := range groupByTableEpoch(slot, tv) {
 		for itemEpoch, tv2 := range groupByItemEpoch(slot, tv1) {
@@ -224,7 +224,9 @@ func (s *Store) flush(slot, history, name string) error {
 			}
 		}
 	}
-	//TODO delete from redis
+	if err := s.Redis.Delete(slot, name); err != nil {
+		return err
+	}
 	return nil
 }
 

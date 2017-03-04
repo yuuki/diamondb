@@ -100,7 +100,7 @@ func (d *DynamoDB) Ping() error {
 	var params *godynamodb.DescribeLimitsInput
 	_, err := d.svc.DescribeLimits(params)
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Wrapf(err, "failed to ping dynamodb")
 	}
 	return nil
 }
@@ -135,7 +135,7 @@ func (d *DynamoDB) Fetch(name string, start, end time.Time) (model.SeriesMap, er
 	for i := 0; i < numQueries; i++ {
 		ret := <-c
 		if ret.err != nil {
-			return nil, errors.WithStack(ret.err)
+			return nil, ret.err
 		}
 		sm.MergePointsToMap(ret.value)
 	}

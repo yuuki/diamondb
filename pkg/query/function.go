@@ -5,8 +5,6 @@ import (
 	"math"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/yuuki/diamondb/pkg/mathutil"
 	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/timeparser"
@@ -367,7 +365,7 @@ func summarize(ss model.SeriesSlice, interval string, function string) (model.Se
 	result := make(model.SeriesSlice, 0, len(ss))
 	delta, err := timeparser.ParseTimeOffset(interval)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	step := int64(delta.Seconds())
 	for _, s := range ss {

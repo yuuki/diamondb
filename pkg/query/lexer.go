@@ -105,7 +105,7 @@ func ParseTarget(target string) (Expr, error) {
 	l.IsIdentRune = isIdentRune
 	yyParse(l)
 	if l.err != nil {
-		return l.result, errors.Wrap(l.err, "yyParse failed")
+		return l.result, l.err
 	}
 	return l.result, nil
 }

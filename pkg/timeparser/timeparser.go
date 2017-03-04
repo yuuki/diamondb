@@ -87,7 +87,7 @@ func ParseAtTime(s string) (time.Time, error) {
 	}
 	o, err := ParseTimeOffset(offset)
 	if err != nil {
-		return time.Time{}, errors.WithStack(err)
+		return time.Time{}, err
 	}
 	return r.Add(o), nil
 }
