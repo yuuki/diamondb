@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"math"
 	"time"
 
@@ -112,6 +113,7 @@ type CreateTableParam struct {
 }
 
 // CreareTable creates a dynamodb table to store time series data.
+// Skip creating table if the table already exists.
 func (d *DynamoDB) CreateTable(param *CreateTableParam) error {
 	_, err := d.svc.CreateTable(&godynamodb.CreateTableInput{
 		TableName: aws.String(param.Name),
@@ -145,12 +147,16 @@ func (d *DynamoDB) CreateTable(param *CreateTableParam) error {
 		if awsErr, ok := err.(awserr.Error); ok {
 			if awsErr.Code() == "ResourceInUseException" {
 				// Skip if the table already exists
+				log.Printf("Skip creating DynamoDB table because %s already exists\n", param.Name)
 				return nil
 			}
 		}
 		return errors.Wrapf(err, "failed to create dynamodb table (%s,%d,%d)",
 			param.Name, param.RCU, param.WCU)
 	}
+
+	log.Printf("Creating DynamoDB table (name:%s, rcu:%d, wcu:%d) ...\n",
+		param.Name, param.RCU, param.WCU)
 
 	err = d.svc.WaitUntilTableExists(&godynamodb.DescribeTableInput{
 		TableName: aws.String(param.Name),
