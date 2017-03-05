@@ -29,7 +29,7 @@ func main() {
 // Run invokes the CLI with the given arguments.
 func (cli *CLI) Run(args []string) int {
 	if err := config.Load(); err != nil {
-		log.Printf("Failed to load the config: %s", err)
+		log.Printf("Failed to load the config: %s\n", err)
 		return 2
 	}
 
