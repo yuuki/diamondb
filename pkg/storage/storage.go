@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/mathutil"
 	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage/dynamodb"
@@ -16,6 +17,7 @@ import (
 // ReadWriter defines the interface for data store reader and writer.
 type ReadWriter interface {
 	Ping() error
+	Init() error
 	Fetch(string, time.Time, time.Time) (model.SeriesSlice, error)
 	InsertMetric(*model.Metric) error
 }
@@ -54,6 +56,18 @@ func (s *Store) Ping() error {
 			errMsg += fmt.Sprintf("DynamoDB connection error: %s ", derr)
 		}
 		return errors.New(errMsg)
+	}
+	return nil
+}
+
+func (s *Store) Init() error {
+	err := s.DynamoDB.CreateTable(&dynamodb.CreateTableParam{
+		Name: config.Config.DynamoDBTableName,
+		RCU:  config.Config.DynamoDBTableReadCapacityUnits,
+		WCU:  config.Config.DynamoDBTableWriteCapacityUnits,
+	})
+	if err != nil {
+		return err
 	}
 	return nil
 }

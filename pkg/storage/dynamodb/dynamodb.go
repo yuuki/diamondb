@@ -27,6 +27,7 @@ import (
 type ReadWriter interface {
 	Ping() error
 	Client() godynamodbiface.DynamoDBAPI
+	CreateTable(*CreateTableParam) error
 	Fetch(string, time.Time, time.Time) (model.SeriesMap, error)
 	batchGet(q *query) (model.SeriesMap, error)
 	Put(string, string, int64, int64, map[int64]float64) error
@@ -99,6 +100,76 @@ func (d *DynamoDB) Ping() error {
 	_, err := d.svc.DescribeLimits(params)
 	if err != nil {
 		return errors.Wrapf(err, "failed to ping dynamodb")
+	}
+	return nil
+}
+
+// CreateTableParam is parameter set of CreateTable.
+type CreateTableParam struct {
+	Name string
+	RCU  int64 // ReadCapacityUnits
+	WCU  int64 // WriteCapacityUnits
+}
+
+// CreareTable creates a dynamodb table to store time series data.
+func (d *DynamoDB) CreateTable(param *CreateTableParam) error {
+	_, err := d.svc.CreateTable(&godynamodb.CreateTableInput{
+		TableName: aws.String(param.Name),
+		AttributeDefinitions: []*godynamodb.AttributeDefinition{
+			{
+				AttributeName: aws.String("Name"),
+				AttributeType: aws.String(godynamodb.ScalarAttributeTypeS),
+			},
+			{
+				AttributeName: aws.String("Timestamp"),
+				AttributeType: aws.String(godynamodb.ScalarAttributeTypeN),
+			},
+		},
+		KeySchema: []*godynamodb.KeySchemaElement{
+			{
+				AttributeName: aws.String("Name"),
+				KeyType:       aws.String("HASH"),
+			},
+			{
+				AttributeName: aws.String("Timestamp"),
+				KeyType:       aws.String("RANGE"),
+			},
+		},
+		ProvisionedThroughput: &godynamodb.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(param.RCU),
+			WriteCapacityUnits: aws.Int64(param.WCU),
+		},
+		// TODO StreamSpecification to export to s3
+	})
+	if err != nil {
+		if awsErr, ok := err.(awserr.Error); ok {
+			if awsErr.Code() == "ResourceInUseException" {
+				// Skip if the table already exists
+				return nil
+			}
+		}
+		return errors.Wrapf(err, "failed to create dynamodb table (%s,%d,%d)",
+			param.Name, param.RCU, param.WCU)
+	}
+
+	err = d.svc.WaitUntilTableExists(&godynamodb.DescribeTableInput{
+		TableName: aws.String(param.Name),
+	})
+	if err != nil {
+		return errors.Wrapf(err, "failed to wait until table exists (%s,%d,%d)",
+			param.Name, param.RCU, param.WCU)
+	}
+
+	_, err = d.svc.UpdateTimeToLive(&godynamodb.UpdateTimeToLiveInput{
+		TableName: aws.String(param.Name),
+		TimeToLiveSpecification: &godynamodb.TimeToLiveSpecification{
+			AttributeName: aws.String("TTL"),
+			Enabled:       aws.Bool(true),
+		},
+	})
+	if err != nil {
+		return errors.Wrapf(err, "failed to set TTL to (%s,%d,%d)",
+			param.Name, param.RCU, param.WCU)
 	}
 	return nil
 }
