@@ -121,7 +121,7 @@ func (s *Store) Fetch(name string, start, end time.Time) (model.SeriesSlice, err
 }
 
 var (
-	retentions  = []string{"1m:1h", "5m:1d", "1h:7d", "1d:1y"}
+	retentions  = []string{"1m:1d", "5m:7d", "1h:30d", "1d:1y"}
 	timeSlotMap = map[string]map[string]int{
 		"1m": {
 			"timestampStep":  60,
