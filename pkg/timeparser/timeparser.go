@@ -132,7 +132,7 @@ func ParseTimeOffset(offset string) (time.Duration, error) {
 		t2 := time.Duration(n)
 		if strings.HasPrefix(unit, "s") {
 			t2 *= time.Second
-		} else if strings.HasPrefix(unit, "min") {
+		} else if unit == "m" || strings.HasPrefix(unit, "min") {
 			t2 *= time.Minute
 		} else if strings.HasPrefix(unit, "h") {
 			t2 *= time.Hour
