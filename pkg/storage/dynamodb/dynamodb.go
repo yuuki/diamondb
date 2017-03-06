@@ -17,9 +17,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/yuuki/diamondb/pkg/config"
-	"github.com/yuuki/diamondb/pkg/mathutil"
 	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage/util"
+	"github.com/yuuki/diamondb/pkg/timeparser"
 )
 
 //go:generate mockgen -source ../../../vendor/github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface/interface.go -destination dynamodb_mock.go -package dynamodb
@@ -31,7 +31,7 @@ type ReadWriter interface {
 	CreateTable(*CreateTableParam) error
 	Fetch(string, time.Time, time.Time) (model.SeriesMap, error)
 	batchGet(q *query) (model.SeriesMap, error)
-	Put(string, string, int64, int64, map[int64]float64) error
+	Put(string, string, string, int64, map[int64]float64) error
 }
 
 // DynamoDB provides a dynamodb client.
@@ -40,8 +40,8 @@ type DynamoDB struct {
 }
 
 type timeSlot struct {
-	tableName string
 	itemEpoch int64
+	step      int
 }
 
 type query struct {
@@ -49,7 +49,6 @@ type query struct {
 	start time.Time
 	end   time.Time
 	slot  *timeSlot
-	step  int
 	// context
 }
 
@@ -124,7 +123,7 @@ func (d *DynamoDB) CreateTable(param *CreateTableParam) error {
 			},
 			{
 				AttributeName: aws.String("Timestamp"),
-				AttributeType: aws.String(godynamodb.ScalarAttributeTypeN),
+				AttributeType: aws.String(godynamodb.ScalarAttributeTypeS),
 			},
 		},
 		KeySchema: []*godynamodb.KeySchemaElement{
@@ -182,7 +181,7 @@ func (d *DynamoDB) CreateTable(param *CreateTableParam) error {
 
 // Fetch fetches datapoints by name from start until end.
 func (d *DynamoDB) Fetch(name string, start, end time.Time) (model.SeriesMap, error) {
-	slots, step := selectTimeSlots(start, end, config.Config.DynamoDBTablePrefix)
+	slots := selectTimeSlots(start, end)
 	nameGroups := util.GroupNames(util.SplitName(name), dynamodbBatchLimit)
 	numQueries := len(slots) * len(nameGroups)
 
@@ -198,7 +197,6 @@ func (d *DynamoDB) Fetch(name string, start, end time.Time) (model.SeriesMap, er
 				start: start,
 				end:   end,
 				slot:  slot,
-				step:  step,
 			}
 			go func(q *query) {
 				sm, err := d.batchGet(q)
@@ -221,7 +219,7 @@ func batchGetResultToMap(resp *godynamodb.BatchGetItemOutput, q *query) model.Se
 	sm := make(model.SeriesMap, len(resp.Responses))
 	for _, xs := range resp.Responses {
 		for _, x := range xs {
-			name := (*x["MetricName"].S)
+			name := (*x["Name"].S)
 			points := make(model.DataPoints, 0, len(x["Values"].BS))
 			for _, y := range x["Values"].BS {
 				t := int64(binary.BigEndian.Uint64(y[0:8]))
@@ -232,7 +230,7 @@ func batchGetResultToMap(resp *godynamodb.BatchGetItemOutput, q *query) model.Se
 				}
 				points = append(points, model.NewDataPoint(t, v))
 			}
-			sm[name] = model.NewSeriesPoint(name, points, q.step)
+			sm[name] = model.NewSeriesPoint(name, points, q.slot.step)
 		}
 	}
 	return sm
@@ -242,12 +240,12 @@ func (d *DynamoDB) batchGet(q *query) (model.SeriesMap, error) {
 	var keys []map[string]*godynamodb.AttributeValue
 	for _, name := range q.names {
 		keys = append(keys, map[string]*godynamodb.AttributeValue{
-			"MetricName": {S: aws.String(name)},
-			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", q.slot.itemEpoch))},
+			"Name":      {S: aws.String(name)},
+			"Timestamp": {S: aws.String(fmt.Sprintf("%d:%d", q.slot.itemEpoch, q.slot.step))},
 		})
 	}
 	items := make(map[string]*godynamodb.KeysAndAttributes)
-	items[q.slot.tableName] = &godynamodb.KeysAndAttributes{Keys: keys}
+	items[config.Config.DynamoDBTableName] = &godynamodb.KeysAndAttributes{Keys: keys}
 	params := &godynamodb.BatchGetItemInput{
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
@@ -263,14 +261,22 @@ func (d *DynamoDB) batchGet(q *query) (model.SeriesMap, error) {
 		}
 		return nil, errors.Wrapf(err,
 			"failed to call dynamodb API batchGetItem (%s,%d,%d)",
-			q.slot.tableName, q.slot.itemEpoch, q.step,
+			config.Config.DynamoDBTableName, q.slot.itemEpoch, q.slot.step,
 		)
 	}
 	return batchGetResultToMap(resp, q), nil
 }
 
-func (d *DynamoDB) Put(name, retention string, tableEpoch, itemEpoch int64, tv map[int64]float64) error {
-	tableName := fmt.Sprintf("%s-%s-%d", config.Config.DynamoDBTablePrefix, retention, tableEpoch)
+func (d *DynamoDB) Put(name, slot, history string, itemEpoch int64, tv map[int64]float64) error {
+	stepDuration, err := timeparser.ParseTimeOffset(slot)
+	if err != nil {
+		return err
+	}
+	historyDuration, err := timeparser.ParseTimeOffset(history)
+	if err != nil {
+		return err
+	}
+	ttl := itemEpoch + int64(historyDuration.Seconds())
 
 	vals := make([][]byte, 0, len(tv))
 	for timestamp, value := range tv {
@@ -279,73 +285,61 @@ func (d *DynamoDB) Put(name, retention string, tableEpoch, itemEpoch int64, tv m
 		binary.Write(buf, binary.BigEndian, math.Float64bits(value))
 		vals = append(vals, buf.Bytes())
 	}
+
 	params := &godynamodb.UpdateItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(config.Config.DynamoDBTableName),
 		Key: map[string]*godynamodb.AttributeValue{
-			"MetricName": {S: aws.String(name)},
-			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", itemEpoch))},
+			"Name":      {S: aws.String(name)},
+			"Timestamp": {S: aws.String(fmt.Sprintf("%d:%d", itemEpoch, int64(stepDuration.Seconds())))},
 		},
-		UpdateExpression: aws.String("ADD #values_set :new_values"),
+		UpdateExpression: aws.String(`
+			SET #ttl = :new_ttl
+			ADD #values_set :new_values
+		`),
 		ExpressionAttributeNames: map[string]*string{
+			"#ttl":        aws.String("TTL"),
 			"#values_set": aws.String("Values"),
 		},
 		ExpressionAttributeValues: map[string]*godynamodb.AttributeValue{
+			":new_ttl":    {N: aws.String(fmt.Sprintf("%d", ttl))},
 			":new_values": {BS: vals},
 		},
 		ReturnValues: aws.String("NONE"),
 	}
 	if _, err := d.svc.UpdateItem(params); err != nil {
 		return errors.Wrapf(err, "failed to call dynamodb API putItem (%s,%s,%d)",
-			tableName, name, itemEpoch)
+			config.Config.DynamoDBTableName, name, itemEpoch)
 	}
 	return nil
 }
 
-func selectTimeSlots(startTime, endTime time.Time, tablePrefix string) ([]*timeSlot, int) {
+func selectTimeSlots(startTime, endTime time.Time) []*timeSlot {
 	var (
-		tableName      string
-		step           int
-		tableEpochStep int
-		itemEpochStep  int
+		step          int
+		itemEpochStep int
 	)
 	diff := endTime.Sub(startTime)
 	switch {
 	case oneYear <= diff:
-		tableName = tablePrefix + "-1d1y"
-		tableEpochStep = oneYearSeconds
-		itemEpochStep = tableEpochStep
+		itemEpochStep = oneYearSeconds
 		step = 60 * 60 * 24
 	case oneWeek <= diff:
-		tableName = tablePrefix + "-1h7d"
-		tableEpochStep = 60 * 60 * 24 * 7
-		itemEpochStep = tableEpochStep
+		itemEpochStep = oneWeekSeconds
 		step = 60 * 60
 	case oneDay <= diff:
-		tableName = tablePrefix + "-5m1d"
-		tableEpochStep = 60 * 60 * 24
-		itemEpochStep = tableEpochStep
+		itemEpochStep = oneDaySeconds
 		step = 5 * 60
 	default:
-		tableName = tablePrefix + "-1m1h"
-		tableEpochStep = 60 * 60 * 24
 		itemEpochStep = 60 * 60
 		step = 60
 	}
 
-	slots := []*timeSlot{}
-	startTableEpoch := startTime.Unix() - startTime.Unix()%int64(tableEpochStep)
-	endTableEpoch := endTime.Unix()
-	for tableEpoch := startTableEpoch; tableEpoch < endTableEpoch; tableEpoch += int64(tableEpochStep) {
-		startItemEpoch := mathutil.MaxInt64(tableEpoch, startTime.Unix()-startTime.Unix()%int64(itemEpochStep))
-		endItemEpoch := mathutil.MinInt64(tableEpoch+int64(tableEpochStep), endTime.Unix())
-		for itemEpoch := startItemEpoch; itemEpoch < endItemEpoch; itemEpoch += int64(itemEpochStep) {
-			slot := timeSlot{
-				tableName: fmt.Sprintf("%s-%d", tableName, tableEpoch),
-				itemEpoch: itemEpoch,
-			}
-			slots = append(slots, &slot)
-		}
+	var slots []*timeSlot
+	startItemEpoch := startTime.Unix() - startTime.Unix()%int64(itemEpochStep)
+	endItemEpoch := endTime.Unix()
+	for epoch := startItemEpoch; epoch < endItemEpoch; epoch += int64(itemEpochStep) {
+		slots = append(slots, &timeSlot{itemEpoch: epoch, step: step})
 	}
 
-	return slots, step
+	return slots
 }
