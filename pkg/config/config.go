@@ -16,7 +16,6 @@ type config struct {
 	RedisDB                         int           `json:"redis_db"`
 	RedisPoolSize                   int           `json:"redis_pool_size"`
 	DynamoDBRegion                  string        `json:"dynamodb_region"`
-	DynamoDBTablePrefix             string        `json:"dynamodb_table_prefix"`
 	DynamoDBEndpoint                string        `json:"dynamodb_endpoint"`
 	DynamoDBTableName               string        `json:"dynamodb_table_name"`
 	DynamoDBTableReadCapacityUnits  int64         `json:"dynamodb_table_read_capacity_units"`
@@ -40,8 +39,6 @@ const (
 	DefaultRedisPoolSize = 50
 	// DefaultDynamoDBRegion is the DynamoDB region.
 	DefaultDynamoDBRegion = "ap-northeast-1"
-	// DefaultDynamoDBTablePrefix is the prefix of DynamoDB table name.
-	DefaultDynamoDBTablePrefix = "diamondb_datapoints"
 	// DefaultDynamoDBTableName is the name of DynamoDB table.
 	DefaultDynamoDBTableName = "diamondb.timeseries"
 	// DefaultDynamoDBTableReadCapacityUnits is the name of DynamoDB table.
@@ -96,10 +93,6 @@ func Load() error {
 	Config.DynamoDBRegion = os.Getenv("DIAMONDB_DYNAMODB_REGION")
 	if Config.DynamoDBRegion == "" {
 		Config.DynamoDBRegion = DefaultDynamoDBRegion
-	}
-	Config.DynamoDBTablePrefix = os.Getenv("DIAMONDB_DYNAMODB_TABLE_PREFIX")
-	if Config.DynamoDBTablePrefix == "" {
-		Config.DynamoDBTablePrefix = DefaultDynamoDBTablePrefix
 	}
 	Config.DynamoDBTableName = os.Getenv("DIAMONDB_DYNAMODB_TABLE_NAME")
 	if Config.DynamoDBTableName == "" {
