@@ -10,14 +10,16 @@ import (
 )
 
 type config struct {
-	ShutdownTimeout     time.Duration `json:"shutdown_timeout"`
-	RedisAddrs          []string      `json:"redis_addrs"`
-	RedisPassword       string        `json:"redis_password"`
-	RedisDB             int           `json:"redis_db"`
-	RedisPoolSize       int           `json:"redis_pool_size"`
-	DynamoDBRegion      string        `json:"dynamodb_region"`
-	DynamoDBTablePrefix string        `json:"dynamodb_table_prefix"`
-	DynamoDBEndpoint    string        `json:"dynamodb_endpoint"`
+	ShutdownTimeout                 time.Duration `json:"shutdown_timeout"`
+	RedisAddrs                      []string      `json:"redis_addrs"`
+	RedisPassword                   string        `json:"redis_password"`
+	RedisDB                         int           `json:"redis_db"`
+	RedisPoolSize                   int           `json:"redis_pool_size"`
+	DynamoDBRegion                  string        `json:"dynamodb_region"`
+	DynamoDBEndpoint                string        `json:"dynamodb_endpoint"`
+	DynamoDBTableName               string        `json:"dynamodb_table_name"`
+	DynamoDBTableReadCapacityUnits  int64         `json:"dynamodb_table_read_capacity_units"`
+	DynamoDBTableWriteCapacityUnits int64         `json:"dynamodb_table_write_capacity_units"`
 
 	Debug bool `json:"debug"`
 }
@@ -37,8 +39,12 @@ const (
 	DefaultRedisPoolSize = 50
 	// DefaultDynamoDBRegion is the DynamoDB region.
 	DefaultDynamoDBRegion = "ap-northeast-1"
-	// DefaultDynamoDBTablePrefix is the prefix of DynamoDB table name.
-	DefaultDynamoDBTablePrefix = "diamondb_datapoints"
+	// DefaultDynamoDBTableName is the name of DynamoDB table.
+	DefaultDynamoDBTableName = "diamondb.timeseries"
+	// DefaultDynamoDBTableReadCapacityUnits is the name of DynamoDB table.
+	DefaultDynamoDBTableReadCapacityUnits int64 = 5
+	// DefaultDynamoDBTableWriteCapacityUnits is the name of DynamoDB table.
+	DefaultDynamoDBTableWriteCapacityUnits int64 = 5
 )
 
 // Config is set from the environment variables.
@@ -88,9 +94,29 @@ func Load() error {
 	if Config.DynamoDBRegion == "" {
 		Config.DynamoDBRegion = DefaultDynamoDBRegion
 	}
-	Config.DynamoDBTablePrefix = os.Getenv("DIAMONDB_DYNAMODB_TABLE_PREFIX")
-	if Config.DynamoDBTablePrefix == "" {
-		Config.DynamoDBTablePrefix = DefaultDynamoDBTablePrefix
+	Config.DynamoDBTableName = os.Getenv("DIAMONDB_DYNAMODB_TABLE_NAME")
+	if Config.DynamoDBTableName == "" {
+		Config.DynamoDBTableName = DefaultDynamoDBTableName
+	}
+	rcu := os.Getenv("DIAMONDB_DYNAMODB_TABLE_READ_CAPACITY_UNITS")
+	if rcu == "" {
+		Config.DynamoDBTableReadCapacityUnits = DefaultDynamoDBTableReadCapacityUnits
+	} else {
+		v, err := strconv.ParseInt(rcu, 10, 64)
+		if err != nil {
+			return errors.New("DIAMONDB_DYNAMODB_TABLE_READ_CAPACITY_UNITS must be an integer")
+		}
+		Config.DynamoDBTableReadCapacityUnits = v
+	}
+	wcu := os.Getenv("DIAMONDB_DYNAMODB_TABLE_WRITE_CAPACITY_UNITS")
+	if wcu == "" {
+		Config.DynamoDBTableWriteCapacityUnits = DefaultDynamoDBTableWriteCapacityUnits
+	} else {
+		v, err := strconv.ParseInt(wcu, 10, 64)
+		if err != nil {
+			return errors.New("DIAMONDB_DYNAMODB_TABLE_WRITE_CAPACITY_UNITS must be an integer")
+		}
+		Config.DynamoDBTableWriteCapacityUnits = v
 	}
 	if v := os.Getenv("DIAMONDB_DYNAMODB_ENDPOINT"); v != "" {
 		Config.DynamoDBEndpoint = v

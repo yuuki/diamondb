@@ -29,7 +29,7 @@ func main() {
 // Run invokes the CLI with the given arguments.
 func (cli *CLI) Run(args []string) int {
 	if err := config.Load(); err != nil {
-		log.Printf("Failed to load the config: %s", err)
+		log.Printf("Failed to load the config: %s\n", err)
 		return 2
 	}
 
@@ -59,7 +59,13 @@ func (cli *CLI) Run(args []string) int {
 
 	store, err := storage.New()
 	if err != nil {
-		log.Printf("failed to start fetcher session. %s", err)
+		log.Printf("failed to start fetcher session. %s\n", err)
+		return -1
+	}
+
+	log.Println("Initializing storage...")
+	if err := store.Init(); err != nil {
+		log.Printf("failed to initialize storage. %s\n", err)
 		return -1
 	}
 

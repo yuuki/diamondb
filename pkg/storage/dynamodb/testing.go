@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/mock/gomock"
+	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/model"
 )
 
@@ -24,35 +25,28 @@ func (s *FakeReadWriter) Fetch(name string, start, end time.Time) (model.SeriesM
 }
 
 type mockDynamoDBParam struct {
-	Resolution string
-	TableEpoch int64
-	ItemEpoch  int64
-	SeriesMap  model.SeriesMap
+	Slot      *timeSlot
+	SeriesMap model.SeriesMap
 }
 
-var testTableNamePrefix = "diamondb_datapoints_test"
+var mockTableName = "diamondb.testmock.timeseries"
 
 func NewTestDynamoDB(mock *MockDynamoDBAPI) *DynamoDB {
-	return &DynamoDB{
-		svc:         mock,
-		tablePrefix: testTableNamePrefix,
-	}
-}
-
-func mockTableName(resolution string, tableEpoch int64) string {
-	return fmt.Sprintf("%s-%s-%d", testTableNamePrefix, resolution, tableEpoch)
+	return &DynamoDB{svc: mock}
 }
 
 func mockExpectBatchGetItem(mock *MockDynamoDBAPI, m *mockDynamoDBParam) *gomock.Call {
+	config.Config.DynamoDBTableName = mockTableName
+
 	var keys []map[string]*godynamodb.AttributeValue
 	for _, name := range m.SeriesMap.SortedNames() {
 		keys = append(keys, map[string]*godynamodb.AttributeValue{
-			"MetricName": {S: aws.String(name)},
-			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
+			"Name":      {S: aws.String(name)},
+			"Timestamp": {S: aws.String(fmt.Sprintf("%d:%d", m.Slot.itemEpoch, m.Slot.step))},
 		})
 	}
 	items := make(map[string]*godynamodb.KeysAndAttributes)
-	items[mockTableName(m.Resolution, m.TableEpoch)] = &godynamodb.KeysAndAttributes{Keys: keys}
+	items[mockTableName] = &godynamodb.KeysAndAttributes{Keys: keys}
 	params := &godynamodb.BatchGetItemInput{
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
@@ -71,12 +65,11 @@ func mockReturnBatchGetItem(expect *gomock.Call, m *mockDynamoDBParam) *gomock.C
 			vals = append(vals, buf.Bytes())
 		}
 		attribute := map[string]*godynamodb.AttributeValue{
-			"MetricName": {S: aws.String(name)},
-			"Timestamp":  {N: aws.String(fmt.Sprintf("%d", m.ItemEpoch))},
-			"Values":     {BS: vals},
+			"Name":      {S: aws.String(name)},
+			"Timestamp": {S: aws.String(fmt.Sprintf("%d:%d", m.Slot.itemEpoch, m.Slot.step))},
+			"Values":    {BS: vals},
 		}
-		table := mockTableName(m.Resolution, m.TableEpoch)
-		responses[table] = append(responses[table], attribute)
+		responses[mockTableName] = append(responses[mockTableName], attribute)
 	}
 
 	expect.Return(&godynamodb.BatchGetItemOutput{

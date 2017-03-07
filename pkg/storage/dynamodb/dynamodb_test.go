@@ -51,10 +51,8 @@ func TestFetchSeriesMap(t *testing.T) {
 	defer ctrl.Finish()
 	mock := NewMockDynamoDBAPI(ctrl)
 	param := &mockDynamoDBParam{
-		Resolution: "1m1h",
-		TableEpoch: 0,
-		ItemEpoch:  0,
-		SeriesMap:  expected,
+		Slot:      &timeSlot{itemEpoch: 0, step: 60},
+		SeriesMap: expected,
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
 
@@ -99,18 +97,14 @@ func TestFetchSeriesMap_Concurrent(t *testing.T) {
 	mock := NewMockDynamoDBAPI(ctrl)
 
 	param1 := &mockDynamoDBParam{
-		Resolution: "1m1h",
-		TableEpoch: 0,
-		ItemEpoch:  0,
-		SeriesMap:  expected1,
+		Slot:      &timeSlot{itemEpoch: 0, step: 60},
+		SeriesMap: expected1,
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param1), param1)
 
 	param2 := &mockDynamoDBParam{
-		Resolution: "1m1h",
-		TableEpoch: 0,
-		ItemEpoch:  0,
-		SeriesMap:  expected2,
+		Slot:      &timeSlot{itemEpoch: 0, step: 60},
+		SeriesMap: expected2,
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
 
@@ -173,18 +167,14 @@ func TestFetchSeriesMap_Concurrent_TheSameNameButTheSlotIsDifferent(t *testing.T
 	mock := NewMockDynamoDBAPI(ctrl)
 
 	param1 := &mockDynamoDBParam{
-		Resolution: "1m1h",
-		TableEpoch: 0,
-		ItemEpoch:  0,
-		SeriesMap:  expected1,
+		Slot:      &timeSlot{itemEpoch: 0, step: 60},
+		SeriesMap: expected1,
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param1), param1)
 
 	param2 := &mockDynamoDBParam{
-		Resolution: "1m1h",
-		TableEpoch: 0,
-		ItemEpoch:  3600,
-		SeriesMap:  expected2,
+		Slot:      &timeSlot{itemEpoch: 3600, step: 60},
+		SeriesMap: expected2,
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param2), param2)
 
@@ -218,7 +208,7 @@ func TestFetchSeriesMap_Empty(t *testing.T) {
 	defer ctrl.Finish()
 
 	responses := make(map[string][]map[string]*godynamodb.AttributeValue)
-	responses[mockTableName("1m1h", 0)] = []map[string]*godynamodb.AttributeValue{}
+	responses[mockTableName] = []map[string]*godynamodb.AttributeValue{}
 	reqErr := awserr.NewRequestFailure(
 		awserr.New("ResourceNotFoundException", "resource not found", errors.New("dummy")),
 		404, "dummyID",
@@ -259,10 +249,8 @@ func TestBatchGet(t *testing.T) {
 	defer ctrl.Finish()
 	mock := NewMockDynamoDBAPI(ctrl)
 	param := &mockDynamoDBParam{
-		Resolution: "1m1h",
-		TableEpoch: 0,
-		ItemEpoch:  1000,
-		SeriesMap:  expected,
+		Slot:      &timeSlot{itemEpoch: 1000, step: 60},
+		SeriesMap: expected,
 	}
 	mockReturnBatchGetItem(mockExpectBatchGetItem(mock, param), param)
 	d := NewTestDynamoDB(mock)
@@ -271,8 +259,7 @@ func TestBatchGet(t *testing.T) {
 		names: []string{"server1.loadavg5", "server2.loadavg5"},
 		start: time.Unix(1000, 0),
 		end:   time.Unix(2000, 0),
-		slot:  &timeSlot{mockTableName("1m1h", 0), 1000},
-		step:  60,
+		slot:  &timeSlot{itemEpoch: 1000, step: 60},
 	})
 	if err != nil {
 		t.Fatalf("err: %s", err)
@@ -287,66 +274,38 @@ func TestBatchGet(t *testing.T) {
 var selectTimeSlotsTests = []struct {
 	start     time.Time
 	end       time.Time
-	step      int
 	timeSlots []*timeSlot
 }{
 	{
-		time.Unix(100, 0), time.Unix(6000, 0), 60,
-		[]*timeSlot{
-			{
-				tableName: mockTableName("1m1h", 0),
-				itemEpoch: 0,
-			},
-			{
-				tableName: mockTableName("1m1h", 0),
-				itemEpoch: 3600,
-			},
-		},
+		time.Unix(100, 0), time.Unix(6000, 0),
+		[]*timeSlot{{itemEpoch: 0, step: 60}, {itemEpoch: 3600, step: 60}},
 	},
 	{
-		time.Unix(10000, 0), time.Unix(100000, 0), 300,
-		[]*timeSlot{
-			{
-				tableName: mockTableName("5m1d", 0),
-				itemEpoch: 0,
-			},
-			{
-				tableName: mockTableName("5m1d", 86400),
-				itemEpoch: 86400,
-			},
-		},
+		time.Unix(10000, 0), time.Unix(100000, 0),
+		[]*timeSlot{{itemEpoch: 0, step: 300}, {itemEpoch: 86400, step: 300}},
 	},
 	{
-		time.Unix(100000, 0), time.Unix(1000000, 0), 3600,
-		[]*timeSlot{
-			{
-				tableName: mockTableName("1h7d", 0),
-				itemEpoch: 0,
-			},
-			{
-				tableName: mockTableName("1h7d", 604800),
-				itemEpoch: 604800,
-			},
-		},
+		time.Unix(100000, 0), time.Unix(1000000, 0),
+		[]*timeSlot{{itemEpoch: 0, step: 3600}, {itemEpoch: 604800, step: 3600}},
 	},
 	{
-		time.Unix(1000000, 0), time.Unix(100000000, 0), 86400,
+		time.Unix(1000000, 0), time.Unix(100000000, 0),
 		[]*timeSlot{
 			{
-				tableName: mockTableName("1d1y", 0),
 				itemEpoch: 0,
+				step:      86400,
 			},
 			{
-				tableName: mockTableName("1d1y", 31104000),
 				itemEpoch: 31104000,
+				step:      86400,
 			},
 			{
-				tableName: mockTableName("1d1y", 62208000),
 				itemEpoch: 62208000,
+				step:      86400,
 			},
 			{
-				tableName: mockTableName("1d1y", 93312000),
 				itemEpoch: 93312000,
+				step:      86400,
 			},
 		},
 	},
@@ -354,12 +313,9 @@ var selectTimeSlotsTests = []struct {
 
 func TestSelectTimeSlots(t *testing.T) {
 	for _, lc := range selectTimeSlotsTests {
-		slots, step := selectTimeSlots(lc.start, lc.end, testTableNamePrefix)
+		got := selectTimeSlots(lc.start, lc.end)
 
-		if step != lc.step {
-			t.Fatalf("\nExpected: %+v\nActual:   %+v", lc.step, step)
-		}
-		if diff := pretty.Compare(lc.timeSlots, slots); diff != "" {
+		if diff := pretty.Compare(lc.timeSlots, got); diff != "" {
 			t.Fatalf("diff: (-actual +expected)\n%s", diff)
 		}
 	}
