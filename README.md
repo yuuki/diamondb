@@ -1,11 +1,11 @@
-DiamonDB
-========
+DiamonDB: the rebuild of time series database
+=============================================
 
 This software is still heavily under development.
 
 # What is DiamonDB?
 
-A Reliable, Scalable, Cloud-Based Time Series Database.
+DiamonDB is a reliable, scalable, cloud-based time series database.
 
 - __Reliablity on top of well-known storage implementations__
 - __Horizontal scalability__
