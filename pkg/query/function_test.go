@@ -922,7 +922,7 @@ func TestSumSeriesWithWildcards(t *testing.T) {
 			},
 		},
 		{
-			"position 1 + two series that postion 0 is different",
+			"position 1 + two series that position 0 is different",
 			SeriesSlice{
 				NewSeries("roleA.server0.loadavg5", []float64{0.1, 0.2, 0.3}, 0, 1),
 				NewSeries("roleB.server1.loadavg5", []float64{1.1, 1.2, 1.3}, 0, 1),
