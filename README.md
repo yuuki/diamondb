@@ -2,6 +2,7 @@ DiamonDB: the rebuild of time series database
 =============================================
 
 [![Build Status](https://travis-ci.org/yuuki/diamondb.svg?branch=master)](https://travis-ci.org/yuuki/diamondb)
+[![Go Report Card](https://goreportcard.com/badge/github.com/yuuki/diamondb)](https://goreportcard.com/report/github.com/yuuki/diamondb)
 
 This software is still heavily under development.
 
