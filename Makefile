@@ -6,6 +6,7 @@ all: build
 
 .PHONY: deps
 deps:
+	go get golang.org/x/tools/cmd/goyacc
 	go get github.com/golang/mock/mockgen
 
 .PHONY: gen
@@ -17,15 +18,15 @@ build: gen
 	go build -ldflags "-X main.GitCommit=\"$(COMMIT)\"" $(PKG)/cmd/...
 
 .PHONY: test
-test: gen
+test:
 	go test -v $(PKGS)
 
 .PHONY: test-race
-test-race: gen
+test-race:
 	go test -v -race $(PKGS)
 
 .PHONY: test-all
-test-all: gen vet test-race
+test-all: vet test-race
 
 .PHONY: cover
 cover: gen
