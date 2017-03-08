@@ -34,11 +34,11 @@ cover: gen
 
 .PHONY: fmt
 fmt:
-	gofmt -s -w $$(git ls | grep -e '\.go$$' | grep -v /vendor/)
+	gofmt -s -w $$(git ls | grep -e '\.go$$' | grep -v -e vendor)
 
 .PHONY: imports
 imports:
-	goimports -w $$(git ls | grep -e '\.go$$' | grep -v /vendor/)
+	goimports -w $$(git ls | grep -e '\.go$$' | grep -v -e vendor)
 
 .PHONY: lint
 lint:
