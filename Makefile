@@ -6,7 +6,6 @@ all: build
 
 .PHONY: deps
 deps:
-	glide install
 	go get github.com/golang/mock/mockgen
 
 .PHONY: gen
