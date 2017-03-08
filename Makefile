@@ -18,11 +18,14 @@ build: gen
 
 .PHONY: test
 test: gen
-	go test -race -v $(PKGS)
-	make vet
+	go test -v $(PKGS)
+
+.PHONY: test-race
+test-race: gen
+	go test -v -race $(PKGS)
 
 .PHONY: test-all
-test-all: gen vet test
+test-all: gen vet test-race
 
 .PHONY: cover
 cover: gen
