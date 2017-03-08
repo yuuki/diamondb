@@ -33,6 +33,10 @@ make
 make test
 ```
 
+# Thanks
+
+[astj](https://github.com/astj), [itchyny](https://github.com/itchyny)
+
 # LICENSE
 
 Copyright 2016 TSUBOUCHI, Yuuki <yuki.tsubo@gmail.com>
