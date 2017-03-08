@@ -46,7 +46,7 @@ lint:
 
 .PHONY: vet
 vet:
-	go tool vet -all -printfuncs=Wrap,Wrapf,Errorf $$(find . -type d -d 1 | grep -v -e "^\.\/\." -e vendor)
+	go tool vet -all -printfuncs=Wrap,Wrapf,Errorf $$(find . -type d -depth 1 | grep -v -e "^\.\/\." -e vendor)
 
 .PHONY: up
 up:
