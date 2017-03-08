@@ -21,6 +21,9 @@ test: gen
 	go test -race -v $(PKGS)
 	make vet
 
+.PHONY: test-all
+test-all: gen vet test
+
 .PHONY: cover
 cover: gen
 	go test -cover $(PKGS)
