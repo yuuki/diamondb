@@ -19,17 +19,17 @@ func TestNewDataPoint(t *testing.T) {
 	}
 }
 
-var testDataPointMarshalJSONTests = []struct {
-	desc     string
-	point    *DataPoint
-	expected string
-}{
-	{"not NaN", NewDataPoint(100, 10.5), "[10.5,100]"},
-	{"NaN", NewDataPoint(100, math.NaN()), "[null,100]"},
-}
-
 func TestDataPointMarshalJSON(t *testing.T) {
-	for _, tc := range testDataPointMarshalJSONTests {
+	tests := []struct {
+		desc     string
+		point    *DataPoint
+		expected string
+	}{
+		{"not NaN", NewDataPoint(100, 10.5), "[10.5,100]"},
+		{"NaN", NewDataPoint(100, math.NaN()), "[null,100]"},
+	}
+
+	for _, tc := range tests {
 		j, _ := json.Marshal(tc.point)
 		got := fmt.Sprintf("%s", j)
 		if diff := pretty.Compare(got, tc.expected); diff != "" {

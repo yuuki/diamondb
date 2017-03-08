@@ -6,61 +6,61 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 )
 
-var testNewSeriesPointTests = []struct {
-	desc           string
-	input          DataPoints
-	expectedPoints DataPoints
-	expectedValues []float64
-	expectedStart  int64
-	expectedEnd    int64
-}{
-	{
-		"not aligned and not sorted timestamp",
-		DataPoints{
-			NewDataPoint(1000, 0.1),
-			NewDataPoint(1120, 0.3),
-			NewDataPoint(1060, 0.2),
-		},
-		DataPoints{
-			// Align timestamp by step
-			NewDataPoint(960, 0.1),
-			NewDataPoint(1020, 0.2),
-			NewDataPoint(1080, 0.3),
-		},
-		[]float64{0.1, 0.2, 0.3},
-		960,
-		1080,
-	},
-	{
-		"duplicate timestamps after aligned",
-		DataPoints{
-			NewDataPoint(1000, 0.1),
-			NewDataPoint(1120, 0.3),
-			NewDataPoint(1060, 0.2),
-			NewDataPoint(1070, 0.4),
-		},
-		DataPoints{
-			// Align timestamp by step
-			NewDataPoint(960, 0.1),
-			NewDataPoint(1020, 0.4),
-			NewDataPoint(1080, 0.3),
-		},
-		[]float64{0.1, 0.4, 0.3},
-		960,
-		1080,
-	},
-	{
-		"zero length points",
-		DataPoints{},
-		DataPoints{},
-		[]float64{},
-		-1,
-		-1,
-	},
-}
-
 func TestNewSeriesPoint(t *testing.T) {
-	for _, tc := range testNewSeriesPointTests {
+	tests := []struct {
+		desc           string
+		input          DataPoints
+		expectedPoints DataPoints
+		expectedValues []float64
+		expectedStart  int64
+		expectedEnd    int64
+	}{
+		{
+			"not aligned and not sorted timestamp",
+			DataPoints{
+				NewDataPoint(1000, 0.1),
+				NewDataPoint(1120, 0.3),
+				NewDataPoint(1060, 0.2),
+			},
+			DataPoints{
+				// Align timestamp by step
+				NewDataPoint(960, 0.1),
+				NewDataPoint(1020, 0.2),
+				NewDataPoint(1080, 0.3),
+			},
+			[]float64{0.1, 0.2, 0.3},
+			960,
+			1080,
+		},
+		{
+			"duplicate timestamps after aligned",
+			DataPoints{
+				NewDataPoint(1000, 0.1),
+				NewDataPoint(1120, 0.3),
+				NewDataPoint(1060, 0.2),
+				NewDataPoint(1070, 0.4),
+			},
+			DataPoints{
+				// Align timestamp by step
+				NewDataPoint(960, 0.1),
+				NewDataPoint(1020, 0.4),
+				NewDataPoint(1080, 0.3),
+			},
+			[]float64{0.1, 0.4, 0.3},
+			960,
+			1080,
+		},
+		{
+			"zero length points",
+			DataPoints{},
+			DataPoints{},
+			[]float64{},
+			-1,
+			-1,
+		},
+	}
+
+	for _, tc := range tests {
 		s := NewSeriesPoint("server1.loadavg5", tc.input, 60)
 
 		if s.Name() != "server1.loadavg5" {

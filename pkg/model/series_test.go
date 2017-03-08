@@ -9,34 +9,34 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 )
 
-var newSeriesPointTests = []struct {
-	desc           string
-	inValues       []float64
-	inStart        int64
-	expectedValues []float64
-	expectedStart  int64
-	expectedEnd    int64
-}{
-	{
-		"normal",
-		[]float64{0.1, 0.2, 0.3},
-		960,
-		[]float64{0.1, 0.2, 0.3},
-		960,
-		1080,
-	},
-	{
-		"zero length vlaues",
-		[]float64{},
-		960,
-		[]float64{},
-		-1,
-		-1,
-	},
-}
-
 func TestNewSeries(t *testing.T) {
-	for _, tc := range newSeriesPointTests {
+	tests := []struct {
+		desc           string
+		inValues       []float64
+		inStart        int64
+		expectedValues []float64
+		expectedStart  int64
+		expectedEnd    int64
+	}{
+		{
+			"normal",
+			[]float64{0.1, 0.2, 0.3},
+			960,
+			[]float64{0.1, 0.2, 0.3},
+			960,
+			1080,
+		},
+		{
+			"zero length vlaues",
+			[]float64{},
+			960,
+			[]float64{},
+			-1,
+			-1,
+		},
+	}
+
+	for _, tc := range tests {
 		s := NewSeries("server1.loadavg5", tc.inValues, tc.expectedStart, 60)
 
 		if s.Name() != "server1.loadavg5" {
@@ -96,31 +96,31 @@ func TestMarshalJSON(t *testing.T) {
 	}
 }
 
-var testSeriesPointsTests = []struct {
-	desc     string
-	s        *Series
-	expected DataPoints
-}{
-	{
-		"normal",
-		NewSeries("server1.loadavg5", []float64{0.1, 0.2, 0.3, 0.4, 0.5}, 0, 60),
-		DataPoints{
-			NewDataPoint(0, 0.1),
-			NewDataPoint(60, 0.2),
-			NewDataPoint(120, 0.3),
-			NewDataPoint(180, 0.4),
-			NewDataPoint(240, 0.5),
-		},
-	},
-	{
-		"zero length values",
-		NewSeries("server1.loadavg5", []float64{}, 0, 60),
-		DataPoints{},
-	},
-}
-
 func TestSeriesPoints(t *testing.T) {
-	for _, tc := range testSeriesPointsTests {
+	tests := []struct {
+		desc     string
+		s        *Series
+		expected DataPoints
+	}{
+		{
+			"normal",
+			NewSeries("server1.loadavg5", []float64{0.1, 0.2, 0.3, 0.4, 0.5}, 0, 60),
+			DataPoints{
+				NewDataPoint(0, 0.1),
+				NewDataPoint(60, 0.2),
+				NewDataPoint(120, 0.3),
+				NewDataPoint(180, 0.4),
+				NewDataPoint(240, 0.5),
+			},
+		},
+		{
+			"zero length values",
+			NewSeries("server1.loadavg5", []float64{}, 0, 60),
+			DataPoints{},
+		},
+	}
+
+	for _, tc := range tests {
 		got := tc.s.Points()
 		if diff := pretty.Compare(got, tc.expected); diff != "" {
 			t.Fatalf("diff: (-actual +expected)\n%s", diff)

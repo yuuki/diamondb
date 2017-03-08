@@ -17,19 +17,19 @@ func TestParsetTarget_SeriesListExpr(t *testing.T) {
 	}
 }
 
-var groupSeriesExprTests = []struct {
-	target          string
-	expectedPrefix  string
-	expectedRange   []string
-	expectedPostfix string
-}{
-	{"server.{foo,bar,baz}.loadavg5", "server.", []string{"foo", "bar", "baz"}, ".loadavg5"},
-	{"server.{1,2,3,4}.loadavg5", "server.", []string{"1", "2", "3", "4"}, ".loadavg5"},
-	{"server.cpu.{user,system,iowait}", "server.cpu.", []string{"user", "system", "iowait"}, ""},
-}
-
 func TestParsetTarget_GroupSeriesExpr(t *testing.T) {
-	for _, test := range groupSeriesExprTests {
+	tests := []struct {
+		target          string
+		expectedPrefix  string
+		expectedRange   []string
+		expectedPostfix string
+	}{
+		{"server.{foo,bar,baz}.loadavg5", "server.", []string{"foo", "bar", "baz"}, ".loadavg5"},
+		{"server.{1,2,3,4}.loadavg5", "server.", []string{"1", "2", "3", "4"}, ".loadavg5"},
+		{"server.cpu.{user,system,iowait}", "server.cpu.", []string{"user", "system", "iowait"}, ""},
+	}
+
+	for _, test := range tests {
 		expr, err := ParseTarget(test.target)
 		if err != nil {
 			t.Fatalf("%s", err)

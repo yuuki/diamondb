@@ -191,56 +191,6 @@ func TestEvalTarget_GroupSeries(t *testing.T) {
 	}
 }
 
-var testEvalTargetFuncTests = []struct {
-	desc          string
-	target        string
-	mockSeriesMap SeriesSlice
-	expected      SeriesSlice
-}{
-	{
-		"the number of arguments is one",
-		"sumSeries(server1.loadavg5)",
-		SeriesSlice{NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60)},
-		SeriesSlice{NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60)},
-	},
-	{
-		"the number of arguments is two",
-		"sumSeries(server1.loadavg5,server2.loadavg5)",
-		SeriesSlice{
-			NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60),
-			NewSeries("server2.loadavg5", []float64{10.0}, 1000, 60),
-		},
-		SeriesSlice{
-			NewSeries("sumSerie(server1.loadavg5,server2.loadavg5)", []float64{20.0}, 1000, 60),
-		},
-	},
-	{
-		"the type of arguments is group model.",
-		"sumSeries(server{1,2}.loadavg5)",
-		SeriesSlice{
-			NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60),
-			NewSeries("server2.loadavg5", []float64{10.0}, 1000, 60),
-		},
-		SeriesSlice{
-			// The original specification is "sumSeries(server{1,2}.loadavg5)"
-			NewSeries("sumSeries(server1.loadavg5,server2.loadavg5)", []float64{20.0}, 100, 60),
-		},
-	},
-	{
-		"function is nested",
-		"sumSeries(sumSeries(server1.loadavg5))",
-		SeriesSlice{
-			NewSeries("server1.loadavg5", []float64{10.0}, 1000, 60),
-		},
-		SeriesSlice{
-			NewSeries(
-				"sumSeries(sumSeries(server1.loadavg5))",
-				[]float64{10.0}, 1000, 60,
-			),
-		},
-	},
-}
-
 func TestInvokeSubExprs_Leak(t *testing.T) {
 	defer leaktest.Check(t)()
 

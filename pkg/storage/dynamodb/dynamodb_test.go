@@ -271,48 +271,48 @@ func TestBatchGet(t *testing.T) {
 	}
 }
 
-var selectTimeSlotsTests = []struct {
-	start     time.Time
-	end       time.Time
-	timeSlots []*timeSlot
-}{
-	{
-		time.Unix(100, 0), time.Unix(6000, 0),
-		[]*timeSlot{{itemEpoch: 0, step: 60}, {itemEpoch: 3600, step: 60}},
-	},
-	{
-		time.Unix(10000, 0), time.Unix(100000, 0),
-		[]*timeSlot{{itemEpoch: 0, step: 300}, {itemEpoch: 86400, step: 300}},
-	},
-	{
-		time.Unix(100000, 0), time.Unix(1000000, 0),
-		[]*timeSlot{{itemEpoch: 0, step: 3600}, {itemEpoch: 604800, step: 3600}},
-	},
-	{
-		time.Unix(1000000, 0), time.Unix(100000000, 0),
-		[]*timeSlot{
-			{
-				itemEpoch: 0,
-				step:      86400,
-			},
-			{
-				itemEpoch: 31104000,
-				step:      86400,
-			},
-			{
-				itemEpoch: 62208000,
-				step:      86400,
-			},
-			{
-				itemEpoch: 93312000,
-				step:      86400,
+func TestSelectTimeSlots(t *testing.T) {
+	tests := []struct {
+		start     time.Time
+		end       time.Time
+		timeSlots []*timeSlot
+	}{
+		{
+			time.Unix(100, 0), time.Unix(6000, 0),
+			[]*timeSlot{{itemEpoch: 0, step: 60}, {itemEpoch: 3600, step: 60}},
+		},
+		{
+			time.Unix(10000, 0), time.Unix(100000, 0),
+			[]*timeSlot{{itemEpoch: 0, step: 300}, {itemEpoch: 86400, step: 300}},
+		},
+		{
+			time.Unix(100000, 0), time.Unix(1000000, 0),
+			[]*timeSlot{{itemEpoch: 0, step: 3600}, {itemEpoch: 604800, step: 3600}},
+		},
+		{
+			time.Unix(1000000, 0), time.Unix(100000000, 0),
+			[]*timeSlot{
+				{
+					itemEpoch: 0,
+					step:      86400,
+				},
+				{
+					itemEpoch: 31104000,
+					step:      86400,
+				},
+				{
+					itemEpoch: 62208000,
+					step:      86400,
+				},
+				{
+					itemEpoch: 93312000,
+					step:      86400,
+				},
 			},
 		},
-	},
-}
+	}
 
-func TestSelectTimeSlots(t *testing.T) {
-	for _, lc := range selectTimeSlotsTests {
+	for _, lc := range tests {
 		got := selectTimeSlots(lc.start, lc.end)
 
 		if diff := pretty.Compare(lc.timeSlots, got); diff != "" {
