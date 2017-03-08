@@ -26,7 +26,7 @@ func request(name string, timestamp int64, value float64, endpoint string) error
 		Metric: &model.Metric{
 			Name: name,
 			Datapoints: []*model.Datapoint{
-				&model.Datapoint{Timestamp: timestamp, Value: value},
+				{Timestamp: timestamp, Value: value},
 			},
 		},
 	}

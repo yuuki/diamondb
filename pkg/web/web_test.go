@@ -64,7 +64,7 @@ func TestWriteHandler(t *testing.T) {
 	wr := &WriteRequest{
 		Metric: &model.Metric{
 			Name:       "server1.loadavg5",
-			Datapoints: []*model.Datapoint{&model.Datapoint{Timestamp: 100, Value: 0.1}},
+			Datapoints: []*model.Datapoint{{Timestamp: 100, Value: 0.1}},
 		},
 	}
 	b := new(bytes.Buffer)
