@@ -176,6 +176,7 @@ func (r *Redis) batchGet(q *query) (model.SeriesMap, error) {
 	return sm, nil
 }
 
+// Get gets datapoints from redis by slot and series name.
 func (r *Redis) Get(slot string, name string) (map[int64]float64, error) {
 	key := slot + ":" + name
 	tsval, err := r.client.HGetAll(key).Result()
@@ -197,6 +198,7 @@ func (r *Redis) Get(slot string, name string) (map[int64]float64, error) {
 	return tv, nil
 }
 
+// Len returns the length of datapoints by slot and name.
 func (r *Redis) Len(slot string, name string) (int64, error) {
 	key := slot + ":" + name
 	n, err := r.client.HLen(key).Result()
@@ -206,6 +208,7 @@ func (r *Redis) Len(slot string, name string) (int64, error) {
 	return n, nil
 }
 
+// Put puts the datapoint into redis.
 func (r *Redis) Put(slot string, name string, p *model.Datapoint) error {
 	key := slot + ":" + name
 	err := r.client.HSet(key, fmt.Sprintf("%d", p.Timestamp), p.Value).Err()
@@ -215,6 +218,7 @@ func (r *Redis) Put(slot string, name string, p *model.Datapoint) error {
 	return nil
 }
 
+// MPut puts datapoints into redis.
 func (r *Redis) MPut(slot string, name string, tv map[int64]float64) error {
 	key := slot + ":" + name
 	tsval := make(map[string]string, len(tv))
@@ -227,6 +231,7 @@ func (r *Redis) MPut(slot string, name string, tv map[int64]float64) error {
 	return nil
 }
 
+// Delete datapoints from redis.
 func (r *Redis) Delete(slot string, name string) error {
 	key := slot + ":" + name
 	if err := r.client.Del(key).Err(); err != nil {
