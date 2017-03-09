@@ -24,9 +24,9 @@ const (
 
 // ReadWriter defines the interface for Redis reader and writer.
 type ReadWriter interface {
+	api() redisAPI
 	Ping() error
 	Fetch(string, time.Time, time.Time) (model.SeriesMap, error)
-	Client() redisAPI
 	batchGet(q *query) (model.SeriesMap, error)
 	Get(string, string) (map[int64]float64, error)
 	Len(string, string) (int64, error)
@@ -86,8 +86,8 @@ func New() *Redis {
 	return nil
 }
 
-// Client returns the redis client.
-func (r *Redis) Client() redisAPI {
+// api returns the redis client.
+func (r *Redis) api() redisAPI {
 	return r.client
 }
 

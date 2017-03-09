@@ -33,7 +33,7 @@ func TestNewRedis(t *testing.T) {
 	for _, tc := range tests {
 		config.Config.RedisAddrs = tc.in
 		r := New()
-		if v := reflect.TypeOf(r.Client()); v != tc.expectedType {
+		if v := reflect.TypeOf(r.api()); v != tc.expectedType {
 			t.Fatalf("desc: %s , Redis client type should be %s, not %s",
 				tc.desc, tc.expectedType, v)
 		}
@@ -68,13 +68,13 @@ func TestFetchSeriesMap(t *testing.T) {
 	config.Config.RedisAddrs = []string{s.Addr()}
 	r := New()
 
-	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
+	_, err = r.api().HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "160": "10.2", "220": "11.0",
 	}).Result()
 	if err != nil {
 		panic(err)
 	}
-	_, err = r.Client().HMSet("1m:server2.loadavg5", map[string]string{
+	_, err = r.api().HMSet("1m:server2.loadavg5", map[string]string{
 		"100": "8.0", "160": "5.0", "220": "6.0",
 	}).Result()
 	if err != nil {
@@ -114,13 +114,13 @@ func TestBatchGet(t *testing.T) {
 	config.Config.RedisAddrs = []string{s.Addr()}
 	r := New()
 
-	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
+	_, err = r.api().HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "130": "10.2", "160": "11.0",
 	}).Result()
 	if err != nil {
 		panic(err)
 	}
-	_, err = r.Client().HMSet("1m:server2.loadavg5", map[string]string{
+	_, err = r.api().HMSet("1m:server2.loadavg5", map[string]string{
 		"100": "8.0", "130": "5.0", "160": "6.0",
 	}).Result()
 	if err != nil {
@@ -250,7 +250,7 @@ func TestGet(t *testing.T) {
 	config.Config.RedisAddrs = []string{s.Addr()}
 	r := New()
 
-	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
+	_, err = r.api().HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "160": "10.2", "220": "11.0",
 	}).Result()
 	if err != nil {
@@ -282,7 +282,7 @@ func TestLen(t *testing.T) {
 	config.Config.RedisAddrs = []string{s.Addr()}
 	r := New()
 
-	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
+	_, err = r.api().HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "160": "10.2", "220": "11.0",
 	}).Result()
 	if err != nil {
@@ -341,7 +341,7 @@ func TestDelete(t *testing.T) {
 	config.Config.RedisAddrs = []string{s.Addr()}
 	r := New()
 
-	_, err = r.Client().HMSet("1m:server1.loadavg5", map[string]string{
+	_, err = r.api().HMSet("1m:server1.loadavg5", map[string]string{
 		"100": "10.0", "160": "10.2", "220": "11.0",
 	}).Result()
 	if err != nil {
