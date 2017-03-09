@@ -93,7 +93,7 @@ func offset(ss model.SeriesSlice, factor float64) model.SeriesSlice {
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.group
 func doGroup(args funcArgs) (model.SeriesSlice, error) {
-	ss := model.SeriesSlice{}
+	var ss model.SeriesSlice
 	for i, arg := range args {
 		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
@@ -108,7 +108,7 @@ func doGroup(args funcArgs) (model.SeriesSlice, error) {
 }
 
 func doSumSeries(args funcArgs) (model.SeriesSlice, error) {
-	ss := model.SeriesSlice{}
+	var ss model.SeriesSlice
 	for i, arg := range args {
 		_, ok := args[i].expr.(SeriesListExpr)
 		if !ok {
@@ -135,7 +135,7 @@ func sumSeries(ss model.SeriesSlice) *model.Series {
 }
 
 func doAverageSeries(args funcArgs) (model.SeriesSlice, error) {
-	ss := model.SeriesSlice{}
+	var ss model.SeriesSlice
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
 		if !ok {
@@ -162,7 +162,7 @@ func averageSeries(ss model.SeriesSlice) *model.Series {
 }
 
 func doMinSeries(args funcArgs) (model.SeriesSlice, error) {
-	ss := model.SeriesSlice{}
+	var ss model.SeriesSlice
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
 		if !ok {
@@ -189,7 +189,7 @@ func minSeries(ss model.SeriesSlice) *model.Series {
 }
 
 func doMaxSeries(args funcArgs) (model.SeriesSlice, error) {
-	ss := model.SeriesSlice{}
+	var ss model.SeriesSlice
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
 		if !ok {
@@ -217,7 +217,7 @@ func maxSeries(ss model.SeriesSlice) *model.Series {
 }
 
 func doMultiplySeries(args funcArgs) (model.SeriesSlice, error) {
-	ss := model.SeriesSlice{}
+	var ss model.SeriesSlice
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
 		if !ok {
