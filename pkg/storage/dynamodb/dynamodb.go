@@ -111,7 +111,7 @@ type CreateTableParam struct {
 	WCU  int64 // WriteCapacityUnits
 }
 
-// CreareTable creates a dynamodb table to store time series data.
+// CreateTable creates a dynamodb table to store time series data.
 // Skip creating table if the table already exists.
 func (d *DynamoDB) CreateTable(param *CreateTableParam) error {
 	_, err := d.svc.CreateTable(&godynamodb.CreateTableInput{
