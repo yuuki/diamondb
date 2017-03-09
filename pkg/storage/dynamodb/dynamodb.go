@@ -267,6 +267,8 @@ func (d *DynamoDB) batchGet(q *query) (model.SeriesMap, error) {
 	return batchGetResultToMap(resp, q), nil
 }
 
+// Put writes the datapoints into DynamoDB. It creates item
+// if item doesn't exist and updates item if it exists.
 func (d *DynamoDB) Put(name, slot, history string, itemEpoch int64, tv map[int64]float64) error {
 	stepDuration, err := timeparser.ParseTimeOffset(slot)
 	if err != nil {
