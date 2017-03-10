@@ -39,7 +39,7 @@ make test
 
 # Thanks
 
-[astj](https://github.com/astj), [itchyny](https://github.com/itchyny)
+[astj](https://github.com/astj), [itchyny](https://github.com/itchyny), [haya14busa](https://github.com/haya14busa)
 
 # LICENSE
 
