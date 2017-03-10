@@ -11,7 +11,7 @@ import (
 //line parser.go.y:10
 type yySymType struct {
 	yys      int
-	token    Token
+	token    token
 	expr     Expr
 	exprs    []Expr
 	target   Expr
@@ -489,32 +489,32 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.go.y:45
 		{
-			n, _ := strconv.ParseFloat(yyDollar[1].token.Literal, 64)
+			n, _ := strconv.ParseFloat(yyDollar[1].token.lit, 64)
 			yyVAL.expr = NumberExpr{Literal: n}
 		}
 	case 5:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.go.y:50
 		{
-			yyVAL.expr = StringExpr{Literal: yyDollar[1].token.Literal}
+			yyVAL.expr = StringExpr{Literal: yyDollar[1].token.lit}
 		}
 	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.go.y:54
 		{
-			yyVAL.expr = SeriesListExpr{Literal: yyDollar[1].token.Literal}
+			yyVAL.expr = SeriesListExpr{Literal: yyDollar[1].token.lit}
 		}
 	case 7:
 		yyDollar = yyS[yypt-5 : yypt+1]
 		//line parser.go.y:58
 		{
-			yyVAL.expr = GroupSeriesExpr{Prefix: yyDollar[1].token.Literal, ValueList: yyDollar[3].literals, Postfix: yyDollar[5].str}
+			yyVAL.expr = GroupSeriesExpr{Prefix: yyDollar[1].token.lit, ValueList: yyDollar[3].literals, Postfix: yyDollar[5].str}
 		}
 	case 8:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		//line parser.go.y:62
 		{
-			yyVAL.expr = FuncExpr{Name: yyDollar[1].token.Literal, SubExprs: yyDollar[3].exprs}
+			yyVAL.expr = FuncExpr{Name: yyDollar[1].token.lit, SubExprs: yyDollar[3].exprs}
 		}
 	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -538,7 +538,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.go.y:81
 		{
-			yyVAL.str = yyDollar[1].token.Literal
+			yyVAL.str = yyDollar[1].token.lit
 		}
 	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -556,13 +556,13 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.go.y:97
 		{
-			yyVAL.str = yyDollar[1].token.Literal
+			yyVAL.str = yyDollar[1].token.lit
 		}
 	case 16:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.go.y:101
 		{
-			yyVAL.str = yyDollar[1].token.Literal
+			yyVAL.str = yyDollar[1].token.lit
 		}
 	}
 	goto yystack /* stack new state and value */

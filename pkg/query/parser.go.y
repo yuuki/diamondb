@@ -8,7 +8,7 @@ import (
 %}
 
 %union{
-  token Token
+  token token
   expr  Expr
   exprs []Expr
   target Expr
@@ -43,24 +43,24 @@ expr :
   }
   | NUMBER
   {
-    n, _ := strconv.ParseFloat($1.Literal, 64)
+    n, _ := strconv.ParseFloat($1.lit, 64)
     $$ = NumberExpr{Literal: n}
   }
   | STRING
   {
-    $$ = StringExpr{Literal: $1.Literal}
+    $$ = StringExpr{Literal: $1.lit}
   }
   | IDENTIFIER
   {
-    $$ = SeriesListExpr{Literal: $1.Literal}
+    $$ = SeriesListExpr{Literal: $1.lit}
   }
   | IDENTIFIER '{' identifiers '}' identifier_opt
   {
-    $$ = GroupSeriesExpr{Prefix: $1.Literal, ValueList: $3, Postfix: $5}
+    $$ = GroupSeriesExpr{Prefix: $1.lit, ValueList: $3, Postfix: $5}
   }
   | FUNC LBRACK exprs RBRACK
   {
-    $$ = FuncExpr{Name: $1.Literal, SubExprs: $3}
+    $$ = FuncExpr{Name: $1.lit, SubExprs: $3}
   }
 
 exprs :
@@ -79,7 +79,7 @@ identifier_opt:
   }
   | IDENTIFIER
   {
-    $$ = $1.Literal
+    $$ = $1.lit
   }
 
 identifiers: 
@@ -95,11 +95,11 @@ identifiers:
 ident_in_brace:
   NUMBER
   { 
-    $$ = $1.Literal
+    $$ = $1.lit
   }
   | IDENTIFIER 
   {
-    $$ = $1.Literal
+    $$ = $1.lit
   }
 
 %%

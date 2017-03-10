@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-// Token represents the token of the query expression.
-type Token struct {
-	Token   int
-	Literal string
+// token represents the token of the query expression.
+type token struct {
+	tok int
+	lit string
 }
 
 // Expr represents each of query expression.

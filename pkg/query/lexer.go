@@ -65,27 +65,27 @@ var (
 
 // Lex returns the token number for the yacc parser.
 func (l *Lexer) Lex(lval *yySymType) int {
-	token := int(l.Scan())
+	tok := int(l.Scan())
 	tokstr := l.TokenText()
 
-	if token == scanner.EOF {
+	if tok == scanner.EOF {
 		return EOF
 	}
-	if token == scanner.Char || token == scanner.String {
-		token = STRING
+	if tok == scanner.Char || tok == scanner.String {
+		tok = STRING
 		tokstr = tokstr[1 : len(tokstr)-1]
 	}
 	if v, ok := symTable[l.TokenText()]; ok {
-		token = v
+		tok = v
 	}
-	if token == scanner.Ident {
-		token = IDENTIFIER
+	if tok == scanner.Ident {
+		tok = IDENTIFIER
 		if _, err := strconv.ParseFloat(tokstr, 64); err == nil {
-			token = NUMBER
+			tok = NUMBER
 		}
 	}
-	lval.token = Token{Token: token, Literal: tokstr}
-	return token
+	lval.token = token{tok: tok, lit: tokstr}
+	return tok
 }
 
 // Error returns the error message of parser.
