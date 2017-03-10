@@ -82,8 +82,8 @@ identifier_opt:
     $$ = $1.lit
   }
 
-identifiers: 
-  ident_in_brace 
+identifiers:
+  ident_in_brace
   {
     $$ = []string{$1}
   }
@@ -94,10 +94,10 @@ identifiers:
 
 ident_in_brace:
   NUMBER
-  { 
+  {
     $$ = $1.lit
   }
-  | IDENTIFIER 
+  | IDENTIFIER
   {
     $$ = $1.lit
   }
