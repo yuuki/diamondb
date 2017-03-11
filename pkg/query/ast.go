@@ -12,7 +12,10 @@ type Token struct {
 }
 
 // Expr represents each of query expression.
-type Expr interface{}
+type Expr interface {
+	String() string
+	isExpr()
+}
 
 // BoolExpr provides Number expression.
 type BoolExpr struct {
@@ -71,3 +74,15 @@ type FuncExpr struct {
 func (e FuncExpr) String() string {
 	return e.Name
 }
+
+// isExpr() ensures that only expression/type nodes can be
+// assigned to an Expr.
+//
+// Taken from go/ast technique
+// https://github.com/golang/go/blob/d11a2184fb29d0f8a447b2e70299dc410c5642ed/src/go/ast/ast.go#L488-L489
+func (BoolExpr) isExpr()        {}
+func (NumberExpr) isExpr()      {}
+func (StringExpr) isExpr()      {}
+func (SeriesListExpr) isExpr()  {}
+func (GroupSeriesExpr) isExpr() {}
+func (FuncExpr) isExpr()        {}

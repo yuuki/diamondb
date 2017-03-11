@@ -1,6 +1,7 @@
 package query
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -219,6 +220,9 @@ func TestInvokeSubExprs_ErrLeak(t *testing.T) {
 	ff := &storage.FakeReadWriter{
 		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
 			time.Sleep(10 * time.Millisecond)
+			if name == "server1.loadavg5" {
+				return nil, fmt.Errorf("dummy err: name=%q", name)
+			}
 			ss := SeriesSlice{NewSeries(name, []float64{10.0}, 1, 60)}
 			return ss, nil
 		},
@@ -226,10 +230,10 @@ func TestInvokeSubExprs_ErrLeak(t *testing.T) {
 	exprs := []Expr{
 		SeriesListExpr{Literal: "server1.loadavg5"},
 		SeriesListExpr{Literal: "server2.loadavg5"},
-		10, // no such expr
+		NumberExpr{Literal: 10},
 	}
 	_, err := invokeSubExprs(ff, exprs, time.Unix(1, 0), time.Unix(10, 0))
 	if err == nil {
-		t.Fatal("should raise error")
+		t.Fatal("should raise error but got nil")
 	}
 }
