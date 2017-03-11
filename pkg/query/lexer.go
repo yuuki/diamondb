@@ -84,7 +84,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 			tok = NUMBER
 		}
 	}
-	lval.token = token{tok: tok, lit: tokstr}
+	lval.token = Token{tok: tok, lit: tokstr}
 	return tok
 }
 

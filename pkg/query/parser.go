@@ -11,7 +11,7 @@ import (
 //line parser.go.y:10
 type yySymType struct {
 	yys      int
-	token    token
+	token    Token
 	expr     Expr
 	exprs    []Expr
 	target   Expr

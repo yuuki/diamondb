@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// token represents the token of the query expression.
-type token struct {
+// Token represents the token of the query expression.
+type Token struct {
 	tok int
 	lit string
 }
