@@ -22,6 +22,7 @@ type BoolExpr struct {
 	Literal bool
 }
 
+// String returns string representation of the expression.
 func (e BoolExpr) String() string {
 	return fmt.Sprintf("%t", e.Literal)
 }
@@ -31,6 +32,7 @@ type NumberExpr struct {
 	Literal float64
 }
 
+// String returns string representation of the expression.
 func (e NumberExpr) String() string {
 	return fmt.Sprintf("%g", e.Literal)
 }
@@ -40,6 +42,7 @@ type StringExpr struct {
 	Literal string
 }
 
+// String returns string representation of the expression.
 func (e StringExpr) String() string {
 	return e.Literal
 }
@@ -49,6 +52,7 @@ type SeriesListExpr struct {
 	Literal string
 }
 
+// String returns string representation.
 func (e SeriesListExpr) String() string {
 	return e.Literal
 }
@@ -60,6 +64,7 @@ type GroupSeriesExpr struct {
 	Postfix   string
 }
 
+// String returns string representation of the expression.
 func (e GroupSeriesExpr) String() string {
 	vals := strings.Join(e.ValueList, ",")
 	return fmt.Sprintf(e.Prefix + "{" + vals + "}" + e.Postfix)
@@ -71,6 +76,7 @@ type FuncExpr struct {
 	SubExprs []Expr
 }
 
+// String returns string representation of the expression.
 func (e FuncExpr) String() string {
 	return e.Name
 }
