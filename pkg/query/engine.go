@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage"
 )
@@ -18,14 +19,6 @@ type UnsupportedFunctionError struct {
 // UnsupportedFunctionError satisfies error interface.
 func (e *UnsupportedFunctionError) Error() string {
 	return fmt.Sprintf("unsupported function %s", e.funcName)
-}
-
-type UnknownExpressionError struct {
-	expr Expr
-}
-
-func (e *UnknownExpressionError) Error() string {
-	return fmt.Sprintf("unknown expression %v", e.expr)
 }
 
 type funcArg struct {
@@ -183,7 +176,7 @@ func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Ti
 			return nil, &UnsupportedFunctionError{funcName: e.Name}
 		}
 	default:
-		return nil, &UnknownExpressionError{expr: expr}
+		return nil, errors.Errorf("unknown expression (%s)", expr)
 	}
 }
 
@@ -216,7 +209,7 @@ func invokeSubExprs(reader storage.ReadWriter, exprs []Expr, startTime, endTime 
 				}
 			}(expr, startTime, endTime, i)
 		default:
-			return nil, &UnknownExpressionError{expr: expr}
+			return nil, errors.Errorf("unknown expression (%s)", expr)
 		}
 	}
 
