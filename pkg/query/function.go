@@ -19,7 +19,7 @@ func (e *ArgumentError) Error() string {
 	return fmt.Sprintf("%s: %s", e.funcName, e.msg)
 }
 
-func doAlias(args funcArgs) (model.SeriesSlice, error) {
+func doAlias(args []*funcArg) (model.SeriesSlice, error) {
 	if len(args) != 2 {
 		return nil, &ArgumentError{
 			funcName: "alias",
@@ -51,7 +51,7 @@ func alias(ss model.SeriesSlice, newName string) model.SeriesSlice {
 	return ss
 }
 
-func doOffset(args funcArgs) (model.SeriesSlice, error) {
+func doOffset(args []*funcArg) (model.SeriesSlice, error) {
 	if len(args) != 2 {
 		return nil, &ArgumentError{
 			funcName: "offset",
@@ -92,7 +92,7 @@ func offset(ss model.SeriesSlice, factor float64) model.SeriesSlice {
 }
 
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.group
-func doGroup(args funcArgs) (model.SeriesSlice, error) {
+func doGroup(args []*funcArg) (model.SeriesSlice, error) {
 	var ss model.SeriesSlice
 	for i, arg := range args {
 		_, ok := args[i].expr.(SeriesListExpr)
@@ -107,7 +107,7 @@ func doGroup(args funcArgs) (model.SeriesSlice, error) {
 	return ss, nil
 }
 
-func doSumSeries(args funcArgs) (model.SeriesSlice, error) {
+func doSumSeries(args []*funcArg) (model.SeriesSlice, error) {
 	var ss model.SeriesSlice
 	for i, arg := range args {
 		_, ok := args[i].expr.(SeriesListExpr)
@@ -134,7 +134,7 @@ func sumSeries(ss model.SeriesSlice) *model.Series {
 	return model.NewSeries(name, vals, start, step)
 }
 
-func doAverageSeries(args funcArgs) (model.SeriesSlice, error) {
+func doAverageSeries(args []*funcArg) (model.SeriesSlice, error) {
 	var ss model.SeriesSlice
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
@@ -161,7 +161,7 @@ func averageSeries(ss model.SeriesSlice) *model.Series {
 	return model.NewSeries(name, vals, start, step)
 }
 
-func doMinSeries(args funcArgs) (model.SeriesSlice, error) {
+func doMinSeries(args []*funcArg) (model.SeriesSlice, error) {
 	var ss model.SeriesSlice
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
@@ -188,7 +188,7 @@ func minSeries(ss model.SeriesSlice) *model.Series {
 	return model.NewSeries(name, vals, start, step)
 }
 
-func doMaxSeries(args funcArgs) (model.SeriesSlice, error) {
+func doMaxSeries(args []*funcArg) (model.SeriesSlice, error) {
 	var ss model.SeriesSlice
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
@@ -216,7 +216,7 @@ func maxSeries(ss model.SeriesSlice) *model.Series {
 	return model.NewSeries(name, vals, start, step)
 }
 
-func doMultiplySeries(args funcArgs) (model.SeriesSlice, error) {
+func doMultiplySeries(args []*funcArg) (model.SeriesSlice, error) {
 	var ss model.SeriesSlice
 	for _, arg := range args {
 		_, ok := arg.expr.(SeriesListExpr)
@@ -244,7 +244,7 @@ func multiplySeries(ss model.SeriesSlice) *model.Series {
 	return model.NewSeries(name, vals, start, step)
 }
 
-func doDivideSeries(args funcArgs) (model.SeriesSlice, error) {
+func doDivideSeries(args []*funcArg) (model.SeriesSlice, error) {
 	if len(args) != 2 {
 		return nil, &ArgumentError{
 			funcName: "divideSeries",
@@ -280,7 +280,7 @@ func divideSeries(dividendSeriesSlice model.SeriesSlice, divisorSeries *model.Se
 	return result
 }
 
-func doPercentileOfSeries(args funcArgs) (model.SeriesSlice, error) {
+func doPercentileOfSeries(args []*funcArg) (model.SeriesSlice, error) {
 	if len(args) != 2 && len(args) != 3 {
 		return nil, &ArgumentError{
 			funcName: "percentileOfSeries",
@@ -326,7 +326,7 @@ func percentileOfSeries(ss model.SeriesSlice, n float64, interpolate bool) *mode
 	return model.NewSeries(name, vals, start, step)
 }
 
-func doSummarize(args funcArgs) (model.SeriesSlice, error) {
+func doSummarize(args []*funcArg) (model.SeriesSlice, error) {
 	if len(args) != 2 && len(args) != 3 {
 		return nil, &ArgumentError{
 			funcName: "summarize",
@@ -416,7 +416,7 @@ func summarize(ss model.SeriesSlice, interval string, function string) (model.Se
 	return result, nil
 }
 
-func doSumSeriesWithWildcards(args funcArgs) (model.SeriesSlice, error) {
+func doSumSeriesWithWildcards(args []*funcArg) (model.SeriesSlice, error) {
 	if len(args) < 2 {
 		return nil, &ArgumentError{
 			funcName: "sumSeriesWithWildcards",

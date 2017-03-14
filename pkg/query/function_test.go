@@ -13,12 +13,12 @@ import (
 func TestDoSumSeries(t *testing.T) {
 	tests := []struct {
 		desc string
-		args funcArgs
+		args []*funcArg
 		err  error
 	}{
 		{
 			"the number of arguments is one",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -30,7 +30,7 @@ func TestDoSumSeries(t *testing.T) {
 		},
 		{
 			"the number of arguments is two",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -48,7 +48,7 @@ func TestDoSumSeries(t *testing.T) {
 		},
 		{
 			"the type of the arguments is different",
-			funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+			[]*funcArg{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
 			errors.New("sumSeries: invalid argument type (server1.loadavg5)"),
 		},
 	}
@@ -70,12 +70,12 @@ func TestDoSumSeries(t *testing.T) {
 func TestDoAverageSeries(t *testing.T) {
 	tests := []struct {
 		desc string
-		args funcArgs
+		args []*funcArg
 		err  error
 	}{
 		{
 			"the number of arguments is one",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -87,7 +87,7 @@ func TestDoAverageSeries(t *testing.T) {
 		},
 		{
 			"the number of arguments is two",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -105,7 +105,7 @@ func TestDoAverageSeries(t *testing.T) {
 		},
 		{
 			"the type of the arguments is different",
-			funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+			[]*funcArg{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
 			errors.New("averageSeries: invalid argument type (server1.loadavg5)"),
 		},
 	}
@@ -127,12 +127,12 @@ func TestDoAverageSeries(t *testing.T) {
 func TestDoMinSeries(t *testing.T) {
 	tests := []struct {
 		desc string
-		args funcArgs
+		args []*funcArg
 		err  error
 	}{
 		{
 			"the number of arguments is one",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -144,7 +144,7 @@ func TestDoMinSeries(t *testing.T) {
 		},
 		{
 			"the number of arguments is two",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -162,7 +162,7 @@ func TestDoMinSeries(t *testing.T) {
 		},
 		{
 			"the type of the arguments is different",
-			funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+			[]*funcArg{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
 			errors.New("minSeries: invalid argument type (server1.loadavg5)"),
 		},
 	}
@@ -184,12 +184,12 @@ func TestDoMinSeries(t *testing.T) {
 func TestDoMaxSeries(t *testing.T) {
 	tests := []struct {
 		desc string
-		args funcArgs
+		args []*funcArg
 		err  error
 	}{
 		{
 			"the number of arguments is one",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -201,7 +201,7 @@ func TestDoMaxSeries(t *testing.T) {
 		},
 		{
 			"the number of arguments is two",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -219,7 +219,7 @@ func TestDoMaxSeries(t *testing.T) {
 		},
 		{
 			"the type of the arguments is different",
-			funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+			[]*funcArg{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
 			errors.New("maxSeries: invalid argument type (server1.loadavg5)"),
 		},
 	}
@@ -241,12 +241,12 @@ func TestDoMaxSeries(t *testing.T) {
 func TestDoMultiplySeries(t *testing.T) {
 	tests := []struct {
 		desc string
-		args funcArgs
+		args []*funcArg
 		err  error
 	}{
 		{
 			"the number of arguments is one",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -258,7 +258,7 @@ func TestDoMultiplySeries(t *testing.T) {
 		},
 		{
 			"the number of arguments is two",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -276,7 +276,7 @@ func TestDoMultiplySeries(t *testing.T) {
 		},
 		{
 			"the type of the arguments is different",
-			funcArgs{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
+			[]*funcArg{&funcArg{expr: StringExpr{Literal: "server1.loadavg5"}}},
 			errors.New("multiplySeries: invalid argument type (server1.loadavg5)"),
 		},
 	}
@@ -298,12 +298,12 @@ func TestDoMultiplySeries(t *testing.T) {
 func TestDoPercentileOfSeries(t *testing.T) {
 	tests := []struct {
 		desc string
-		args funcArgs
+		args []*funcArg
 		err  error
 	}{
 		{
 			"the number of arguments is one",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -315,7 +315,7 @@ func TestDoPercentileOfSeries(t *testing.T) {
 		},
 		{
 			"SeriesListExpr + NumberExpr",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -328,7 +328,7 @@ func TestDoPercentileOfSeries(t *testing.T) {
 		},
 		{
 			"the type of the arguments is different",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{expr: StringExpr{Literal: "hoge"}},
 				&funcArg{expr: StringExpr{Literal: "foo"}},
 			},
@@ -336,7 +336,7 @@ func TestDoPercentileOfSeries(t *testing.T) {
 		},
 		{
 			"the type of the arguments is different",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -364,7 +364,7 @@ func TestDoPercentileOfSeries(t *testing.T) {
 }
 
 func TestDoGroup(t *testing.T) {
-	args := funcArgs{
+	args := []*funcArg{
 		&funcArg{
 			expr: SeriesListExpr{Literal: "server{1,2}.loadavg5"},
 			seriesSlice: SeriesSlice{
@@ -411,12 +411,12 @@ func TestAlias(t *testing.T) {
 func TestDoOffset(t *testing.T) {
 	tests := []struct {
 		desc string
-		args funcArgs
+		args []*funcArg
 		err  error
 	}{
 		{
 			"one argument",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -428,7 +428,7 @@ func TestDoOffset(t *testing.T) {
 		},
 		{
 			"seriesListExpr + numberExpr",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -441,7 +441,7 @@ func TestDoOffset(t *testing.T) {
 		},
 		{
 			"seriesSliceExpr(2) + numberExpr",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server{1,2}.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -455,7 +455,7 @@ func TestDoOffset(t *testing.T) {
 		},
 		{
 			"seriesSliceExpr + seriesSliceExpr",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -628,12 +628,12 @@ func TestDivideSeries(t *testing.T) {
 func TestDoSummarize(t *testing.T) {
 	tests := []struct {
 		desc string
-		args funcArgs
+		args []*funcArg
 		err  error
 	}{
 		{
 			"case1: correct two arguments",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -648,7 +648,7 @@ func TestDoSummarize(t *testing.T) {
 		},
 		{
 			"case2: correct three arguments",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -782,12 +782,12 @@ func TestPercentileOfSeries(t *testing.T) {
 func TestDoSumSeriesWithWildcards(t *testing.T) {
 	tests := []struct {
 		desc string
-		args funcArgs
+		args []*funcArg
 		err  error
 	}{
 		{
 			"normal (SeriesListExpr + NumberExpr)",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -802,7 +802,7 @@ func TestDoSumSeriesWithWildcards(t *testing.T) {
 		},
 		{
 			"normal (SeriesListExpr + NumberExpr x 3)",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -823,7 +823,7 @@ func TestDoSumSeriesWithWildcards(t *testing.T) {
 		},
 		{
 			"too few arguments",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{
@@ -835,7 +835,7 @@ func TestDoSumSeriesWithWildcards(t *testing.T) {
 		},
 		{
 			"the type of SeriesSlice is wrong",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: NumberExpr{Literal: 1},
 				},
@@ -847,7 +847,7 @@ func TestDoSumSeriesWithWildcards(t *testing.T) {
 		},
 		{
 			"the type of position is wrong",
-			funcArgs{
+			[]*funcArg{
 				&funcArg{
 					expr: SeriesListExpr{Literal: "server1.loadavg5"},
 					seriesSlice: SeriesSlice{

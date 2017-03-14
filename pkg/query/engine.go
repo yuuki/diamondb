@@ -26,8 +26,6 @@ type funcArg struct {
 	seriesSlice model.SeriesSlice
 }
 
-type funcArgs []*funcArg
-
 // EvalTargets evaluates the targets concurrently. It is guaranteed that the order
 // of the targets as input value and SeriesSlice as retuen value is the same.
 func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime time.Time) (model.SeriesSlice, error) {
@@ -180,7 +178,7 @@ func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Ti
 	}
 }
 
-func invokeSubExprs(reader storage.ReadWriter, exprs []Expr, startTime, endTime time.Time) (funcArgs, error) {
+func invokeSubExprs(reader storage.ReadWriter, exprs []Expr, startTime, endTime time.Time) ([]*funcArg, error) {
 	type result struct {
 		value *funcArg
 		err   error
@@ -188,7 +186,7 @@ func invokeSubExprs(reader storage.ReadWriter, exprs []Expr, startTime, endTime 
 	}
 
 	c := make(chan *result, len(exprs))
-	args := make(funcArgs, len(exprs))
+	args := make([]*funcArg, len(exprs))
 	numTasks := 0
 
 	for i, expr := range exprs {
