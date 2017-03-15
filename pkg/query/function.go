@@ -91,6 +91,44 @@ func offset(ss model.SeriesSlice, factor float64) model.SeriesSlice {
 	return result
 }
 
+func doScale(args []*funcArg) (model.SeriesSlice, error) {
+	if len(args) != 2 {
+		return nil, &ArgumentError{
+			funcName: "scale",
+			msg:      fmt.Sprintf("wrong number of arguments (%d for 2)", len(args)),
+		}
+	}
+	_, ok := args[0].expr.(SeriesListExpr)
+	if !ok {
+		return nil, &ArgumentError{
+			funcName: "scale",
+			msg:      fmt.Sprintf("invalid argument type (%s) as SeriesList", args[0].expr),
+		}
+	}
+	factor, ok := args[1].expr.(NumberExpr)
+	if !ok {
+		return nil, &ArgumentError{
+			funcName: "scale",
+			msg:      fmt.Sprintf("invalid argument type (%s) as factor", args[1].expr),
+		}
+	}
+	return scale(args[0].seriesSlice, factor.Literal), nil
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.scale
+func scale(ss model.SeriesSlice, factor float64) model.SeriesSlice {
+	result := make(model.SeriesSlice, 0, len(ss))
+	for _, s := range ss {
+		name := fmt.Sprintf("scale(%s,%g)", s.Name(), factor)
+		vals := s.Values()
+		for i := 0; i < len(vals); i++ {
+			vals[i] *= factor
+		}
+		result = append(result, model.NewSeries(name, vals, s.Start(), s.Step()))
+	}
+	return result
+}
+
 // http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.group
 func doGroup(args []*funcArg) (model.SeriesSlice, error) {
 	var ss model.SeriesSlice

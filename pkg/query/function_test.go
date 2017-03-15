@@ -10,6 +10,132 @@ import (
 	. "github.com/yuuki/diamondb/pkg/model"
 )
 
+func TestDoScale(t *testing.T) {
+	var tests = []struct {
+		desc string
+		args []*funcArg
+		err  error
+	}{
+		{
+			"引数1個",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries(
+							"server1.loadavg5", []float64{0.1}, 100, 1,
+						),
+					},
+				},
+			},
+			errors.New("scale: wrong number of arguments (1 for 2)"),
+		},
+		{
+			"seriesSliceExpr * numberExpr",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries(
+							"server1.loadavg5", []float64{0.1}, 100, 1,
+						),
+					},
+				},
+				{expr: NumberExpr{Literal: 1}},
+			},
+			nil,
+		},
+		{
+			"seriesSliceExpr(2) * numberExpr",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries(
+							"server1.loadavg5", []float64{0.1}, 100, 1,
+						),
+						NewSeries(
+							"server2.loadavg5", []float64{0.1}, 100, 1,
+						),
+					},
+				},
+				{expr: NumberExpr{Literal: 1}},
+			},
+			nil,
+		},
+		{
+			"型が違う",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries(
+							"server1.loadavg5", []float64{0.1}, 100, 1,
+						),
+					},
+				},
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries(
+							"server1.loadavg5", []float64{0.1}, 100, 1,
+						),
+					},
+				},
+			},
+			errors.New("scale: invalid argument type (server1.loadavg5) as factor"),
+		},
+	}
+	for _, tc := range tests {
+		_, err := doScale(tc.args)
+		if tc.err != nil {
+			if diff := pretty.Compare(errors.Cause(err).Error(), errors.Cause(tc.err).Error()); diff != "" {
+				t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+		}
+	}
+}
+
+func TestScale(t *testing.T) {
+	tests := []struct {
+		desc                string
+		inputSeriesSlice    SeriesSlice
+		inputFactor         float64
+		expectedSeriesSlice SeriesSlice
+	}{
+		{
+			"positive factor",
+			SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{1.0, 2.0, 3.0, 4.0}, 1, 1),
+				NewSeries("server2.loadavg5", []float64{math.NaN(), 5.0}, 4, 1),
+			},
+			0.5,
+			SeriesSlice{
+				NewSeries("scale(server1.loadavg5,0.5)", []float64{0.5, 1.0, 1.5, 2.0}, 1, 1),
+				NewSeries("scale(server2.loadavg5,0.5)", []float64{math.NaN(), 2.5}, 4, 1),
+			},
+		},
+		{
+			"negative factor",
+			SeriesSlice{
+				NewSeries("server1.loadavg5", []float64{1.0, 2.0, 3.0, 4.0}, 1, 1),
+				NewSeries("server2.loadavg5", []float64{math.NaN(), 5.0}, 4, 1),
+			},
+			-0.5,
+			SeriesSlice{
+				NewSeries("scale(server1.loadavg5,-0.5)", []float64{-0.5, -1.0, -1.5, -2.0}, 1, 1),
+				NewSeries("scale(server2.loadavg5,-0.5)", []float64{math.NaN(), -2.5}, 4, 1),
+			},
+		},
+	}
+	for _, tc := range tests {
+		got := scale(tc.inputSeriesSlice, tc.inputFactor)
+		if diff := pretty.Compare(got, tc.expectedSeriesSlice); diff != "" {
+			t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
+		}
+	}
+}
+
 func TestDoSumSeries(t *testing.T) {
 	tests := []struct {
 		desc string

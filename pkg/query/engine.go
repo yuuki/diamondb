@@ -110,6 +110,12 @@ func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Ti
 				return nil, err
 			}
 			return ss, err
+		case "scale":
+			ss, err := doScale(args)
+			if err != nil {
+				return nil, err
+			}
+			return ss, err
 		case "group":
 			ss, err := doGroup(args)
 			if err != nil {
