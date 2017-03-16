@@ -60,6 +60,7 @@ func (s *Store) Ping() error {
 	return nil
 }
 
+// Init initializes the store object.
 func (s *Store) Init() error {
 	err := s.DynamoDB.CreateTable(&dynamodb.CreateTableParam{
 		Name: config.Config.DynamoDBTableName,
