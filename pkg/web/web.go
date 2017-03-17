@@ -25,16 +25,19 @@ const (
 	DayTime = time.Duration(24*60*60) * time.Second
 )
 
+// Handler serves various HTTP endpoints of the Diamond server
 type Handler struct {
 	server *http.Server
 	store  storage.ReadWriter
 }
 
+// Options for the web Handler.
 type Option struct {
 	Port  string
 	Store storage.ReadWriter
 }
 
+// New initializes a new web Handler.
 func New(o *Option) *Handler {
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
@@ -62,6 +65,7 @@ func New(o *Option) *Handler {
 	return h
 }
 
+// Run serves the HTTP endpoints.
 func (h *Handler) Run() {
 	log.Printf("Listening on :%s\n", h.server.Addr)
 	if err := h.server.ListenAndServe(); err != nil {
@@ -69,6 +73,7 @@ func (h *Handler) Run() {
 	}
 }
 
+// Shutdown shoudowns the HTTP server.
 func (h *Handler) Shutdown(sig os.Signal) error {
 	log.Printf("Received %s gracefully shutdown...\n", sig)
 	ctx, cancel := context.WithTimeout(context.Background(), config.Config.ShutdownTimeout)
