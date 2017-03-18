@@ -37,6 +37,10 @@ make
 make test
 ```
 
+# Presentations (in Japanese)
+
+[サーバモニタリング向け時系列データベースの探究 / The study of time-series database for server monitoring](https://speakerdeck.com/yuukit/the-study-of-time-series-database-for-server-monitoring)
+
 # Thanks
 
 [astj](https://github.com/astj), [itchyny](https://github.com/itchyny), [haya14busa](https://github.com/haya14busa)
