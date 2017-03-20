@@ -89,92 +89,49 @@ func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Ti
 		}
 		return ss, nil
 	case FuncExpr:
+		var (
+			ss  model.SeriesSlice
+			err error
+		)
+
 		args, err := invokeSubExprs(reader, e.SubExprs, startTime, endTime)
 		if err != nil {
 			return nil, err
 		}
 		switch e.Name {
 		case "alias":
-			ss, err := doAlias(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doAlias(args)
 		case "offset":
-			ss, err := doOffset(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doOffset(args)
 		case "scale":
-			ss, err := doScale(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doScale(args)
 		case "group":
-			ss, err := doGroup(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doGroup(args)
 		case "averageSeries", "avg":
-			ss, err := doAverageSeries(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doAverageSeries(args)
 		case "sumSeries", "sum":
-			ss, err := doSumSeries(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doSumSeries(args)
 		case "minSeries":
-			ss, err := doMinSeries(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doMinSeries(args)
 		case "maxSeries":
-			ss, err := doMaxSeries(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doMaxSeries(args)
 		case "multiplySeries":
-			ss, err := doMultiplySeries(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doMultiplySeries(args)
 		case "divideSeries":
-			ss, err := doDivideSeries(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doDivideSeries(args)
 		case "percentileOfSeries":
-			ss, err := doPercentileOfSeries(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doPercentileOfSeries(args)
 		case "summarize":
-			ss, err := doSummarize(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doSummarize(args)
 		case "sumSeriesWithWildcards":
-			ss, err := doSumSeriesWithWildcards(args)
-			if err != nil {
-				return nil, err
-			}
-			return ss, err
+			ss, err = doSumSeriesWithWildcards(args)
 		default:
 			return nil, &UnsupportedFunctionError{funcName: e.Name}
 		}
+		if err != nil {
+			return nil, err
+		}
+		return ss, err
 	default:
 		return nil, errors.Errorf("unknown expression (%s)", expr)
 	}
