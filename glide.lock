@@ -1,10 +1,10 @@
-hash: 7e1909c90f30d538d7f9e19b4e34fcf8c31a514916a1d22426ea977e0f645a75
-updated: 2017-03-02T04:15:14.286602316+09:00
+hash: 58fcb21be2e713c84b3b078b57116bed2b39997ca1f587e119ea05221eb75228
+updated: 2017-03-20T23:47:23.738700497+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
 - name: github.com/aws/aws-sdk-go
-  version: 6669bce73b4e3bc922ff5ea3a3983ede26e02b39
+  version: 695fe24acaf9afe80b0ce261d4637f42ba0b4c7d
   subpackages:
   - aws
   - aws/awserr
@@ -58,6 +58,10 @@ imports:
   version: f09c4662a0bd6bd8943ac7b4931e185df9471da4
   subpackages:
   - context
+- name: golang.org/x/sync
+  version: 450f422ab23cf9881c94e2db30cac0eb1b7cf80c
+  subpackages:
+  - errgroup
 - name: gopkg.in/redis.v5
   version: 8fcba2ea878201b70c5a63dd416141d4ddbc601a
   subpackages:
