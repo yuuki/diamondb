@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/pkg/errors"
 	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage"
@@ -29,27 +31,21 @@ type funcArg struct {
 // EvalTargets evaluates the targets concurrently. It is guaranteed that the order
 // of the targets as input value and SeriesSlice as retuen value is the same.
 func EvalTargets(reader storage.ReadWriter, targets []string, startTime, endTime time.Time) (model.SeriesSlice, error) {
-	type result struct {
-		value model.SeriesSlice
-		err   error
-		index int
-	}
-
-	c := make(chan *result, len(targets))
-	for i, target := range targets {
-		go func(target string, start, end time.Time, i int) {
-			ss, err := EvalTarget(reader, target, start, end)
-			c <- &result{value: ss, err: err, index: i}
-		}(target, startTime, endTime, i)
-	}
+	var eg errgroup.Group
 	ordered := make([]model.SeriesSlice, len(targets))
-	for i := 0; i < len(targets); i++ {
-		ret := <-c
-		if ret.err != nil {
-			// return err that is found firstly.
-			return nil, ret.err
-		}
-		ordered[ret.index] = ret.value
+	for i, target := range targets {
+		i, target := i, target
+		eg.Go(func() error {
+			ss, err := EvalTarget(reader, target, startTime, endTime)
+			if err != nil {
+				return err
+			}
+			ordered[i] = ss
+			return nil
+		})
+	}
+	if err := eg.Wait(); err != nil {
+		return nil, err
 	}
 	var results model.SeriesSlice
 	for _, ss := range ordered {
