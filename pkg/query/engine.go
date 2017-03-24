@@ -140,46 +140,31 @@ func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Ti
 }
 
 func invokeSubExprs(reader storage.ReadWriter, exprs []Expr, startTime, endTime time.Time) ([]*funcArg, error) {
-	type result struct {
-		value *funcArg
-		err   error
-		index int
-	}
-
-	c := make(chan *result, len(exprs))
+	var eg errgroup.Group
 	args := make([]*funcArg, len(exprs))
-	numTasks := 0
-
 	for i, expr := range exprs {
 		switch expr.(type) {
 		case BoolExpr, NumberExpr, StringExpr:
 			args[i] = &funcArg{expr: expr}
 		case SeriesListExpr, GroupSeriesExpr, FuncExpr:
-			numTasks++
-			go func(e Expr, start, end time.Time, i int) {
-				ss, err := invokeExpr(reader, e, start, end)
-				c <- &result{
-					value: &funcArg{
-						expr:        SeriesListExpr{Literal: ss.FormattedName()},
-						seriesSlice: ss,
-					},
-					err:   err,
-					index: i,
+			i, expr := i, expr
+			eg.Go(func() error {
+				ss, err := invokeExpr(reader, expr, startTime, endTime)
+				if err != nil {
+					return err
 				}
-			}(expr, startTime, endTime, i)
+				args[i] = &funcArg{
+					expr:        SeriesListExpr{Literal: ss.FormattedName()},
+					seriesSlice: ss,
+				}
+				return nil
+			})
 		default:
 			return nil, errors.Errorf("unknown expression (%s)", expr)
 		}
 	}
-
-	for i := 0; i < numTasks; i++ {
-		ret := <-c
-		if ret.err != nil {
-			// return err that is found firstly.
-			return nil, ret.err
-		}
-		args[ret.index] = ret.value
+	if err := eg.Wait(); err != nil {
+		return nil, err
 	}
-
 	return args, nil
 }
