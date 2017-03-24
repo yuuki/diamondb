@@ -39,7 +39,8 @@ make test
 
 # Presentations (in Japanese)
 
-[サーバモニタリング向け時系列データベースの探究 / The study of time-series database for server monitoring](https://speakerdeck.com/yuukit/the-study-of-time-series-database-for-server-monitoring)
+- [サーバモニタリング向け時系列データベースの探究 / The study of time-series database for server monitoring](https://speakerdeck.com/yuukit/the-study-of-time-series-database-for-server-monitoring)
+- [高度に発達したシステムの異常は神の怒りと見分けがつかない / IPSJ-ONE 2017 y_uuki](https://speakerdeck.com/yuukit/ipsj-one-2017-y-uuki)
 
 # Thanks
 

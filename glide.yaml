@@ -15,5 +15,8 @@ import:
 - package: github.com/golang/mock
   subpackages:
   - gomock
+- package: golang.org/x/sync
+  subpackages:
+  - errgroup
 testImport:
 - package: github.com/fortytw2/leaktest
