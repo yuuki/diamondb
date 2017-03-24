@@ -176,6 +176,12 @@ func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Ti
 				return nil, err
 			}
 			return ss, err
+		case "doLinerRegression":
+			ss, err := doLinerRegression(reader, args, startTime, endTime)
+			if err != nil {
+				return nil, err
+			}
+			return ss, err
 		default:
 			return nil, &UnsupportedFunctionError{funcName: e.Name}
 		}

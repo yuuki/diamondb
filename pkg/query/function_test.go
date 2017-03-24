@@ -3,11 +3,13 @@ package query
 import (
 	"math"
 	"testing"
+	"time"
 
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/pkg/errors"
 
 	. "github.com/yuuki/diamondb/pkg/model"
+	"github.com/yuuki/diamondb/pkg/storage"
 )
 
 func TestDoScale(t *testing.T) {
@@ -1135,5 +1137,151 @@ func TestSumSeriesWithWildcards(t *testing.T) {
 		if diff := pretty.Compare(got, tc.expectedSeriesSlice); diff != "" {
 			t.Fatalf("desc: %s diff: (-actual +expected)\n%s", tc.desc, diff)
 		}
+	}
+}
+
+func TestDoLinearRegression(t *testing.T) {
+	tests := []struct {
+		desc string
+		args []*funcArg
+		err  error
+	}{
+		{
+			"SeriesListExpr",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 1, 1),
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"SeriesListExpr + StringExpr",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 1, 1),
+					},
+				},
+				{
+					expr: StringExpr{Literal: "10"}, // unix time
+				},
+			},
+			nil,
+		},
+		{
+			"SeriesListExpr + StringExpr + StringExpr",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 1, 1),
+					},
+				},
+				{
+					expr: StringExpr{Literal: "10"}, // unix time
+				},
+				{
+					expr: StringExpr{Literal: "50"}, // unix time
+				},
+			},
+			nil,
+		},
+		{
+			"the number of argument is 4",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 1, 1),
+					},
+				},
+				{
+					expr: StringExpr{Literal: "10"}, // unix time
+				},
+				{
+					expr: StringExpr{Literal: "50"}, // unix time
+				},
+				{
+					expr: StringExpr{Literal: "-1"},
+				},
+			},
+			errors.New("linearRegression: wrong number of arguments (4 for 1,2,3)"),
+		},
+		{
+			"the type of the arguments is different (1)",
+			[]*funcArg{
+				{
+					expr: NumberExpr{Literal: 1.0},
+				},
+			},
+			errors.New("linearRegression: invalid argument type (1) as SeriesSlice"),
+		},
+		{
+			"the type of the arguments is different (2)",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 1, 1),
+					},
+				},
+				{
+					expr: NumberExpr{Literal: 1.0},
+				},
+			},
+			errors.New("linearRegression: invalid argument type (1) as startSourceAt"),
+		},
+		{
+			"the type of the arguments is different (3)",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 1, 1),
+					},
+				},
+				{
+					expr: StringExpr{Literal: "10"},
+				},
+				{
+					expr: NumberExpr{Literal: 1.0},
+				},
+			},
+			errors.New("linearRegression: invalid argument type (1) as endSourceAt"),
+		},
+	}
+
+	ff := &storage.FakeReadWriter{
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+			return SeriesSlice{}, nil
+		},
+	}
+
+	for _, tc := range tests {
+		_, err := doLinerRegression(ff, tc.args, time.Unix(100, 0), time.Unix(200, 0))
+		if err != tc.err {
+			if diff := pretty.Compare(errors.Cause(err).Error(), errors.Cause(tc.err).Error()); diff != "" {
+				t.Errorf("desc: %s, diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+		}
+	}
+}
+
+func TestLinearRegression_EvalTargetsErr(t *testing.T) {
+	ff := &storage.FakeReadWriter{
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+			return nil, errors.New("something occurs")
+		},
+	}
+	_, err := linearRegression(ff, SeriesSlice{
+		NewSeries("server1.loadavg5", []float64{}, 1, 1),
+	}, time.Unix(0, 0), time.Unix(1, 0))
+	if err == nil {
+		t.Fatalf("should raise error %v", err)
 	}
 }
