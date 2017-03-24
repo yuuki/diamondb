@@ -127,6 +127,31 @@ func Lcm(a, b int) int {
 	return a * b / Gcd(a, b)
 }
 
+// LinearRegressionAnalysis returns factor and offset of linear regression function by least squares method.
+// https://github.com/graphite-project/graphite-web/blob/f7634f3e/webapp/graphite/render/functions.py#L2567
+// In y = ax + b, a: factor b: offset
+func LinearRegressionAnalysis(vals []float64, start int64, step int) (float64, float64) {
+	vals = notNaNVals(vals)
+	if len(vals) < 1 {
+		return math.NaN(), math.NaN()
+	}
+	var sumI, sumV, sumII, sumIV float64
+	for i, v := range vals {
+		sumI += float64(i)
+		sumV += v
+		sumII += float64(i * i)
+		sumIV += float64(i) * v
+	}
+	n := float64(len(vals))
+	denominator := float64(n*sumII - sumI*sumI)
+	if denominator == 0 {
+		return math.NaN(), math.NaN()
+	}
+	factor := (n*sumIV - sumI*sumV) / denominator / float64(step)
+	offset := (sumII*sumV-sumIV*sumI)/denominator - factor*float64(start)
+	return factor, offset
+}
+
 // Percentile is calculated using the method outlined in the NIST Engineering
 // Statistics Handbook:
 // http://www.itl.nist.gov/div898/handbook/prc/section2/prc252.htm

@@ -60,6 +60,7 @@ var (
 		"percentileOfSeries":     FUNC,
 		"summarize":              FUNC,
 		"sumSeriesWithWildcards": FUNC,
+		"linearRegression":       FUNC,
 		"nonNegativeDerivative":  FUNC,
 	}
 )

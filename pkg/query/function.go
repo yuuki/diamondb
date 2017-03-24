@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"time"
 
+	"github.com/pkg/errors"
 	"github.com/yuuki/diamondb/pkg/mathutil"
 	"github.com/yuuki/diamondb/pkg/model"
+	"github.com/yuuki/diamondb/pkg/storage"
 	"github.com/yuuki/diamondb/pkg/timeparser"
 )
 
@@ -515,4 +518,85 @@ func sumSeriesWithWildcards(ss model.SeriesSlice, positions []int) model.SeriesS
 		results = append(results, newSeries[name])
 	}
 	return results
+}
+
+func doLinerRegression(reader storage.ReadWriter, args []*funcArg, startTime, endTime time.Time) (model.SeriesSlice, error) {
+	if len(args) == 0 || len(args) > 3 {
+		return nil, &ArgumentError{
+			funcName: "linearRegression",
+			msg:      fmt.Sprintf("wrong number of arguments (%d for 1,2,3)", len(args)),
+		}
+	}
+	_, ok := args[0].expr.(SeriesListExpr)
+	if !ok {
+		return nil, &ArgumentError{
+			funcName: "linearRegression",
+			msg:      fmt.Sprintf("invalid argument type (%s) as SeriesSlice", args[0].expr),
+		}
+	}
+	var (
+		startSourceAt, endSourceAt = startTime, endTime
+		err                        error
+	)
+	if len(args) >= 2 {
+		t, ok := args[1].expr.(StringExpr)
+		if !ok {
+			return nil, &ArgumentError{
+				funcName: "linearRegression",
+				msg:      fmt.Sprintf("invalid argument type (%s) as startSourceAt", args[1].expr),
+			}
+		}
+		startSourceAt, err = timeparser.ParseAtTime(t.Literal)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+	}
+	if len(args) >= 3 {
+		t, ok := args[2].expr.(StringExpr)
+		if !ok {
+			return nil, &ArgumentError{
+				funcName: "linearRegression",
+				msg:      fmt.Sprintf("invalid argument type (%s) as endSourceAt", args[2].expr),
+			}
+		}
+		endSourceAt, err = timeparser.ParseAtTime(t.Literal)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+	}
+	return linearRegression(reader, args[0].seriesSlice, startSourceAt, endSourceAt)
+}
+
+// http://graphite.readthedocs.io/en/latest/functions.html#graphite.render.functions.linearRegression
+func linearRegression(fetcher storage.ReadWriter, ss model.SeriesSlice, startSourceAt, endSourceAt time.Time) (model.SeriesSlice, error) {
+	targets := make([]string, 0, len(ss))
+	for _, s := range ss {
+		targets = append(targets, s.Name())
+	}
+	sourceSlice, err := EvalTargets(fetcher, targets, startSourceAt, endSourceAt)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to evaluate targets(%s)", strings.Join(targets, ","))
+	}
+
+	length := mathutil.MinInt64(int64(len(ss)), int64(len(sourceSlice)))
+	results := make(model.SeriesSlice, 0, length)
+	for i := 0; i < int(length); i++ {
+		source, s := sourceSlice[i], ss[i]
+		factor, offset := mathutil.LinearRegressionAnalysis(
+			source.Values(), source.Start(), source.Step(),
+		)
+		if math.IsNaN(factor) || math.IsNaN(offset) {
+			continue
+		}
+		vals := make([]float64, 0, s.Len())
+		for j := 0; j < s.Len(); j++ {
+			t := s.Start() + int64(s.Step()*j)
+			vals = append(vals, offset+float64(t)*factor)
+		}
+		newName := fmt.Sprintf("linearRegression(%s, %d, %d)",
+			s.Name(), startSourceAt.Unix(), endSourceAt.Unix(),
+		)
+		results = append(results, model.NewSeries(newName, vals, s.Start(), s.Step()))
+	}
+	return results, nil
 }

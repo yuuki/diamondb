@@ -125,6 +125,8 @@ func invokeExpr(reader storage.ReadWriter, expr Expr, startTime, endTime time.Ti
 			ss, err = doSummarize(args)
 		case "sumSeriesWithWildcards":
 			ss, err = doSumSeriesWithWildcards(args)
+		case "doLinerRegression":
+			ss, err = doLinerRegression(reader, args, startTime, endTime)
 		default:
 			return nil, &UnsupportedFunctionError{funcName: e.Name}
 		}

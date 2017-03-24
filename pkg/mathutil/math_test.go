@@ -271,6 +271,36 @@ func TestLcm(t *testing.T) {
 	}
 }
 
+func TestLinearRegressionAnalysis(t *testing.T) {
+	cases := []struct {
+		desc           string
+		inputVals      []float64
+		inputStart     int64
+		inputStep      int
+		expectedFactor float64
+		expectedOffset float64
+	}{
+		{"y=0.1x+0", []float64{0.1, 0.2, 0.3, 0.4}, 1, 1, 0.1, 0},
+		{"y=2x-1", []float64{1.0, 3.0, 5.0, 7.0}, 1, 1, 2.0, -1.0},
+		{"y=5.0", []float64{5.0, 5.0, 5.0}, 1, 1, 0.0, 5.0},
+		{"input length is zero", []float64{}, 1, 1, math.NaN(), math.NaN()},
+		{"input length is one", []float64{1.0}, 1, 1, math.NaN(), math.NaN()},
+	}
+	for _, c := range cases {
+		factor, offset := LinearRegressionAnalysis(c.inputVals, c.inputStart, c.inputStep)
+		if factor != c.expectedFactor {
+			if !(math.IsNaN(factor) && math.IsNaN(c.expectedFactor)) {
+				t.Fatalf("desc: %s, factor should be %g, not %g", c.desc, c.expectedFactor, factor)
+			}
+		}
+		if offset != c.expectedOffset {
+			if !(math.IsNaN(factor) && math.IsNaN(c.expectedFactor)) {
+				t.Fatalf("desc: %s, offset should be %g, not %g", c.desc, c.expectedOffset, offset)
+			}
+		}
+	}
+}
+
 func TestPercentile(t *testing.T) {
 	tests := []struct {
 		vals        []float64
