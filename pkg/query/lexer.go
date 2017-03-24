@@ -61,7 +61,6 @@ var (
 		"summarize":              FUNC,
 		"sumSeriesWithWildcards": FUNC,
 		"linearRegression":       FUNC,
-		"nonNegativeDerivative":  FUNC,
 	}
 )
 

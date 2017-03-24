@@ -207,7 +207,7 @@ func TestParseTarget_FuncExprWithNumberExpr(t *testing.T) {
 }
 
 func TestParsetTarget_FuncExprWithFuncExpr(t *testing.T) {
-	expr, err := ParseTarget("summarize(nonNegativeDerivative(gauge.num_users),\"1week\")")
+	expr, err := ParseTarget("summarize(group(gauge.num_users),\"1week\")")
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
@@ -227,8 +227,8 @@ func TestParsetTarget_FuncExprWithFuncExpr(t *testing.T) {
 	if !ok2 {
 		t.Fatalf("expr %#v should be FuncExpr", v2)
 	}
-	if v2.Name != "nonNegativeDerivative" {
-		t.Fatalf("\nExpected: %+v\nActual:   %+v", "nonNegativeDerivative", v2.Name)
+	if v2.Name != "group" {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", "group", v2.Name)
 	}
 	if l := len(v2.SubExprs); l != 1 {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", 1, l)
