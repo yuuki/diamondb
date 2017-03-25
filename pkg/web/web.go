@@ -58,7 +58,9 @@ func New(o *Option) *Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/ping", h.pingHandler())
 	mux.Handle("/inspect", h.inspectHandler())
-	mux.Handle("/render", h.renderHandler())
+	mux.Handle("/render", http.TimeoutHandler(
+		h.renderHandler(), time.Duration(30)*time.Second, "/render timeout"),
+	)
 	mux.Handle("/datapoints", h.writeHandler())
 	n.UseHandler(mux)
 
