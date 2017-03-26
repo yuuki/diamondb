@@ -59,7 +59,7 @@ func New(o *Option) *Handler {
 	mux.Handle("/ping", h.pingHandler())
 	mux.Handle("/inspect", h.inspectHandler())
 	mux.Handle("/render", http.TimeoutHandler(
-		h.renderHandler(), time.Duration(30)*time.Second, "/render timeout"),
+		h.renderHandler(), config.Config.HTTPRenderTimeout, "/render timeout"),
 	)
 	mux.Handle("/datapoints", h.writeHandler())
 	n.UseHandler(mux)

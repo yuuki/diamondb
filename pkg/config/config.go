@@ -11,6 +11,7 @@ import (
 
 type config struct {
 	ShutdownTimeout                 time.Duration `json:"shutdown_timeout"`
+	HTTPRenderTimeout               time.Duration `json:"http_render_timeout"`
 	RedisAddrs                      []string      `json:"redis_addrs"`
 	RedisPassword                   string        `json:"redis_password"`
 	RedisDB                         int           `json:"redis_db"`
@@ -29,6 +30,8 @@ const (
 	DefaultPort = "8000"
 	// DefaultShutdownTimeout is the default timeout seconds for server shutdown.
 	DefaultShutdownTimeout = 10 * time.Second
+	// DefaultHTTPRenderTimeout is the default timeout seconds for /render
+	DefaultHTTPRenderTimeout = 30 * time.Second
 	// DefaultRedisAddr is the port to connect to redis-server process.
 	DefaultRedisAddr = "localhost:6379"
 	// DefaultRedisPassword is the password to connect to redis-server process.
@@ -61,6 +64,16 @@ func Load() error {
 			return errors.New("DIAMONDB_SHUTDOWN_TIMEOUT must be an integer")
 		}
 		Config.ShutdownTimeout = time.Duration(v) * time.Second
+	}
+	renderTimeout := os.Getenv("DIAMONDB_HTTP_RENDER_TIMEOUT")
+	if renderTimeout == "" {
+		Config.HTTPRenderTimeout = DefaultHTTPRenderTimeout
+	} else {
+		v, err := strconv.ParseInt(renderTimeout, 10, 64)
+		if err != nil {
+			return errors.New("DIAMONDB_HTTP_RENDER_TIMEOUT must be an integer")
+		}
+		Config.HTTPRenderTimeout = time.Duration(v) * time.Second
 	}
 	Config.RedisAddrs = strings.Split(os.Getenv("DIAMONDB_REDIS_ADDRS"), ",")
 	if len(Config.RedisAddrs) == 0 {
