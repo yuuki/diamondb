@@ -30,7 +30,7 @@ const (
 	DefaultPort = "8000"
 	// DefaultShutdownTimeout is the default timeout seconds for server shutdown.
 	DefaultShutdownTimeout = 10 * time.Second
-	// DefaultHTTPRenderTimeout is the default timeout seconds for /render
+	// DefaultHTTPRenderTimeout is the default timeout seconds for /render.
 	DefaultHTTPRenderTimeout = 30 * time.Second
 	// DefaultRedisAddr is the port to connect to redis-server process.
 	DefaultRedisAddr = "localhost:6379"
