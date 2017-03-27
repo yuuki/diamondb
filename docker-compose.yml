@@ -11,6 +11,7 @@ services:
     environment:
       - DIAMONDB_REDIS_ADDRS=redis:6379
       - DIAMONDB_DYNAMODB_ENDPOINT=http://dynamodb:8000
+      - DIAMONDB_DYNAMODB_DISABLE_TTL=1
   redis:
     image: redis:3.2.7
   dynamodb:
