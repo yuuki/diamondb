@@ -30,3 +30,6 @@
 - github.com/fortytw2/leaktest
   - Copyright (c) 2012 The Go Authors.
   - [BSD License](https://github.com/fortytw2/leaktest/blob/master/LICENSE)
+- github.com/phayes/freeport
+  - Copyright (c) 2014, Patrick Hayes / HighWire Press All rights reserved.
+  - [BSD License](https://github.com/phayes/freeport/blob/master/LICENSE.md)
