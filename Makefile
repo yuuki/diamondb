@@ -25,6 +25,11 @@ test:
 test-race:
 	go test -v -race $(PKGS)
 
+.PHONY: test-integration
+test-integration:
+	docker-compose -f docker-compose.yml -f docker-compose.test.yml build
+	docker-compose -f docker-compose.yml -f docker-compose.test.yml run --rm testweb
+
 .PHONY: test-all
 test-all: vet test-race
 
