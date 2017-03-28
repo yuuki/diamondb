@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  testweb:
+    image: diamondb_web
+    entrypoint: ""
+    command: go test -v -tags integration github.com/yuuki/diamondb/test/integration/...
+    depends_on:
+      - web
+  web:
+    build: .
+    expose:
+      - "8000"
+    environment:
+      - DIAMONDB_REDIS_ADDRS=redis:6379
+      - DIAMONDB_DYNAMODB_ENDPOINT=http://dynamodb:8000
+      - DIAMONDB_DYNAMODB_DISABLE_TTL=1
