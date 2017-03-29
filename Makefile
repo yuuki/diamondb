@@ -31,7 +31,7 @@ test-integration:
 	docker-compose -f docker-compose.yml -f docker-compose.test.yml run --rm testweb
 
 .PHONY: test-all
-test-all: vet test-race
+test-all: vet test-race test-integration
 
 .PHONY: cover
 cover: gen
