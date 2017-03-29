@@ -1,5 +1,5 @@
-hash: 57209f22b61c8a76980a71e0fd4c6840bc2a83a3ba48aa64a93bd9c58fd81f47
-updated: 2017-03-28T00:02:25.487658145+09:00
+hash: 58fcb21be2e713c84b3b078b57116bed2b39997ca1f587e119ea05221eb75228
+updated: 2017-03-20T23:47:23.738700497+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
@@ -77,5 +77,3 @@ testImports:
   - info
 - name: github.com/fortytw2/leaktest
   version: 0db74e8cd5adacfcc982838c6e185789e4b44e14
-- name: github.com/phayes/freeport
-  version: e7681b37614941bf73b404e0caa37f19e33b5fed

@@ -20,4 +20,3 @@ import:
   - errgroup
 testImport:
 - package: github.com/fortytw2/leaktest
-- package: github.com/phayes/freeport
