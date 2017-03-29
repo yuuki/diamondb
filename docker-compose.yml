@@ -9,4 +9,3 @@ services:
     image: redis:3.2.7
   dynamodb:
     image: dwmkerr/dynamodb:latest
-    command: [-dbPath, /data]

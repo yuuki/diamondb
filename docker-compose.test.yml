@@ -3,7 +3,7 @@ version: '3'
 services:
   testweb:
     image: diamondb_web
-    entrypoint: ""
+    entrypoint: [/wait-for-it.sh, "web:8000", --timeout=30, --strict, --]
     command: go test -v -tags integration github.com/yuuki/diamondb/test/integration/...
     depends_on:
       - web

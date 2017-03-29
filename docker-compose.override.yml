@@ -10,5 +10,6 @@ services:
       - DIAMONDB_DYNAMODB_ENDPOINT=http://dynamodb:8000
       - DIAMONDB_DYNAMODB_DISABLE_TTL=1
   dynamodb:
+    command: [-dbPath, /data]
     volumes:
       - /tmp/dynamodb:/data
