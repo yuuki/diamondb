@@ -165,16 +165,18 @@ func (d *DynamoDB) CreateTable(param *CreateTableParam) error {
 			param.Name, param.RCU, param.WCU)
 	}
 
-	_, err = d.svc.UpdateTimeToLive(&godynamodb.UpdateTimeToLiveInput{
-		TableName: aws.String(param.Name),
-		TimeToLiveSpecification: &godynamodb.TimeToLiveSpecification{
-			AttributeName: aws.String("TTL"),
-			Enabled:       aws.Bool(true),
-		},
-	})
-	if err != nil {
-		return errors.Wrapf(err, "failed to set TTL to (%s,%d,%d)",
-			param.Name, param.RCU, param.WCU)
+	if config.Config.DynamoDBTTL {
+		_, err = d.svc.UpdateTimeToLive(&godynamodb.UpdateTimeToLiveInput{
+			TableName: aws.String(param.Name),
+			TimeToLiveSpecification: &godynamodb.TimeToLiveSpecification{
+				AttributeName: aws.String("TTL"),
+				Enabled:       aws.Bool(true),
+			},
+		})
+		if err != nil {
+			return errors.Wrapf(err, "failed to set TTL to (%s,%d,%d)",
+				param.Name, param.RCU, param.WCU)
+		}
 	}
 	return nil
 }

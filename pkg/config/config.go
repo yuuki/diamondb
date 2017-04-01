@@ -21,6 +21,7 @@ type config struct {
 	DynamoDBTableName               string        `json:"dynamodb_table_name"`
 	DynamoDBTableReadCapacityUnits  int64         `json:"dynamodb_table_read_capacity_units"`
 	DynamoDBTableWriteCapacityUnits int64         `json:"dynamodb_table_write_capacity_units"`
+	DynamoDBTTL                     bool          `json:"dynamodb_ttl"`
 
 	Debug bool `json:"debug"`
 }
@@ -48,6 +49,8 @@ const (
 	DefaultDynamoDBTableReadCapacityUnits int64 = 5
 	// DefaultDynamoDBTableWriteCapacityUnits is the name of DynamoDB table.
 	DefaultDynamoDBTableWriteCapacityUnits int64 = 5
+	// DefaultDynamoDBTTL is the flag of enabling DynamoDB TTL
+	DefaultDynamoDBTTL = true
 )
 
 // Config is set from the environment variables.
@@ -133,6 +136,9 @@ func Load() error {
 	}
 	if v := os.Getenv("DIAMONDB_DYNAMODB_ENDPOINT"); v != "" {
 		Config.DynamoDBEndpoint = v
+	}
+	if v := os.Getenv("DIAMONDB_DYNAMODB_DISABLE_TTL"); v != "" {
+		Config.DynamoDBTTL = false
 	}
 
 	if os.Getenv("DIAMONDB_DEBUG") != "" {

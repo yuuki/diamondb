@@ -2,19 +2,10 @@ version: '3'
 
 services:
   web:
-    build: .
-    ports:
-      - "9000:8000"
     depends_on:
       - dynamodb
       - redis
-    environment:
-      - DIAMONDB_REDIS_ADDRS=redis:6379
-      - DIAMONDB_DYNAMODB_ENDPOINT=http://dynamodb:8000
   redis:
     image: redis:3.2.7
   dynamodb:
     image: dwmkerr/dynamodb:latest
-    command: [-dbPath, /data]
-    volumes:
-      - /tmp/dynamodb:/data
