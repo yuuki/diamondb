@@ -3,10 +3,14 @@
 package framework
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/yuuki/diamondb/pkg/model"
+	"github.com/yuuki/diamondb/pkg/web"
 )
 
 const ENDPOINT = "http://web:8000"
@@ -56,4 +60,22 @@ func Render(query string) ([]*RenderResp, int) {
 	}
 
 	return data, resp.StatusCode
+}
+
+func Write(metric *model.Metric) int {
+	var wr web.WriteRequest
+	wr.Metric = metric
+	data, err := json.Marshal(wr)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := http.Post(
+		"http://web:8000/datapoints",
+		"application/json",
+		bytes.NewBuffer(data),
+	)
+	if err != nil {
+		panic(err)
+	}
+	return resp.StatusCode
 }
