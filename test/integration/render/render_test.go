@@ -10,7 +10,7 @@ import (
 )
 
 func TestQuery(t *testing.T) {
-	resp, status := framework.Render("target=server1.loadavg5")
+	_, status := framework.Render("target=server1.loadavg5")
 	if status != http.StatusOK {
 		t.Errorf("status code shoud be 200: %v", status)
 	}
