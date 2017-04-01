@@ -3,7 +3,6 @@
 package render_test
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -15,5 +14,4 @@ func TestQuery(t *testing.T) {
 	if status != http.StatusOK {
 		t.Errorf("status code shoud be 200: %v", status)
 	}
-	fmt.Printf("%v", resp)
 }
