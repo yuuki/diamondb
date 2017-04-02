@@ -1,5 +1,5 @@
 REGION=ap-northeast-1
-STACK_NAME=mackerel-diamond
+STACK_NAME=diamond
 CFCMD=aws cloudformation --region $(REGION)
 PARAMETERS ?= "file://./parameters.json"
 TEMPLATE="file://$(PWD)/template.yaml"
