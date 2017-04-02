@@ -37,6 +37,19 @@ Parameters:
     Default: 1
     MaxValue: 3
     MinValue: 1
+  DynamoDBTableName:
+    Type: String
+    Default: diamondb.timeseries
+  DynamoDBTableRCU:
+    Type: Number
+    Default: 5
+    MaxValue: 100000
+    MinValue: 1
+  DynamoDBTableWCU:
+    Type: Number
+    Default: 5
+    MaxValue: 100000
+    MinValue: 1
 Resources:
   KinesisStreams:
     Type: "AWS::Kinesis::Stream"
@@ -59,3 +72,24 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref "AWS::StackName"
+  DynamoDBTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: !Ref DynamoDBTableName
+      AttributeDefinitions:
+        -
+          AttributeName: "Name"
+          AttributeType: "S"
+        -
+          AttributeName: "Timestamp"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "Name"
+          KeyType: "HASH"
+        -
+          AttributeName: "Timestamp"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: !Ref DynamoDBTableRCU
+        WriteCapacityUnits: !Ref DynamoDBTableWCU

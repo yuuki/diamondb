@@ -18,5 +18,15 @@
     "ParameterKey": "RedisReplicasPerNode",
     "ParameterValue": "1",
     "UsePreviousValue": false
+  },
+  {
+    "ParameterKey": "DynamoDBTableRCU",
+    "ParameterValue": "1",
+    "UsePreviousValue": false
+  },
+  {
+    "ParameterKey": "DynamoDBTableWCU",
+    "ParameterValue": "1",
+    "UsePreviousValue": false
   }
 ]
