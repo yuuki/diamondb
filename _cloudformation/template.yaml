@@ -93,3 +93,46 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: !Ref DynamoDBTableRCU
         WriteCapacityUnits: !Ref DynamoDBTableWCU
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+  EcsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS Security Group
+  EcsSecurityGroupHTTPinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt ['EcsSecurityGroup', GroupId]
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  CloudwatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ['-', [ECSLogGroup, !Ref 'AWS::StackName']]
+      RetentionInDays: 14
+  taskdefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Join ['', [!Ref 'AWS::StackName', -app]]
+      ContainerDefinitions:
+      - Name: diamond-app
+        Cpu: '2'
+        Essential: 'true'
+        Image: yuuk1/diamondb:latest
+        Memory: '300'
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: !Ref 'CloudwatchLogsGroup'
+            awslogs-region: !Ref 'AWS::Region'
+            awslogs-stream-prefix: diamond-app
+        PortMappings:
+          - ContainerPort: 8000
+  service:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref 'ECSCluster'
+      DesiredCount: '1'
+      TaskDefinition: !Ref 'taskdefinition'
