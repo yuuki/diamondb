@@ -1,0 +1,22 @@
+[
+  {
+    "ParameterKey": "KinesisStreamsShardNum",
+    "ParameterValue": "1",
+    "UsePreviousValue": false
+  },
+  {
+    "ParameterKey": "RedisNodeType",
+    "ParameterValue": "cache.t2.micro",
+    "UsePreviousValue": false
+  },
+  {
+    "ParameterKey": "RedisShardNum",
+    "ParameterValue": "3",
+    "UsePreviousValue": false
+  },
+  {
+    "ParameterKey": "RedisReplicasPerNode",
+    "ParameterValue": "1",
+    "UsePreviousValue": false
+  }
+]
