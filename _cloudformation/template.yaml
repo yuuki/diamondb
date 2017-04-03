@@ -51,15 +51,62 @@ Parameters:
     MaxValue: 100000
     MinValue: 1
 Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/ecs-refarch-cloudformation/infrastructure/vpc.yaml
+      Parameters:
+        EnvironmentName:    !Ref AWS::StackName
+        VpcCIDR:            192.168.200.0/24
+        PublicSubnet1CIDR:  192.168.200.0/27
+        PublicSubnet2CIDR:  192.168.200.32/27
+        PrivateSubnet1CIDR: 192.168.200.64/28
+        PrivateSubnet2CIDR: 192.168.200.128/28
+
+  SecurityGroups:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/ecs-refarch-cloudformation/infrastructure/security-groups.yaml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        VPC: !GetAtt VPC.Outputs.VPC
+
   KinesisStreams:
     Type: "AWS::Kinesis::Stream"
     Properties:
       Name: !Ref "AWS::StackName"
       ShardCount: !Ref KinesisStreamsShardNum
+
+  RedisClusterSubnetGroup:
+    Type: "AWS::ElastiCache::SubnetGroup"
+    Properties:
+      Description: !Join [" ", [!Ref "AWS::StackName", "redis subnet group"]]
+      CacheSubnetGroupName: !Join ["-", [!Ref "AWS::StackName", "subnet", "group"]]
+      SubnetIds:
+        - !GetAtt VPC.Outputs.PrivateSubnet1
+        - !GetAtt VPC.Outputs.PrivateSubnet2
+  RedisClusterSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Allow redis port to ECS host
+      VpcId: !GetAtt VPC.Outputs.VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '6379'
+        ToPort: '6379'
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: '6379'
+        ToPort: '6379'
+        CidrIp: 0.0.0.0/0
   RedisClusterReplicationGroup:
     Type: "AWS::ElastiCache::ReplicationGroup"
     Properties:
-      ReplicationGroupDescription: "mackerel-diamond Redis replication group"
+      ReplicationGroupDescription: !Join ["-", [!Ref "AWS::StackName", "redis replication group"]]
+      CacheSubnetGroupName: !Ref RedisClusterSubnetGroup
+      SecurityGroupIds:
+        - !Ref RedisClusterSecurityGroup
       Engine: "redis"
       EngineVersion: "3.2.4"
       CacheNodeType: !Ref RedisNodeType
@@ -72,6 +119,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref "AWS::StackName"
+
   DynamoDBTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
@@ -93,6 +141,7 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: !Ref DynamoDBTableRCU
         WriteCapacityUnits: !Ref DynamoDBTableWCU
+
   ECSCluster:
     Type: AWS::ECS::Cluster
   EcsSecurityGroup:
