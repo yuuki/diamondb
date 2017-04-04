@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/pkg/errors"
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
@@ -42,6 +43,7 @@ func New(o *Option) *Handler {
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	n.Use(negroni.NewLogger())
+	n.Use(gzip.Gzip(gzip.DefaultCompression))
 	n.Use(cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "POST"},
