@@ -30,3 +30,6 @@
 - github.com/fortytw2/leaktest
   - Copyright (c) 2012 The Go Authors.
   - [BSD License](https://github.com/fortytw2/leaktest/blob/master/LICENSE)
+- github.com/phyber/negroni-gzip
+  - Copyright (c) 2013 Jeremy Saenz, 2014 David O'Rourke
+  - [MIT License](https://github.com/phyber/negroni-gzip/blob/master/LICENSE)
