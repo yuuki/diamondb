@@ -177,7 +177,7 @@ func (h *Handler) writeHandler() http.Handler {
 			}
 			return
 		}
-		w.WriteHeader(204)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	})
 }

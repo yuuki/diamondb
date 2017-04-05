@@ -86,7 +86,7 @@ func TestWriteHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	if r.Code != 204 {
+	if r.Code != http.StatusNoContent {
 		t.Fatalf("/datapoints response code should be 204")
 	}
 }
