@@ -154,6 +154,7 @@ func (h *Handler) renderHandler() http.Handler {
 	})
 }
 
+// WriteRequest reprensents a request of /datapoints.
 type WriteRequest struct {
 	Metric *model.Metric `json:"metric"`
 }

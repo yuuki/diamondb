@@ -13,11 +13,13 @@ import (
 	"github.com/yuuki/diamondb/pkg/timeparser"
 )
 
+// ArgumentError represents an error of the argument of query functions.
 type ArgumentError struct {
 	funcName string
 	msg      string
 }
 
+// Error returns the error message for ArgumentError.
 func (e *ArgumentError) Error() string {
 	return fmt.Sprintf("%s: %s", e.funcName, e.msg)
 }
