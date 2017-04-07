@@ -7,7 +7,23 @@ import (
 )
 
 func renderJSON(w http.ResponseWriter, status int, v interface{}) {
-	res, err := json.Marshal(v)
+	_renderJSON(w, status, v, false)
+}
+
+func renderJSONIndent(w http.ResponseWriter, status int, v interface{}) {
+	_renderJSON(w, status, v, true)
+}
+
+func _renderJSON(w http.ResponseWriter, status int, v interface{}, indent bool) {
+	var (
+		data []byte
+		err  error
+	)
+	if indent {
+		data, err = json.MarshalIndent(v, "", "\t")
+	} else {
+		data, err = json.Marshal(v)
+	}
 	if err != nil {
 		serverError(w, err.Error())
 		return
@@ -15,7 +31,7 @@ func renderJSON(w http.ResponseWriter, status int, v interface{}) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	if _, err := w.Write(res); err != nil {
+	if _, err := w.Write(data); err != nil {
 		log.Println(err)
 		return
 	}
