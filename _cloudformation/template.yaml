@@ -166,7 +166,7 @@ Resources:
     Properties:
       Family: !Join ['', [!Ref 'AWS::StackName', -app]]
       ContainerDefinitions:
-      - Name: diamond-app
+      - Name: diamondb-app
         Cpu: '2'
         Essential: 'true'
         Image: yuuk1/diamondb:latest
@@ -176,7 +176,7 @@ Resources:
           Options:
             awslogs-group: !Ref 'CloudwatchLogsGroup'
             awslogs-region: !Ref 'AWS::Region'
-            awslogs-stream-prefix: diamond-app
+            awslogs-stream-prefix: diamondb-app
         PortMappings:
           - ContainerPort: 8000
   service:
