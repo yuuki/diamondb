@@ -10,4 +10,4 @@ RUN go get github.com/golang/mock/mockgen && \
 WORKDIR /go/src/github.com/yuuki/diamondb
 ADD ./ /go/src/github.com/yuuki/diamondb
 RUN make build
-ENTRYPOINT ["/wait-for-it.sh", "dynamodb:8000", "--timeout=10", "--strict", "--", "/go/src/github.com/yuuki/diamondb/diamondb-server"]
+ENTRYPOINT ["/go/src/github.com/yuuki/diamondb/diamondb-server"]
