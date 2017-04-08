@@ -10,18 +10,20 @@ import (
 )
 
 type config struct {
-	ShutdownTimeout                 time.Duration `json:"shutdown_timeout"`
-	HTTPRenderTimeout               time.Duration `json:"http_render_timeout"`
-	RedisAddrs                      []string      `json:"redis_addrs"`
-	RedisPassword                   string        `json:"redis_password"`
-	RedisDB                         int           `json:"redis_db"`
-	RedisPoolSize                   int           `json:"redis_pool_size"`
-	DynamoDBRegion                  string        `json:"dynamodb_region"`
-	DynamoDBEndpoint                string        `json:"dynamodb_endpoint"`
-	DynamoDBTableName               string        `json:"dynamodb_table_name"`
-	DynamoDBTableReadCapacityUnits  int64         `json:"dynamodb_table_read_capacity_units"`
-	DynamoDBTableWriteCapacityUnits int64         `json:"dynamodb_table_write_capacity_units"`
-	DynamoDBTTL                     bool          `json:"dynamodb_ttl"`
+	ShutdownTimeout                 time.Duration  `json:"shutdown_timeout"`
+	HTTPRenderTimeout               time.Duration  `json:"http_render_timeout"`
+	TimeZoneName                    string         `json:"timezone"`
+	TimeZone                        *time.Location `json:"-"`
+	RedisAddrs                      []string       `json:"redis_addrs"`
+	RedisPassword                   string         `json:"redis_password"`
+	RedisDB                         int            `json:"redis_db"`
+	RedisPoolSize                   int            `json:"redis_pool_size"`
+	DynamoDBRegion                  string         `json:"dynamodb_region"`
+	DynamoDBEndpoint                string         `json:"dynamodb_endpoint"`
+	DynamoDBTableName               string         `json:"dynamodb_table_name"`
+	DynamoDBTableReadCapacityUnits  int64          `json:"dynamodb_table_read_capacity_units"`
+	DynamoDBTableWriteCapacityUnits int64          `json:"dynamodb_table_write_capacity_units"`
+	DynamoDBTTL                     bool           `json:"dynamodb_ttl"`
 
 	Debug bool `json:"debug"`
 }
@@ -33,6 +35,8 @@ const (
 	DefaultShutdownTimeout = 10 * time.Second
 	// DefaultHTTPRenderTimeout is the default timeout seconds for /render.
 	DefaultHTTPRenderTimeout = 30 * time.Second
+	// DefaultTimeZone is the default timezone.
+	DefaultTimeZone = "UTC"
 	// DefaultRedisAddr is the port to connect to redis-server process.
 	DefaultRedisAddr = "localhost:6379"
 	// DefaultRedisPassword is the password to connect to redis-server process.
@@ -78,6 +82,18 @@ func Load() error {
 		}
 		Config.HTTPRenderTimeout = time.Duration(v) * time.Second
 	}
+
+	Config.TimeZoneName = os.Getenv("DIAMONDB_TIMEZONE")
+	if Config.TimeZoneName == "" {
+		Config.TimeZone, _ = time.LoadLocation(DefaultTimeZone)
+	} else {
+		tz, err := time.LoadLocation(Config.TimeZoneName)
+		if err != nil {
+			return errors.New("DIAMONDB_TIMEZONE must be 'UTC', 'Local' or the name such as 'Asia/Tokyo'")
+		}
+		Config.TimeZone = tz
+	}
+
 	Config.RedisAddrs = strings.Split(os.Getenv("DIAMONDB_REDIS_ADDRS"), ",")
 	if len(Config.RedisAddrs) == 0 {
 		Config.RedisAddrs = []string{DefaultRedisAddr}
