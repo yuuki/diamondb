@@ -113,7 +113,7 @@ func (h *Handler) renderHandler() http.Handler {
 		from := until.Add(-DayTime)
 
 		if v := r.FormValue("from"); v != "" {
-			t, err := timeparser.ParseAtTime(url.QueryEscape(v))
+			t, err := timeparser.ParseAtTime(url.QueryEscape(v), config.Config.TimeZone)
 			if err != nil {
 				log.Println(err)
 				badRequest(w, errors.Cause(err).Error())
@@ -122,7 +122,7 @@ func (h *Handler) renderHandler() http.Handler {
 			from = t
 		}
 		if v := r.FormValue("until"); v != "" {
-			t, err := timeparser.ParseAtTime(url.QueryEscape(v))
+			t, err := timeparser.ParseAtTime(url.QueryEscape(v), config.Config.TimeZone)
 			if err != nil {
 				log.Println(err)
 				badRequest(w, errors.Cause(err).Error())

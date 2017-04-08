@@ -96,7 +96,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	startTime, err := timeparser.ParseAtTime(start)
+	startTime, err := timeparser.ParseAtTime(start, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
