@@ -172,6 +172,11 @@ func (h *Handler) writeHandler() http.Handler {
 			badRequest(w, err.Error())
 			return
 		}
+		if wr.Metric == nil {
+			badRequest(w, "Not found 'metric' json key")
+			return
+		}
+
 		if err := h.store.InsertMetric(wr.Metric); err != nil {
 			log.Printf("%+v", err) // Print stack trace by pkg/errors
 			switch err.(type) {
