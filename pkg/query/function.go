@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/mathutil"
 	"github.com/yuuki/diamondb/pkg/model"
 	"github.com/yuuki/diamondb/pkg/storage"
@@ -548,7 +549,7 @@ func doLinerRegression(reader storage.ReadWriter, args []*funcArg, startTime, en
 				msg:      fmt.Sprintf("invalid argument type (%s) as startSourceAt", args[1].expr),
 			}
 		}
-		startSourceAt, err = timeparser.ParseAtTime(t.Literal)
+		startSourceAt, err = timeparser.ParseAtTime(t.Literal, config.Config.TimeZone)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
@@ -561,7 +562,7 @@ func doLinerRegression(reader storage.ReadWriter, args []*funcArg, startTime, en
 				msg:      fmt.Sprintf("invalid argument type (%s) as endSourceAt", args[2].expr),
 			}
 		}
-		endSourceAt, err = timeparser.ParseAtTime(t.Literal)
+		endSourceAt, err = timeparser.ParseAtTime(t.Literal, config.Config.TimeZone)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}

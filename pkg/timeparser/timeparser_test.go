@@ -6,7 +6,7 @@ import (
 )
 
 func TestParseAtTime_Empty(t *testing.T) {
-	got, err := ParseAtTime("")
+	got, err := ParseAtTime("", nil)
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -15,7 +15,7 @@ func TestParseAtTime_Empty(t *testing.T) {
 }
 
 func TestParseAtTime_UnixTime(t *testing.T) {
-	got, err := ParseAtTime("100")
+	got, err := ParseAtTime("100", nil)
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -25,7 +25,7 @@ func TestParseAtTime_UnixTime(t *testing.T) {
 }
 
 func TestParseAtTime_CurrentTime(t *testing.T) {
-	got, err := ParseAtTime("now")
+	got, err := ParseAtTime("now", nil)
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -34,7 +34,7 @@ func TestParseAtTime_CurrentTime(t *testing.T) {
 }
 
 func TestParseAtTime_RelativePlus(t *testing.T) {
-	got, err := ParseAtTime("now+3d")
+	got, err := ParseAtTime("now+3d", nil)
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -43,7 +43,7 @@ func TestParseAtTime_RelativePlus(t *testing.T) {
 }
 
 func TestParseAtTime_RelativeMinus(t *testing.T) {
-	got, err := ParseAtTime("now-30d")
+	got, err := ParseAtTime("now-30d", nil)
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -52,12 +52,25 @@ func TestParseAtTime_RelativeMinus(t *testing.T) {
 }
 
 func TestParseAtTime_Absolute(t *testing.T) {
-	got, err := ParseAtTime("19:22_20161010")
+	got, err := ParseAtTime("19:22_20161010", time.UTC)
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
 
 	expected := time.Date(2016, 10, 10, 19, 22, 0, 0, time.UTC)
+	if expected != got {
+		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, got)
+	}
+}
+
+func TestParseAtTime_Timezone(t *testing.T) {
+	loc, _ := time.LoadLocation("Asia/Tokyo")
+	got, err := ParseAtTime("19:22_20161010", loc)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	expected := time.Date(2016, 10, 10, 19, 22, 0, 0, loc)
 	if expected != got {
 		t.Fatalf("\nExpected: %+v\nActual:   %+v", expected, got)
 	}

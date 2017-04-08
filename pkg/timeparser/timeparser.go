@@ -32,7 +32,11 @@ func (e *TimeParserError) Error() string {
 
 // ParseAtTime parses parameters that specify the relative or absolute time period.
 // eg. '1444508126', 'now', 'now-24h'
-func ParseAtTime(s string) (time.Time, error) {
+func ParseAtTime(s string, loc *time.Location) (time.Time, error) {
+	if loc == nil {
+		loc = time.Local
+	}
+
 	s = strings.ToLower(strings.TrimSpace(s))
 	s = strings.Replace(s, "_", "", -1)
 	s = strings.Replace(s, ",", "", -1)
@@ -45,11 +49,11 @@ func ParseAtTime(s string) (time.Time, error) {
 
 	// unix time ?
 	if i, err := strconv.ParseInt(s, 10, 32); err == nil {
-		return time.Unix(i, 0), nil
+		return time.Unix(i, 0).In(loc), nil
 	}
 
 	if strings.Contains(s, ":") && len(s) == 13 {
-		t, err := time.Parse(timeFormat, s)
+		t, err := time.ParseInLocation(timeFormat, s, loc)
 		if err != nil {
 			return time.Time{}, errors.WithStack(
 				&TimeParserError{
@@ -58,7 +62,7 @@ func ParseAtTime(s string) (time.Time, error) {
 				},
 			)
 		}
-		return t, nil
+		return t.In(loc), nil
 	} else if strings.Contains(s, "+") {
 		v := strings.SplitN(s, "+", 2)
 		ref, offset = v[0], v[1]
@@ -89,7 +93,7 @@ func ParseAtTime(s string) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
-	return r.Add(o), nil
+	return r.In(loc).Add(o), nil
 }
 
 // ParseTimeOffset parses the offset into time.Duration.
