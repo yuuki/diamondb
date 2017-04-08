@@ -101,7 +101,7 @@ func (h *Handler) pingHandler() http.Handler {
 // InspectHandler returns a HTTP handler for the endpoint to inspect information.
 func (h *Handler) inspectHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		renderJSON(w, http.StatusOK, config.Config)
+		renderJSONIndent(w, http.StatusOK, config.Config)
 		return
 	})
 }
