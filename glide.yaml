@@ -18,5 +18,8 @@ import:
 - package: golang.org/x/sync
   subpackages:
   - errgroup
+- package: github.com/phyber/negroni-gzip
+  subpackages:
+  - gzip
 testImport:
 - package: github.com/fortytw2/leaktest

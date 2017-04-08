@@ -1,5 +1,5 @@
-hash: 58fcb21be2e713c84b3b078b57116bed2b39997ca1f587e119ea05221eb75228
-updated: 2017-03-20T23:47:23.738700497+09:00
+hash: 62d1e8aad4c60435ffbe5b0fa1a1776250123b843b5117ff1284e8f598e67f85
+updated: 2017-04-04T22:47:58.539412412+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
@@ -46,6 +46,10 @@ imports:
   subpackages:
   - diff
   - pretty
+- name: github.com/phyber/negroni-gzip
+  version: 8118ae63850fee22b2fe43cea81d3bc149774503
+  subpackages:
+  - gzip
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/rs/cors
