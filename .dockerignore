@@ -1,0 +1,8 @@
+.git
+.gitignore
+LICENSE
+LICENSE_OF_DEPENDENCIES.md
+README.md
+Makefile
+docker-compose.yml
+docker-compose.override.yml
