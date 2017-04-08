@@ -2,7 +2,8 @@ version: '3'
 
 services:
   web:
-    build: .
+    entrypoint: [/wait-for-it.sh, "web:8000", --timeout=30, --strict, --]
+    command: /go/src/github.com/yuuki/diamondb/diamondb-server
     ports:
       - "9000:8000"
     environment:

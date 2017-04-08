@@ -9,7 +9,6 @@ services:
     depends_on:
       - web
   web:
-    build: .
     image: diamondb_web
     expose:
       - "8000"

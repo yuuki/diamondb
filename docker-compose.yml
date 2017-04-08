@@ -2,6 +2,7 @@ version: '3'
 
 services:
   web:
+    build: .
     depends_on:
       - dynamodb
       - redis
