@@ -1,7 +1,8 @@
 version: '3'
 
 services:
-  testweb:
+  # https://docs.docker.com/docker-cloud/builds/automated-testing/
+  sut:
     image: diamondb_web
     entrypoint: [/wait-for-it.sh, "web:8000", --timeout=30, --strict, --]
     command: go test -v -tags integration github.com/yuuki/diamondb/test/integration/...

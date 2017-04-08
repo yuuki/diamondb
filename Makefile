@@ -28,7 +28,7 @@ test-race:
 .PHONY: test-integration
 test-integration:
 	docker-compose -f docker-compose.yml -f docker-compose.test.yml build
-	docker-compose -f docker-compose.yml -f docker-compose.test.yml run --rm testweb
+	docker-compose -f docker-compose.yml -f docker-compose.test.yml run --rm sut
 
 .PHONY: test-all
 test-all: vet test-race test-integration
