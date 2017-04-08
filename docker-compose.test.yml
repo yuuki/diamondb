@@ -10,6 +10,7 @@ services:
       - web
   web:
     build: .
+    image: diamondb_web
     expose:
       - "8000"
     environment:
