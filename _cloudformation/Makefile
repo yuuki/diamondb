@@ -7,12 +7,12 @@ CHANGESET_NAME="$(STACK_NAME)-change-set"
 
 .PHONY: create
 create:
-	$(CFCMD) create-stack --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE)
+	$(CFCMD) create-stack --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE) --capabilities CAPABILITY_NAMED_IAM
 	$(CFCMD) wait stack-create-complete --stack-name $(STACK_NAME)
 
 .PHONY: update
 update:
-	$(CFCMD) update-stack --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE)
+	$(CFCMD) update-stack --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE) --capabilities CAPABILITY_NAMED_IAM
 	$(CFCMD) wait stack-update-complete --stack-name $(STACK_NAME)
 
 .PHONY: diff
