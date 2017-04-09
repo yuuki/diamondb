@@ -142,26 +142,50 @@ Resources:
         ReadCapacityUnits: !Ref DynamoDBTableRCU
         WriteCapacityUnits: !Ref DynamoDBTableWCU
 
-  ECSCluster:
-    Type: AWS::ECS::Cluster
-  EcsSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+  ALB:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      GroupDescription: ECS Security Group
-  EcsSecurityGroupHTTPinbound:
-    Type: AWS::EC2::SecurityGroupIngress
+      TemplateURL: https://s3.amazonaws.com/ecs-refarch-cloudformation/infrastructure/load-balancers.yaml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        VPC: !GetAtt VPC.Outputs.VPC
+        Subnets: !GetAtt VPC.Outputs.PublicSubnets
+        SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
+
+  ECS:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      GroupId: !GetAtt ['EcsSecurityGroup', GroupId]
-      IpProtocol: tcp
-      FromPort: '80'
-      ToPort: '80'
-      CidrIp: 0.0.0.0/0
-  CloudwatchLogsGroup:
+      TemplateURL: https://s3.amazonaws.com/ecs-refarch-cloudformation/infrastructure/ecs-cluster.yaml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        InstanceType: t2.micro
+        ClusterSize: 2
+        VPC: !GetAtt VPC.Outputs.VPC
+        SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
+        Subnets: !GetAtt VPC.Outputs.PrivateSubnets
+
+  #-- diamondb application --
+
+  CloudWatchLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Join ['-', [ECSLogGroup, !Ref 'AWS::StackName']]
-      RetentionInDays: 14
-  taskdefinition:
+      LogGroupName: !Ref AWS::StackName
+      RetentionInDays: 30
+
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn: ECSListenerRule
+    Properties:
+      Cluster: !GetAtt ECS.Outputs.Cluster
+      DesiredCount: 1
+      LoadBalancers:
+      - ContainerName: diamondb-app
+        ContainerPort: 8000
+        TargetGroupArn: !Ref 'ECSTargetGroup'
+      Role: !Ref 'ECSServiceRole'
+      TaskDefinition: !Ref 'TaskDefinition'
+
+  TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Join ['', [!Ref 'AWS::StackName', -app]]
@@ -174,14 +198,70 @@ Resources:
         LogConfiguration:
           LogDriver: awslogs
           Options:
-            awslogs-group: !Ref 'CloudwatchLogsGroup'
+            awslogs-group: !Ref 'CloudWatchLogsGroup'
             awslogs-region: !Ref 'AWS::Region'
             awslogs-stream-prefix: diamondb-app
         PortMappings:
           - ContainerPort: 8000
-  service:
-    Type: AWS::ECS::Service
+
+  ECSTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Cluster: !Ref 'ECSCluster'
-      DesiredCount: '1'
-      TaskDefinition: !Ref 'taskdefinition'
+      VpcId: !GetAtt VPC.Outputs.VPC
+      Port: 80
+      Protocol: HTTP
+      Matcher:
+        HttpCode: 200-299
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /ping
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+
+  ECSListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !GetAtt ALB.Outputs.Listener
+      Priority: 2
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - /
+      Actions:
+        - TargetGroupArn: !Ref ECSTargetGroup
+          Type: forward
+
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ecs-service-${AWS::StackName}
+      Path: /
+      AssumeRolePolicyDocument: |
+        {
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "Service": [ "ecs.amazonaws.com" ]},
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        }
+      Policies:
+        - PolicyName: !Sub ecs-service-${AWS::StackName}
+          PolicyDocument:
+            {
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Effect": "Allow",
+                "Action": [
+                  "ec2:AuthorizeSecurityGroupIngress",
+                  "ec2:Describe*",
+                  "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                  "elasticloadbalancing:Describe*",
+                  "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                  "elasticloadbalancing:DeregisterTargets",
+                  "elasticloadbalancing:DescribeTargetGroups",
+                  "elasticloadbalancing:DescribeTargetHealth",
+                  "elasticloadbalancing:RegisterTargets"
+                ],
+                "Resource": "*"
+              }]
+            }
