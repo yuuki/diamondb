@@ -17,7 +17,7 @@ update:
 
 .PHONY: diff
 diff:
-	$(CFCMD) create-change-set --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE) --change-set-name $(CHANGESET_NAME)
+	$(CFCMD) create-change-set --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE) --change-set-name $(CHANGESET_NAME) --capabilities CAPABILITY_NAMED_IAM
 	@echo 'sleep for waiting change set deploy: '
 	@sleep 5
 	@echo 'changes: '
