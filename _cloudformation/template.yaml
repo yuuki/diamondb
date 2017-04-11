@@ -50,7 +50,9 @@ Parameters:
     Default: 5
     MaxValue: 100000
     MinValue: 1
+
 Resources:
+
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -72,21 +74,22 @@ Resources:
         VPC: !GetAtt VPC.Outputs.VPC
 
   KinesisStreams:
-    Type: "AWS::Kinesis::Stream"
+    Type: AWS::Kinesis::Stream
     Properties:
-      Name: !Ref "AWS::StackName"
+      Name: !Ref AWS::StackName
       ShardCount: !Ref KinesisStreamsShardNum
 
   RedisClusterSubnetGroup:
-    Type: "AWS::ElastiCache::SubnetGroup"
+    Type: AWS::ElastiCache::SubnetGroup
     Properties:
       Description: !Join [" ", [!Ref "AWS::StackName", "redis subnet group"]]
       CacheSubnetGroupName: !Join ["-", [!Ref "AWS::StackName", "subnet", "group"]]
       SubnetIds:
         - !GetAtt VPC.Outputs.PrivateSubnet1
         - !GetAtt VPC.Outputs.PrivateSubnet2
+
   RedisClusterSecurityGroup:
-    Type: "AWS::EC2::SecurityGroup"
+    Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow redis port to ECS host
       VpcId: !GetAtt VPC.Outputs.VPC
@@ -100,6 +103,7 @@ Resources:
         FromPort: '6379'
         ToPort: '6379'
         CidrIp: 0.0.0.0/0
+
   RedisClusterReplicationGroup:
     Type: "AWS::ElastiCache::ReplicationGroup"
     Properties:
@@ -270,7 +274,7 @@ Resources:
   ECSTaskRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub diamondb-app-${AWS::StackName}
+      RoleName: !Sub ecs-app-${AWS::StackName}
       Path: /
       AssumeRolePolicyDocument: |
         {
@@ -281,7 +285,7 @@ Resources:
           }]
         }
       Policies:
-        - PolicyName: !Sub diamondb-app-${AWS::StackName}
+        - PolicyName: !Sub ecs-app-${AWS::StackName}
           PolicyDocument:
             {
               "Version": "2012-10-17",
