@@ -203,6 +203,7 @@ Resources:
             awslogs-stream-prefix: diamondb-app
         PortMappings:
           - ContainerPort: 8000
+      TaskRoleArn: !GetAtt ECSTaskRole.Arn
 
   ECSTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -261,6 +262,46 @@ Resources:
                   "elasticloadbalancing:DescribeTargetGroups",
                   "elasticloadbalancing:DescribeTargetHealth",
                   "elasticloadbalancing:RegisterTargets"
+                ],
+                "Resource": "*"
+              }]
+            }
+
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub diamondb-app-${AWS::StackName}
+      Path: /
+      AssumeRolePolicyDocument: |
+        {
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        }
+      Policies:
+        - PolicyName: !Sub diamondb-app-${AWS::StackName}
+          PolicyDocument:
+            {
+              "Version": "2012-10-17",
+              "Statement": [{
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:BatchGetItem",
+                  "dynamodb:BatchWriteItem",
+                  "dynamodb:CreateTable",
+                  "dynamodb:DeleteItem",
+                  "dynamodb:DescribeTable",
+                  "dynamodb:GetItem",
+                  "dynamodb:PutItem",
+                  "dynamodb:Query",
+                  "dynamodb:Scan",
+                  "dynamodb:UpdateItem",
+                  "dynamodb:UpdateTimeToLive",
+                  "s3:GetObject",
+                  "s3:ListBucket",
+                  "s3:PutObject"
                 ],
                 "Resource": "*"
               }]
