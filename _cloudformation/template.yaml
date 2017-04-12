@@ -207,6 +207,10 @@ Resources:
             awslogs-stream-prefix: diamondb-app
         PortMappings:
           - ContainerPort: 8000
+        Environment:
+          - DIAMONDB_REDIS_ADDRS: !Sub
+            - ${Address}:${Port}
+            - { Address: !GetAtt RedisClusterReplicationGroup.PrimaryEndPoint.Address, Port: !GetAtt RedisClusterReplicationGroup.PrimaryEndPoint.Port }
       TaskRoleArn: !GetAtt ECSTaskRole.Arn
 
   ECSTargetGroup:
