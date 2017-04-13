@@ -4,6 +4,7 @@ package query
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"text/scanner"
@@ -96,6 +97,21 @@ func (l *Lexer) Error(msg string) {
 
 func isIdentRune(ch rune, i int) bool {
 	return ch == '_' || ch == '.' || ch == ':' || ch == '-' || ch == '*' || ch == '[' || ch == ']' || ch == '%' || unicode.IsLetter(ch) || unicode.IsDigit(ch)
+}
+
+// scannerError prevents printing "illegal char literal" to allow single quoted strings like `target=alias(server1.loadavg5,'133')`.
+// the default behavior of text/scanner is to print warning log toward quoted strings.
+func scannerError(s *scanner.Scanner, msg string) {
+	// https://github.com/golang/go/blob/ca993d6797/src/text/scanner/scanner.go#L501
+	if msg == "illegal char literal" {
+		return
+	}
+	// https://github.com/golang/go/blob/ca993d6797/src/text/scanner/scanner.go#L329-L333
+	pos := s.Position
+	if !pos.IsValid() {
+		pos = s.Pos()
+	}
+	fmt.Fprintf(os.Stderr, "%s: %s\n", pos, msg)
 }
 
 // ParseTarget parses target string into the AST structure.
