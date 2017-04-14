@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: DiamonDB infrastructure stack
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/ecs-refarch-cloudformation/infrastructure/vpc.yaml
+      Parameters:
+        EnvironmentName:    !Ref AWS::StackName
+        VpcCIDR:            192.168.200.0/24
+        PublicSubnet1CIDR:  192.168.200.0/27
+        PublicSubnet2CIDR:  192.168.200.32/27
+        PrivateSubnet1CIDR: 192.168.200.64/28
+        PrivateSubnet2CIDR: 192.168.200.128/28
+  SecurityGroups:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/ecs-refarch-cloudformation/infrastructure/security-groups.yaml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        VPC: !GetAtt VPC.Outputs.VPC
+Outputs:
+  VPC:
+    Value: !GetAtt VPC.Outputs.VPC
+    Export:
+      Name: !Sub "${AWS::StackName}-VPCID"
+  PublicSubnets:
+    Value: !GetAtt VPC.Outputs.PublicSubnets
+    Export:
+      Name: !Sub "${AWS::StackName}-PublicSubnets"
+  PrivateSubnets:
+    Value: !GetAtt VPC.Outputs.PrivateSubnets
+    Export:
+      Name: !Sub "${AWS::StackName}-PrivateSubnets"
+  PrivateSubnet1:
+    Value: !GetAtt VPC.Outputs.PrivateSubnet1
+    Export:
+      Name: !Sub "${AWS::StackName}-PrivateSubnet1ID"
+  PrivateSubnet2:
+    Value: !GetAtt VPC.Outputs.PrivateSubnet2
+    Export:
+      Name: !Sub "${AWS::StackName}-PrivateSubnet2ID"
+  LoadBalancerSecurityGroup:
+    Value: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-LoadBalancerSecurityGroup"
+  ECSHostSecurityGroup:
+    Value: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-ECSHostSecurityGroup"

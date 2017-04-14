@@ -1,32 +1,53 @@
-REGION=ap-northeast-1
-STACK_NAME=diamondb
-CFCMD=aws cloudformation --region $(REGION)
-PARAMETERS ?= "file://./parameters.json"
-TEMPLATE="file://$(PWD)/template.yaml"
-CHANGESET_NAME="$(STACK_NAME)-change-set"
+all: infrastrcuture/create storage/create app/create
 
-.PHONY: create
-create:
-	$(CFCMD) create-stack --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE) --capabilities CAPABILITY_NAMED_IAM
-	$(CFCMD) wait stack-create-complete --stack-name $(STACK_NAME)
+.PHONY: infrastructure/create
+infrastructure/create:
+	pushd ./infrastructure && make create && popd
 
-.PHONY: update
-update:
-	$(CFCMD) update-stack --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE) --capabilities CAPABILITY_NAMED_IAM
-	$(CFCMD) wait stack-update-complete --stack-name $(STACK_NAME)
+.PHONY: infrastructure/update
+infrastructure/update:
+	pushd ./infrastructure && make update && popd
 
-.PHONY: diff
-diff:
-	$(CFCMD) create-change-set --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE) --change-set-name $(CHANGESET_NAME) --capabilities CAPABILITY_NAMED_IAM
-	@echo 'sleep for waiting change set deploy: '
-	@sleep 5
-	@echo 'changes: '
-	$(CFCMD) describe-change-set --stack-name $(STACK_NAME) --change-set-name $(CHANGESET_NAME) | jq '.Changes'
+.PHONY: infrastructure/diff
+infrastructure/diff:
+	pushd ./infrastructure && make diff && popd
 
-.PHONY: apply
-apply:
-	$(CFCMD) execute-change-set --stack-name $(STACK_NAME) --change-set-name $(CHANGESET_NAME)
+.PHONY: infrastructure/apply
+infrastructure/apply:
+	pushd ./infrastructure && make apply && popd
 
-.PHONY: delete-changeset
-delete-changeset:
-	$(CFCMD) delete-change-set --stack-name $(STACK_NAME) --change-set-name $(CHANGESET_NAME)
+# ------------------------------------------------------
+
+.PHONY: storage/create
+storage/create:
+	pushd ./storage && make create && popd
+
+.PHONY: storage/update
+storage/update:
+	pushd ./storage && make update && popd
+
+.PHONY: storage/diff
+storage/diff:
+	pushd ./storage && make diff && popd
+
+.PHONY: storage/apply
+storage/apply:
+	pushd ./storage && make apply && popd
+
+# ------------------------------------------------------
+
+.PHONY: app/create
+app/create:
+	pushd ./app && make create && popd
+
+.PHONY: app/update
+app/update:
+	pushd ./app && make update && popd
+
+.PHONY: app/diff
+app/diff:
+	pushd ./app && make diff && popd
+
+.PHONY: app/apply
+app/apply:
+	pushd ./app && make diff && popd
