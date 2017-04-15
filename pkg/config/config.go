@@ -14,6 +14,7 @@ type config struct {
 	HTTPRenderTimeout               time.Duration  `json:"http_render_timeout"`
 	TimeZoneName                    string         `json:"timezone"`
 	TimeZone                        *time.Location `json:"-"`
+	RedisCluster                    bool           `json:"redis_cluster"`
 	RedisAddrs                      []string       `json:"redis_addrs"`
 	RedisPassword                   string         `json:"redis_password"`
 	RedisDB                         int            `json:"redis_db"`
@@ -94,6 +95,9 @@ func Load() error {
 		Config.TimeZone = tz
 	}
 
+	if v := os.Getenv("DIAMONDB_ENABLE_REDIS_CLUSTER"); v != "" {
+		Config.RedisCluster = true
+	}
 	Config.RedisAddrs = strings.Split(os.Getenv("DIAMONDB_REDIS_ADDRS"), ",")
 	if len(Config.RedisAddrs) == 0 {
 		Config.RedisAddrs = []string{DefaultRedisAddr}

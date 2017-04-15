@@ -16,22 +16,38 @@ import (
 func TestNewRedis(t *testing.T) {
 	tests := []struct {
 		desc         string
-		in           []string
+		inputAddrs   []string
+		inputCluster bool
 		expectedType reflect.Type
 	}{
 		{
 			"redis not cluster",
 			[]string{"dummy:6379"},
+			false,
 			reflect.TypeOf((*goredis.Client)(nil)),
 		},
 		{
 			"redis cluster",
 			[]string{"dummy01:6379", "dummy02:6379"},
+			true,
+			reflect.TypeOf((*goredis.ClusterClient)(nil)),
+		},
+		{
+			"redis cluster single endpoint",
+			[]string{"dummy01:6379"},
+			true,
+			reflect.TypeOf((*goredis.ClusterClient)(nil)),
+		},
+		{
+			"redis cluster (force)",
+			[]string{"dummy01:6379", "dummy02:6379"},
+			false,
 			reflect.TypeOf((*goredis.ClusterClient)(nil)),
 		},
 	}
 	for _, tc := range tests {
-		config.Config.RedisAddrs = tc.in
+		config.Config.RedisAddrs = tc.inputAddrs
+		config.Config.RedisCluster = tc.inputCluster
 		r := New()
 		if v := reflect.TypeOf(r.api()); v != tc.expectedType {
 			t.Fatalf("desc: %s , Redis client type should be %s, not %s",
