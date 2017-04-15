@@ -62,8 +62,8 @@ var _ ReadWriter = &Redis{}
 
 // New creates a Redis.
 func New() *Redis {
-	addrs := config.Config.RedisAddrs
-	if len(addrs) > 1 {
+	addrs, cluster := config.Config.RedisAddrs, config.Config.RedisCluster
+	if len(addrs) > 1 || cluster {
 		r := Redis{
 			client: goredis.NewClusterClient(&goredis.ClusterOptions{
 				Addrs:    config.Config.RedisAddrs,
