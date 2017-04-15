@@ -50,4 +50,4 @@ app/diff:
 
 .PHONY: app/apply
 app/apply:
-	pushd ./app && make diff && popd
+	pushd ./app && make apply && popd
