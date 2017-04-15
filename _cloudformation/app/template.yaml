@@ -160,6 +160,7 @@ Resources:
                   "dynamodb:Scan",
                   "dynamodb:UpdateItem",
                   "dynamodb:UpdateTimeToLive",
+                  "dynamodb:DescribeLimits",
                   "s3:GetObject",
                   "s3:ListBucket",
                   "s3:PutObject"
