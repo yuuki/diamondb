@@ -90,7 +90,7 @@ Resources:
       Conditions:
         - Field: path-pattern
           Values:
-            - /
+            - /*
       Actions:
         - TargetGroupArn: !Ref ECSTargetGroup
           Type: forward
