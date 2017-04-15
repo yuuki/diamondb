@@ -168,3 +168,8 @@ Resources:
                 "Resource": "*"
               }]
             }
+Outputs:
+  DiamonDBUrl:
+    Value: !GetAtt ALB.Outputs.LoadBalancerUrl
+    Export:
+      Name: !Sub "${AWS::StackName}-DiamonDBUrl"
