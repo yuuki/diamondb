@@ -16,7 +16,7 @@ type config struct {
 	TimeZone                        *time.Location `json:"-"`
 	RedisCluster                    bool           `json:"redis_cluster"`
 	RedisAddrs                      []string       `json:"redis_addrs"`
-	RedisPassword                   string         `json:"redis_password"`
+	RedisPassword                   string         `json:"-"`
 	RedisDB                         int            `json:"redis_db"`
 	RedisPoolSize                   int            `json:"redis_pool_size"`
 	DynamoDBRegion                  string         `json:"dynamodb_region"`
