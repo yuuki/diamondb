@@ -1,161 +1,22 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: DiamonDB stack
+Description: DiamonDB app stack
 Parameters:
-  KinesisStreamsShardNum:
-    Type: Number
-    Default: 1
-    MaxValue: 25
-    MinValue: 1
-  RedisNodeType:
+  RedisClusterAddress:
     Type: String
-    Default: cache.t2.small
-    AllowedValues:
-      - cache.t2.micro
-      - cache.t2.small
-      - cache.t2.medium
-      - cache.m3.medium
-      - cache.m3.large
-      - cache.m3.xlarge
-      - cache.m3.2xlarge
-      - cache.m4.large
-      - cache.m4.xlarge
-      - cache.m4.2xlarge
-      - cache.m4.4xlarge
-      - cache.m4.10xlarge
-      - cache.r3.large
-      - cache.r3.xlarge
-      - cache.r3.2xlarge
-      - cache.r3.4xlarge
-      - cache.r3.8xlarge
-  RedisShardNum:
-    Type: Number
-    Default: 3
-    MaxValue: 15
-    MinValue: 3
-  RedisReplicasPerNode:
-    Type: Number
-    Default: 1
-    MaxValue: 3
-    MinValue: 1
-  DynamoDBTableName:
+    Default: "diamondb-dummy.cache.amazonaws.com"
+  RedisClusterPort:
     Type: String
-    Default: diamondb.timeseries
-  DynamoDBTableRCU:
-    Type: Number
-    Default: 5
-    MaxValue: 100000
-    MinValue: 1
-  DynamoDBTableWCU:
-    Type: Number
-    Default: 5
-    MaxValue: 100000
-    MinValue: 1
-
+    Default: "6379"
 Resources:
-
-  VPC:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://s3.amazonaws.com/ecs-refarch-cloudformation/infrastructure/vpc.yaml
-      Parameters:
-        EnvironmentName:    !Ref AWS::StackName
-        VpcCIDR:            192.168.200.0/24
-        PublicSubnet1CIDR:  192.168.200.0/27
-        PublicSubnet2CIDR:  192.168.200.32/27
-        PrivateSubnet1CIDR: 192.168.200.64/28
-        PrivateSubnet2CIDR: 192.168.200.128/28
-
-  SecurityGroups:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://s3.amazonaws.com/ecs-refarch-cloudformation/infrastructure/security-groups.yaml
-      Parameters:
-        EnvironmentName: !Ref AWS::StackName
-        VPC: !GetAtt VPC.Outputs.VPC
-
-  KinesisStreams:
-    Type: AWS::Kinesis::Stream
-    Properties:
-      Name: !Ref AWS::StackName
-      ShardCount: !Ref KinesisStreamsShardNum
-
-  RedisClusterSubnetGroup:
-    Type: AWS::ElastiCache::SubnetGroup
-    Properties:
-      Description: !Join [" ", [!Ref "AWS::StackName", "redis subnet group"]]
-      CacheSubnetGroupName: !Join ["-", [!Ref "AWS::StackName", "subnet", "group"]]
-      SubnetIds:
-        - !GetAtt VPC.Outputs.PrivateSubnet1
-        - !GetAtt VPC.Outputs.PrivateSubnet2
-
-  RedisClusterSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allow redis port to ECS host
-      VpcId: !GetAtt VPC.Outputs.VPC
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: '6379'
-        ToPort: '6379'
-        CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-      - IpProtocol: tcp
-        FromPort: '6379'
-        ToPort: '6379'
-        CidrIp: 0.0.0.0/0
-
-  RedisClusterReplicationGroup:
-    Type: "AWS::ElastiCache::ReplicationGroup"
-    Properties:
-      ReplicationGroupDescription: !Join ["-", [!Ref "AWS::StackName", "redis replication group"]]
-      CacheSubnetGroupName: !Ref RedisClusterSubnetGroup
-      SecurityGroupIds:
-        - !Ref RedisClusterSecurityGroup
-      Engine: "redis"
-      EngineVersion: "3.2.4"
-      CacheNodeType: !Ref RedisNodeType
-      NumNodeGroups: !Ref RedisShardNum
-      ReplicasPerNodeGroup: !Ref RedisReplicasPerNode
-      SnapshotRetentionLimit: 1
-      SnapshotWindow: "14:00-17:00"
-      AutomaticFailoverEnabled: "true"
-      AutoMinorVersionUpgrade: "false"
-      Tags:
-        - Key: Name
-          Value: !Ref "AWS::StackName"
-
-  DynamoDBTable:
-    Type: "AWS::DynamoDB::Table"
-    Properties:
-      TableName: !Ref DynamoDBTableName
-      AttributeDefinitions:
-        -
-          AttributeName: "Name"
-          AttributeType: "S"
-        -
-          AttributeName: "Timestamp"
-          AttributeType: "S"
-      KeySchema:
-        -
-          AttributeName: "Name"
-          KeyType: "HASH"
-        -
-          AttributeName: "Timestamp"
-          KeyType: "RANGE"
-      ProvisionedThroughput:
-        ReadCapacityUnits: !Ref DynamoDBTableRCU
-        WriteCapacityUnits: !Ref DynamoDBTableWCU
-
   ALB:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: https://s3.amazonaws.com/ecs-refarch-cloudformation/infrastructure/load-balancers.yaml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
-        VPC: !GetAtt VPC.Outputs.VPC
-        Subnets: !GetAtt VPC.Outputs.PublicSubnets
-        SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
-
+        VPC: !ImportValue diamondb-infrastructure-VPCID
+        Subnets: !ImportValue diamondb-infrastructure-PublicSubnets
+        SecurityGroup: !ImportValue diamondb-infrastructure-LoadBalancerSecurityGroup
   ECS:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -164,18 +25,14 @@ Resources:
         EnvironmentName: !Ref AWS::StackName
         InstanceType: t2.micro
         ClusterSize: 2
-        VPC: !GetAtt VPC.Outputs.VPC
-        SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
-        Subnets: !GetAtt VPC.Outputs.PrivateSubnets
-
-  #-- diamondb application --
-
+        VPC: !ImportValue diamondb-infrastructure-VPCID
+        SecurityGroup: !ImportValue diamondb-infrastructure-ECSHostSecurityGroup
+        Subnets: !ImportValue diamondb-infrastructure-PrivateSubnets
   CloudWatchLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Ref AWS::StackName
       RetentionInDays: 30
-
   Service:
     Type: AWS::ECS::Service
     DependsOn: ECSListenerRule
@@ -188,7 +45,6 @@ Resources:
         TargetGroupArn: !Ref 'ECSTargetGroup'
       Role: !Ref 'ECSServiceRole'
       TaskDefinition: !Ref 'TaskDefinition'
-
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -208,15 +64,15 @@ Resources:
         PortMappings:
           - ContainerPort: 8000
         Environment:
-          - DIAMONDB_REDIS_ADDRS: !Sub
-            - ${Address}:${Port}
-            - { Address: !GetAtt RedisClusterReplicationGroup.PrimaryEndPoint.Address, Port: !GetAtt RedisClusterReplicationGroup.PrimaryEndPoint.Port }
+          - Name: DIAMONDB_REDIS_ADDRS
+            Value: !Sub
+              - ${Address}:${Port}
+              - { Address: !Ref RedisClusterAddress, Port: !Ref RedisClusterPort }
       TaskRoleArn: !GetAtt ECSTaskRole.Arn
-
   ECSTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      VpcId: !GetAtt VPC.Outputs.VPC
+      VpcId: !ImportValue diamondb-infrastructure-VPCID
       Port: 80
       Protocol: HTTP
       Matcher:
@@ -226,7 +82,6 @@ Resources:
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
-
   ECSListenerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
@@ -235,11 +90,10 @@ Resources:
       Conditions:
         - Field: path-pattern
           Values:
-            - /
+            - /*
       Actions:
         - TargetGroupArn: !Ref ECSTargetGroup
           Type: forward
-
   ECSServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -274,7 +128,6 @@ Resources:
                 "Resource": "*"
               }]
             }
-
   ECSTaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -307,6 +160,7 @@ Resources:
                   "dynamodb:Scan",
                   "dynamodb:UpdateItem",
                   "dynamodb:UpdateTimeToLive",
+                  "dynamodb:DescribeLimits",
                   "s3:GetObject",
                   "s3:ListBucket",
                   "s3:PutObject"
@@ -314,3 +168,8 @@ Resources:
                 "Resource": "*"
               }]
             }
+Outputs:
+  DiamonDBUrl:
+    Value: !GetAtt ALB.Outputs.LoadBalancerUrl
+    Export:
+      Name: !Sub "${AWS::StackName}-DiamonDBUrl"

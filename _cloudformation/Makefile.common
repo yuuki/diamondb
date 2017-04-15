@@ -1,0 +1,31 @@
+STACK_NAME ?= diamondb
+CFCMD=aws cloudformation
+PARAMETERS ?= "file://./parameters.json"
+TEMPLATE ?= "file://$(PWD)/template.yaml"
+CHANGESET_NAME="$(STACK_NAME)-change-set"
+
+.PHONY: create
+create:
+	$(CFCMD) create-stack --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE) --capabilities CAPABILITY_NAMED_IAM
+	$(CFCMD) wait stack-create-complete --stack-name $(STACK_NAME)
+
+.PHONY: update
+update:
+	$(CFCMD) update-stack --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE) --capabilities CAPABILITY_NAMED_IAM
+	$(CFCMD) wait stack-update-complete --stack-name $(STACK_NAME)
+
+.PHONY: diff
+diff:
+	$(CFCMD) create-change-set --stack-name $(STACK_NAME) --parameters $(PARAMETERS) --template-body $(TEMPLATE) --change-set-name $(CHANGESET_NAME) --capabilities CAPABILITY_NAMED_IAM
+	@echo 'sleep for waiting change set deploy: '
+	@sleep 5
+	@echo 'changes: '
+	$(CFCMD) describe-change-set --stack-name $(STACK_NAME) --change-set-name $(CHANGESET_NAME) | jq '.Changes'
+
+.PHONY: apply
+apply:
+	$(CFCMD) execute-change-set --stack-name $(STACK_NAME) --change-set-name $(CHANGESET_NAME)
+
+.PHONY: delete-changeset
+delete-changeset:
+	$(CFCMD) delete-change-set --stack-name $(STACK_NAME) --change-set-name $(CHANGESET_NAME)

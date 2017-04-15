@@ -1,0 +1,12 @@
+[
+  {
+    "ParameterKey": "RedisClusterAddress",
+    "ParameterValue": "$DIAMONDB_REDIS_ADDRESS",
+    "UsePreviousValue": false
+  },
+  {
+    "ParameterKey": "RedisClusterPort",
+    "ParameterValue": "$DIAMONDB_REDIS_PORT",
+    "UsePreviousValue": false
+  }
+]

@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: DiamonDB storage stack
+
+Parameters:
+  KinesisStreamsShardNum:
+    Type: Number
+    Default: 1
+    MaxValue: 25
+    MinValue: 1
+  RedisNodeType:
+    Type: String
+    Default: cache.t2.small
+    AllowedValues:
+      - cache.t2.micro
+      - cache.t2.small
+      - cache.t2.medium
+      - cache.m3.medium
+      - cache.m3.large
+      - cache.m3.xlarge
+      - cache.m3.2xlarge
+      - cache.m4.large
+      - cache.m4.xlarge
+      - cache.m4.2xlarge
+      - cache.m4.4xlarge
+      - cache.m4.10xlarge
+      - cache.r3.large
+      - cache.r3.xlarge
+      - cache.r3.2xlarge
+      - cache.r3.4xlarge
+      - cache.r3.8xlarge
+  RedisShardNum:
+    Type: Number
+    Default: 3
+    MaxValue: 15
+    MinValue: 3
+  RedisReplicasPerNode:
+    Type: Number
+    Default: 1
+    MaxValue: 3
+    MinValue: 1
+  DynamoDBTableName:
+    Type: String
+    Default: diamondb.timeseries
+  DynamoDBTableRCU:
+    Type: Number
+    Default: 5
+    MaxValue: 100000
+    MinValue: 1
+  DynamoDBTableWCU:
+    Type: Number
+    Default: 5
+    MaxValue: 100000
+    MinValue: 1
+
+Resources:
+  KinesisStreams:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: !Ref AWS::StackName
+      ShardCount: !Ref KinesisStreamsShardNum
+  RedisClusterSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: !Join [" ", [!Ref "AWS::StackName", "redis subnet group"]]
+      CacheSubnetGroupName: !Join ["-", [!Ref "AWS::StackName", "subnet", "group"]]
+      SubnetIds:
+        - !ImportValue diamondb-infrastructure-PrivateSubnet1ID
+        - !ImportValue diamondb-infrastructure-PrivateSubnet2ID
+  RedisClusterSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow redis port to ECS host
+      VpcId: !ImportValue diamondb-infrastructure-VPCID
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '6379'
+        ToPort: '6379'
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: '6379'
+        ToPort: '6379'
+        CidrIp: 0.0.0.0/0
+  RedisClusterReplicationGroup:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      ReplicationGroupDescription: !Join ["-", [!Ref "AWS::StackName", "redis replication group"]]
+      CacheSubnetGroupName: !Ref RedisClusterSubnetGroup
+      SecurityGroupIds:
+        - !Ref RedisClusterSecurityGroup
+      Engine: "redis"
+      EngineVersion: "3.2.4"
+      CacheNodeType: !Ref RedisNodeType
+      NumNodeGroups: !Ref RedisShardNum
+      ReplicasPerNodeGroup: !Ref RedisReplicasPerNode
+      SnapshotRetentionLimit: 1
+      SnapshotWindow: "14:00-17:00"
+      AutomaticFailoverEnabled: "true"
+      AutoMinorVersionUpgrade: "false"
+      Tags:
+        - Key: Name
+          Value: !Ref "AWS::StackName"
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDBTableName
+      AttributeDefinitions:
+        -
+          AttributeName: "Name"
+          AttributeType: "S"
+        -
+          AttributeName: "Timestamp"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "Name"
+          KeyType: "HASH"
+        -
+          AttributeName: "Timestamp"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: !Ref DynamoDBTableRCU
+        WriteCapacityUnits: !Ref DynamoDBTableWCU
+Outputs:
+  RedisClusterReplicationGroupID:
+    Value: !Ref RedisClusterReplicationGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-RedisClusterReplicationGroupID"
