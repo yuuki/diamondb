@@ -68,6 +68,8 @@ Resources:
             Value: !Sub
               - ${Address}:${Port}
               - { Address: !Ref RedisClusterAddress, Port: !Ref RedisClusterPort }
+          - Name: DIAMONDB_ENABLE_REDIS_CLUSTER
+            Value: 1
       TaskRoleArn: !GetAtt ECSTaskRole.Arn
   ECSTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
