@@ -121,3 +121,8 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: !Ref DynamoDBTableRCU
         WriteCapacityUnits: !Ref DynamoDBTableWCU
+Outputs:
+  RedisClusterReplicationGroupID:
+    Value: !Ref RedisClusterReplicationGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-RedisClusterReplicationGroupID"
