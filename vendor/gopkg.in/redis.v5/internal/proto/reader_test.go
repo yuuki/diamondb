@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
+	"gopkg.in/redis.v5/internal/proto"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"gopkg.in/redis.v5/internal/proto"
 )
 
 var _ = Describe("Reader", func() {
@@ -59,7 +59,7 @@ func BenchmarkReader_ParseReply_Slice(b *testing.B) {
 }
 
 func benchmarkParseReply(b *testing.B, reply string, m proto.MultiBulkParse, wanterr bool) {
-	buf := &bytes.Buffer{}
+	buf := new(bytes.Buffer)
 	for i := 0; i < b.N; i++ {
 		buf.WriteString(reply)
 	}

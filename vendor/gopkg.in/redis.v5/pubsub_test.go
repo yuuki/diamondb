@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
+	"gopkg.in/redis.v5"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"gopkg.in/redis.v5"
 )
 
 var _ = Describe("PubSub", func() {
@@ -288,12 +288,13 @@ var _ = Describe("PubSub", func() {
 	})
 
 	expectReceiveMessageOnError := func(pubsub *redis.PubSub) {
-		cn1, _, err := pubsub.Pool().Get()
+		cn, _, err := pubsub.Pool().Get()
 		Expect(err).NotTo(HaveOccurred())
-		cn1.NetConn = &badConn{
+		cn.SetNetConn(&badConn{
 			readErr:  io.EOF,
 			writeErr: io.EOF,
-		}
+		})
+		pubsub.Pool().Put(cn)
 
 		done := make(chan bool, 1)
 		go func() {
@@ -315,7 +316,7 @@ var _ = Describe("PubSub", func() {
 		Eventually(done).Should(Receive())
 
 		stats := client.PoolStats()
-		Expect(stats.Requests).To(Equal(uint32(3)))
+		Expect(stats.Requests).To(Equal(uint32(4)))
 		Expect(stats.Hits).To(Equal(uint32(1)))
 	}
 
@@ -346,11 +347,14 @@ var _ = Describe("PubSub", func() {
 			defer GinkgoRecover()
 
 			wg.Done()
+			defer wg.Done()
 
 			_, err := pubsub.ReceiveMessage()
-			Expect(err).To(MatchError("redis: client is closed"))
-
-			wg.Done()
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(SatisfyAny(
+				MatchError("redis: client is closed"),
+				MatchError("use of closed network connection"), // Go 1.4
+			))
 		}()
 
 		wg.Wait()
@@ -362,4 +366,27 @@ var _ = Describe("PubSub", func() {
 		wg.Wait()
 	})
 
+	It("should ReceiveMessage without a subscription", func() {
+		timeout := 100 * time.Millisecond
+
+		pubsub, err := client.Subscribe()
+		Expect(err).NotTo(HaveOccurred())
+		defer pubsub.Close()
+
+		go func() {
+			defer GinkgoRecover()
+
+			time.Sleep(2 * timeout)
+			err = pubsub.Subscribe("mychannel")
+			Expect(err).NotTo(HaveOccurred())
+
+			err := client.Publish("mychannel", "hello").Err()
+			Expect(err).NotTo(HaveOccurred())
+		}()
+
+		msg, err := pubsub.ReceiveMessageTimeout(timeout)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(msg.Channel).To(Equal("mychannel"))
+		Expect(msg.Payload).To(Equal("hello"))
+	})
 })

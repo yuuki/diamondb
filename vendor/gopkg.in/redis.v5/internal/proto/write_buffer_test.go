@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"gopkg.in/redis.v5/internal/proto"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"gopkg.in/redis.v5/internal/proto"
 )
 
 var _ = Describe("WriteBuffer", func() {

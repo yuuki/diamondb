@@ -19,7 +19,9 @@ var (
 
 var timers = sync.Pool{
 	New: func() interface{} {
-		return time.NewTimer(0)
+		t := time.NewTimer(time.Hour)
+		t.Stop()
+		return t
 	},
 }
 
@@ -41,7 +43,6 @@ type Pooler interface {
 	FreeLen() int
 	Stats() *Stats
 	Close() error
-	Closed() bool
 }
 
 type dialer func() (net.Conn, error)
@@ -96,12 +97,13 @@ func (p *ConnPool) NewConn() (*Conn, error) {
 
 func (p *ConnPool) PopFree() *Conn {
 	timer := timers.Get().(*time.Timer)
-	if !timer.Reset(p.poolTimeout) {
-		<-timer.C
-	}
+	timer.Reset(p.poolTimeout)
 
 	select {
 	case p.queue <- struct{}{}:
+		if !timer.Stop() {
+			<-timer.C
+		}
 		timers.Put(timer)
 	case <-timer.C:
 		timers.Put(timer)
@@ -132,19 +134,20 @@ func (p *ConnPool) popFree() *Conn {
 
 // Get returns existed connection from the pool or creates a new one.
 func (p *ConnPool) Get() (*Conn, bool, error) {
-	if p.Closed() {
+	if p.closed() {
 		return nil, false, ErrClosed
 	}
 
 	atomic.AddUint32(&p.stats.Requests, 1)
 
 	timer := timers.Get().(*time.Timer)
-	if !timer.Reset(p.poolTimeout) {
-		<-timer.C
-	}
+	timer.Reset(p.poolTimeout)
 
 	select {
 	case p.queue <- struct{}{}:
+		if !timer.Stop() {
+			<-timer.C
+		}
 		timers.Put(timer)
 	case <-timer.C:
 		timers.Put(timer)
@@ -241,7 +244,7 @@ func (p *ConnPool) Stats() *Stats {
 	}
 }
 
-func (p *ConnPool) Closed() bool {
+func (p *ConnPool) closed() bool {
 	return atomic.LoadInt32(&p._closed) == 1
 }
 
@@ -318,7 +321,7 @@ func (p *ConnPool) reaper(frequency time.Duration) {
 	defer ticker.Stop()
 
 	for _ = range ticker.C {
-		if p.Closed() {
+		if p.closed() {
 			break
 		}
 		n, err := p.ReapStaleConns()

@@ -1,5 +1,5 @@
-hash: 62d1e8aad4c60435ffbe5b0fa1a1776250123b843b5117ff1284e8f598e67f85
-updated: 2017-04-04T22:47:58.539412412+09:00
+hash: 8ec4a877381ffec59a0fcd0a400fd2a9dae15013a814c863a6813fbe4ffd2d37
+updated: 2017-04-19T22:03:00.234043024+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
@@ -67,7 +67,7 @@ imports:
   subpackages:
   - errgroup
 - name: gopkg.in/redis.v5
-  version: 8fcba2ea878201b70c5a63dd416141d4ddbc601a
+  version: a16aeec10ff407b1e7be6dd35797ccf5426ef0f0
   subpackages:
   - internal
   - internal/consistenthash

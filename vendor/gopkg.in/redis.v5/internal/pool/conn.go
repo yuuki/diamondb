@@ -2,56 +2,77 @@ package pool
 
 import (
 	"net"
+	"sync/atomic"
 	"time"
 
 	"gopkg.in/redis.v5/internal/proto"
 )
 
-const defaultBufSize = 4096
-
 var noDeadline = time.Time{}
 
 type Conn struct {
-	NetConn net.Conn
-	Rd      *proto.Reader
-	Wb      *proto.WriteBuffer
+	netConn net.Conn
+
+	Rd *proto.Reader
+	Wb *proto.WriteBuffer
 
 	Inited bool
-	UsedAt time.Time
+	usedAt atomic.Value
 }
 
 func NewConn(netConn net.Conn) *Conn {
 	cn := &Conn{
-		NetConn: netConn,
+		netConn: netConn,
 		Wb:      proto.NewWriteBuffer(),
-
-		UsedAt: time.Now(),
 	}
-	cn.Rd = proto.NewReader(cn.NetConn)
+	cn.Rd = proto.NewReader(cn.netConn)
+	cn.SetUsedAt(time.Now())
 	return cn
 }
 
+func (cn *Conn) UsedAt() time.Time {
+	return cn.usedAt.Load().(time.Time)
+}
+
+func (cn *Conn) SetUsedAt(tm time.Time) {
+	cn.usedAt.Store(tm)
+}
+
+func (cn *Conn) SetNetConn(netConn net.Conn) {
+	cn.netConn = netConn
+	cn.Rd.Reset(netConn)
+}
+
 func (cn *Conn) IsStale(timeout time.Duration) bool {
-	return timeout > 0 && time.Since(cn.UsedAt) > timeout
+	return timeout > 0 && time.Since(cn.UsedAt()) > timeout
 }
 
 func (cn *Conn) SetReadTimeout(timeout time.Duration) error {
-	cn.UsedAt = time.Now()
+	now := time.Now()
+	cn.SetUsedAt(now)
 	if timeout > 0 {
-		return cn.NetConn.SetReadDeadline(cn.UsedAt.Add(timeout))
+		return cn.netConn.SetReadDeadline(now.Add(timeout))
 	}
-	return cn.NetConn.SetReadDeadline(noDeadline)
-
+	return cn.netConn.SetReadDeadline(noDeadline)
 }
 
 func (cn *Conn) SetWriteTimeout(timeout time.Duration) error {
-	cn.UsedAt = time.Now()
+	now := time.Now()
+	cn.SetUsedAt(now)
 	if timeout > 0 {
-		return cn.NetConn.SetWriteDeadline(cn.UsedAt.Add(timeout))
+		return cn.netConn.SetWriteDeadline(now.Add(timeout))
 	}
-	return cn.NetConn.SetWriteDeadline(noDeadline)
+	return cn.netConn.SetWriteDeadline(noDeadline)
+}
+
+func (cn *Conn) Write(b []byte) (int, error) {
+	return cn.netConn.Write(b)
+}
+
+func (cn *Conn) RemoteAddr() net.Addr {
+	return cn.netConn.RemoteAddr()
 }
 
 func (cn *Conn) Close() error {
-	return cn.NetConn.Close()
+	return cn.netConn.Close()
 }

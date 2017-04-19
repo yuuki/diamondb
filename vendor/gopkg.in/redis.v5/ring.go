@@ -265,7 +265,7 @@ func (c *Ring) shardByName(name string) (*ringShard, error) {
 }
 
 func (c *Ring) cmdShard(cmd Cmder) (*ringShard, error) {
-	cmdInfo := c.cmdInfo(cmd.arg(0))
+	cmdInfo := c.cmdInfo(cmd.name())
 	firstKey := cmd.arg(cmdFirstKeyPos(cmd, cmdInfo))
 	return c.shardByKey(firstKey)
 }
@@ -328,8 +328,8 @@ func (c *Ring) heartbeat() {
 // It is rare to Close a Ring, as the Ring is meant to be long-lived
 // and shared between many goroutines.
 func (c *Ring) Close() error {
-	defer c.mu.Unlock()
 	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	if c.closed {
 		return nil
@@ -364,7 +364,7 @@ func (c *Ring) Pipelined(fn func(*Pipeline) error) ([]Cmder, error) {
 func (c *Ring) pipelineExec(cmds []Cmder) (firstErr error) {
 	cmdsMap := make(map[string][]Cmder)
 	for _, cmd := range cmds {
-		cmdInfo := c.cmdInfo(cmd.arg(0))
+		cmdInfo := c.cmdInfo(cmd.name())
 		name := cmd.arg(cmdFirstKeyPos(cmd, cmdInfo))
 		if name != "" {
 			name = c.hash.Get(hashtag.Key(name))
