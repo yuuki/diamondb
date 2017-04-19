@@ -4,6 +4,7 @@
 package dynamodb
 
 import (
+	aws "github.com/aws/aws-sdk-go/aws"
 	request "github.com/aws/aws-sdk-go/aws/request"
 	dynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	gomock "github.com/golang/mock/gomock"
@@ -30,17 +31,6 @@ func (_m *MockDynamoDBAPI) EXPECT() *_MockDynamoDBAPIRecorder {
 	return _m.recorder
 }
 
-func (_m *MockDynamoDBAPI) BatchGetItemRequest(_param0 *dynamodb.BatchGetItemInput) (*request.Request, *dynamodb.BatchGetItemOutput) {
-	ret := _m.ctrl.Call(_m, "BatchGetItemRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.BatchGetItemOutput)
-	return ret0, ret1
-}
-
-func (_mr *_MockDynamoDBAPIRecorder) BatchGetItemRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "BatchGetItemRequest", arg0)
-}
-
 func (_m *MockDynamoDBAPI) BatchGetItem(_param0 *dynamodb.BatchGetItemInput) (*dynamodb.BatchGetItemOutput, error) {
 	ret := _m.ctrl.Call(_m, "BatchGetItem", _param0)
 	ret0, _ := ret[0].(*dynamodb.BatchGetItemOutput)
@@ -50,6 +40,33 @@ func (_m *MockDynamoDBAPI) BatchGetItem(_param0 *dynamodb.BatchGetItemInput) (*d
 
 func (_mr *_MockDynamoDBAPIRecorder) BatchGetItem(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "BatchGetItem", arg0)
+}
+
+func (_m *MockDynamoDBAPI) BatchGetItemWithContext(_param0 aws.Context, _param1 *dynamodb.BatchGetItemInput, _param2 ...request.Option) (*dynamodb.BatchGetItemOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "BatchGetItemWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.BatchGetItemOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) BatchGetItemWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "BatchGetItemWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) BatchGetItemRequest(_param0 *dynamodb.BatchGetItemInput) (*request.Request, *dynamodb.BatchGetItemOutput) {
+	ret := _m.ctrl.Call(_m, "BatchGetItemRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.BatchGetItemOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) BatchGetItemRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "BatchGetItemRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) BatchGetItemPages(_param0 *dynamodb.BatchGetItemInput, _param1 func(*dynamodb.BatchGetItemOutput, bool) bool) error {
@@ -62,15 +79,19 @@ func (_mr *_MockDynamoDBAPIRecorder) BatchGetItemPages(arg0, arg1 interface{}) *
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "BatchGetItemPages", arg0, arg1)
 }
 
-func (_m *MockDynamoDBAPI) BatchWriteItemRequest(_param0 *dynamodb.BatchWriteItemInput) (*request.Request, *dynamodb.BatchWriteItemOutput) {
-	ret := _m.ctrl.Call(_m, "BatchWriteItemRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.BatchWriteItemOutput)
-	return ret0, ret1
+func (_m *MockDynamoDBAPI) BatchGetItemPagesWithContext(_param0 aws.Context, _param1 *dynamodb.BatchGetItemInput, _param2 func(*dynamodb.BatchGetItemOutput, bool) bool, _param3 ...request.Option) error {
+	_s := []interface{}{_param0, _param1, _param2}
+	for _, _x := range _param3 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "BatchGetItemPagesWithContext", _s...)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) BatchWriteItemRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "BatchWriteItemRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) BatchGetItemPagesWithContext(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "BatchGetItemPagesWithContext", _s...)
 }
 
 func (_m *MockDynamoDBAPI) BatchWriteItem(_param0 *dynamodb.BatchWriteItemInput) (*dynamodb.BatchWriteItemOutput, error) {
@@ -84,15 +105,31 @@ func (_mr *_MockDynamoDBAPIRecorder) BatchWriteItem(arg0 interface{}) *gomock.Ca
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "BatchWriteItem", arg0)
 }
 
-func (_m *MockDynamoDBAPI) CreateTableRequest(_param0 *dynamodb.CreateTableInput) (*request.Request, *dynamodb.CreateTableOutput) {
-	ret := _m.ctrl.Call(_m, "CreateTableRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.CreateTableOutput)
+func (_m *MockDynamoDBAPI) BatchWriteItemWithContext(_param0 aws.Context, _param1 *dynamodb.BatchWriteItemInput, _param2 ...request.Option) (*dynamodb.BatchWriteItemOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "BatchWriteItemWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.BatchWriteItemOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) CreateTableRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateTableRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) BatchWriteItemWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "BatchWriteItemWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) BatchWriteItemRequest(_param0 *dynamodb.BatchWriteItemInput) (*request.Request, *dynamodb.BatchWriteItemOutput) {
+	ret := _m.ctrl.Call(_m, "BatchWriteItemRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.BatchWriteItemOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) BatchWriteItemRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "BatchWriteItemRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) CreateTable(_param0 *dynamodb.CreateTableInput) (*dynamodb.CreateTableOutput, error) {
@@ -106,15 +143,31 @@ func (_mr *_MockDynamoDBAPIRecorder) CreateTable(arg0 interface{}) *gomock.Call 
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateTable", arg0)
 }
 
-func (_m *MockDynamoDBAPI) DeleteItemRequest(_param0 *dynamodb.DeleteItemInput) (*request.Request, *dynamodb.DeleteItemOutput) {
-	ret := _m.ctrl.Call(_m, "DeleteItemRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.DeleteItemOutput)
+func (_m *MockDynamoDBAPI) CreateTableWithContext(_param0 aws.Context, _param1 *dynamodb.CreateTableInput, _param2 ...request.Option) (*dynamodb.CreateTableOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "CreateTableWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.CreateTableOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) DeleteItemRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteItemRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) CreateTableWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateTableWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) CreateTableRequest(_param0 *dynamodb.CreateTableInput) (*request.Request, *dynamodb.CreateTableOutput) {
+	ret := _m.ctrl.Call(_m, "CreateTableRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.CreateTableOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) CreateTableRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "CreateTableRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) DeleteItem(_param0 *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error) {
@@ -128,15 +181,31 @@ func (_mr *_MockDynamoDBAPIRecorder) DeleteItem(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteItem", arg0)
 }
 
-func (_m *MockDynamoDBAPI) DeleteTableRequest(_param0 *dynamodb.DeleteTableInput) (*request.Request, *dynamodb.DeleteTableOutput) {
-	ret := _m.ctrl.Call(_m, "DeleteTableRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.DeleteTableOutput)
+func (_m *MockDynamoDBAPI) DeleteItemWithContext(_param0 aws.Context, _param1 *dynamodb.DeleteItemInput, _param2 ...request.Option) (*dynamodb.DeleteItemOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "DeleteItemWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.DeleteItemOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) DeleteTableRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteTableRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) DeleteItemWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteItemWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) DeleteItemRequest(_param0 *dynamodb.DeleteItemInput) (*request.Request, *dynamodb.DeleteItemOutput) {
+	ret := _m.ctrl.Call(_m, "DeleteItemRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.DeleteItemOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) DeleteItemRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteItemRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) DeleteTable(_param0 *dynamodb.DeleteTableInput) (*dynamodb.DeleteTableOutput, error) {
@@ -150,15 +219,31 @@ func (_mr *_MockDynamoDBAPIRecorder) DeleteTable(arg0 interface{}) *gomock.Call 
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteTable", arg0)
 }
 
-func (_m *MockDynamoDBAPI) DescribeLimitsRequest(_param0 *dynamodb.DescribeLimitsInput) (*request.Request, *dynamodb.DescribeLimitsOutput) {
-	ret := _m.ctrl.Call(_m, "DescribeLimitsRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.DescribeLimitsOutput)
+func (_m *MockDynamoDBAPI) DeleteTableWithContext(_param0 aws.Context, _param1 *dynamodb.DeleteTableInput, _param2 ...request.Option) (*dynamodb.DeleteTableOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "DeleteTableWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.DeleteTableOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) DescribeLimitsRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeLimitsRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) DeleteTableWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteTableWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) DeleteTableRequest(_param0 *dynamodb.DeleteTableInput) (*request.Request, *dynamodb.DeleteTableOutput) {
+	ret := _m.ctrl.Call(_m, "DeleteTableRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.DeleteTableOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) DeleteTableRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteTableRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) DescribeLimits(_param0 *dynamodb.DescribeLimitsInput) (*dynamodb.DescribeLimitsOutput, error) {
@@ -172,15 +257,31 @@ func (_mr *_MockDynamoDBAPIRecorder) DescribeLimits(arg0 interface{}) *gomock.Ca
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeLimits", arg0)
 }
 
-func (_m *MockDynamoDBAPI) DescribeTableRequest(_param0 *dynamodb.DescribeTableInput) (*request.Request, *dynamodb.DescribeTableOutput) {
-	ret := _m.ctrl.Call(_m, "DescribeTableRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.DescribeTableOutput)
+func (_m *MockDynamoDBAPI) DescribeLimitsWithContext(_param0 aws.Context, _param1 *dynamodb.DescribeLimitsInput, _param2 ...request.Option) (*dynamodb.DescribeLimitsOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "DescribeLimitsWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.DescribeLimitsOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) DescribeTableRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTableRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) DescribeLimitsWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeLimitsWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) DescribeLimitsRequest(_param0 *dynamodb.DescribeLimitsInput) (*request.Request, *dynamodb.DescribeLimitsOutput) {
+	ret := _m.ctrl.Call(_m, "DescribeLimitsRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.DescribeLimitsOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) DescribeLimitsRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeLimitsRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) DescribeTable(_param0 *dynamodb.DescribeTableInput) (*dynamodb.DescribeTableOutput, error) {
@@ -194,15 +295,31 @@ func (_mr *_MockDynamoDBAPIRecorder) DescribeTable(arg0 interface{}) *gomock.Cal
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTable", arg0)
 }
 
-func (_m *MockDynamoDBAPI) DescribeTimeToLiveRequest(_param0 *dynamodb.DescribeTimeToLiveInput) (*request.Request, *dynamodb.DescribeTimeToLiveOutput) {
-	ret := _m.ctrl.Call(_m, "DescribeTimeToLiveRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.DescribeTimeToLiveOutput)
+func (_m *MockDynamoDBAPI) DescribeTableWithContext(_param0 aws.Context, _param1 *dynamodb.DescribeTableInput, _param2 ...request.Option) (*dynamodb.DescribeTableOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "DescribeTableWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.DescribeTableOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) DescribeTimeToLiveRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTimeToLiveRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) DescribeTableWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTableWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) DescribeTableRequest(_param0 *dynamodb.DescribeTableInput) (*request.Request, *dynamodb.DescribeTableOutput) {
+	ret := _m.ctrl.Call(_m, "DescribeTableRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.DescribeTableOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) DescribeTableRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTableRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) DescribeTimeToLive(_param0 *dynamodb.DescribeTimeToLiveInput) (*dynamodb.DescribeTimeToLiveOutput, error) {
@@ -216,15 +333,31 @@ func (_mr *_MockDynamoDBAPIRecorder) DescribeTimeToLive(arg0 interface{}) *gomoc
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTimeToLive", arg0)
 }
 
-func (_m *MockDynamoDBAPI) GetItemRequest(_param0 *dynamodb.GetItemInput) (*request.Request, *dynamodb.GetItemOutput) {
-	ret := _m.ctrl.Call(_m, "GetItemRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.GetItemOutput)
+func (_m *MockDynamoDBAPI) DescribeTimeToLiveWithContext(_param0 aws.Context, _param1 *dynamodb.DescribeTimeToLiveInput, _param2 ...request.Option) (*dynamodb.DescribeTimeToLiveOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "DescribeTimeToLiveWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.DescribeTimeToLiveOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) GetItemRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetItemRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) DescribeTimeToLiveWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTimeToLiveWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) DescribeTimeToLiveRequest(_param0 *dynamodb.DescribeTimeToLiveInput) (*request.Request, *dynamodb.DescribeTimeToLiveOutput) {
+	ret := _m.ctrl.Call(_m, "DescribeTimeToLiveRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.DescribeTimeToLiveOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) DescribeTimeToLiveRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DescribeTimeToLiveRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) GetItem(_param0 *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
@@ -238,15 +371,31 @@ func (_mr *_MockDynamoDBAPIRecorder) GetItem(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetItem", arg0)
 }
 
-func (_m *MockDynamoDBAPI) ListTablesRequest(_param0 *dynamodb.ListTablesInput) (*request.Request, *dynamodb.ListTablesOutput) {
-	ret := _m.ctrl.Call(_m, "ListTablesRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.ListTablesOutput)
+func (_m *MockDynamoDBAPI) GetItemWithContext(_param0 aws.Context, _param1 *dynamodb.GetItemInput, _param2 ...request.Option) (*dynamodb.GetItemOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "GetItemWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.GetItemOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) ListTablesRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTablesRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) GetItemWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetItemWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) GetItemRequest(_param0 *dynamodb.GetItemInput) (*request.Request, *dynamodb.GetItemOutput) {
+	ret := _m.ctrl.Call(_m, "GetItemRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.GetItemOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) GetItemRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetItemRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) ListTables(_param0 *dynamodb.ListTablesInput) (*dynamodb.ListTablesOutput, error) {
@@ -260,6 +409,33 @@ func (_mr *_MockDynamoDBAPIRecorder) ListTables(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTables", arg0)
 }
 
+func (_m *MockDynamoDBAPI) ListTablesWithContext(_param0 aws.Context, _param1 *dynamodb.ListTablesInput, _param2 ...request.Option) (*dynamodb.ListTablesOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "ListTablesWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.ListTablesOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) ListTablesWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTablesWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) ListTablesRequest(_param0 *dynamodb.ListTablesInput) (*request.Request, *dynamodb.ListTablesOutput) {
+	ret := _m.ctrl.Call(_m, "ListTablesRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.ListTablesOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) ListTablesRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTablesRequest", arg0)
+}
+
 func (_m *MockDynamoDBAPI) ListTablesPages(_param0 *dynamodb.ListTablesInput, _param1 func(*dynamodb.ListTablesOutput, bool) bool) error {
 	ret := _m.ctrl.Call(_m, "ListTablesPages", _param0, _param1)
 	ret0, _ := ret[0].(error)
@@ -270,15 +446,19 @@ func (_mr *_MockDynamoDBAPIRecorder) ListTablesPages(arg0, arg1 interface{}) *go
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTablesPages", arg0, arg1)
 }
 
-func (_m *MockDynamoDBAPI) ListTagsOfResourceRequest(_param0 *dynamodb.ListTagsOfResourceInput) (*request.Request, *dynamodb.ListTagsOfResourceOutput) {
-	ret := _m.ctrl.Call(_m, "ListTagsOfResourceRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.ListTagsOfResourceOutput)
-	return ret0, ret1
+func (_m *MockDynamoDBAPI) ListTablesPagesWithContext(_param0 aws.Context, _param1 *dynamodb.ListTablesInput, _param2 func(*dynamodb.ListTablesOutput, bool) bool, _param3 ...request.Option) error {
+	_s := []interface{}{_param0, _param1, _param2}
+	for _, _x := range _param3 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "ListTablesPagesWithContext", _s...)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) ListTagsOfResourceRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTagsOfResourceRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) ListTablesPagesWithContext(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTablesPagesWithContext", _s...)
 }
 
 func (_m *MockDynamoDBAPI) ListTagsOfResource(_param0 *dynamodb.ListTagsOfResourceInput) (*dynamodb.ListTagsOfResourceOutput, error) {
@@ -292,15 +472,31 @@ func (_mr *_MockDynamoDBAPIRecorder) ListTagsOfResource(arg0 interface{}) *gomoc
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTagsOfResource", arg0)
 }
 
-func (_m *MockDynamoDBAPI) PutItemRequest(_param0 *dynamodb.PutItemInput) (*request.Request, *dynamodb.PutItemOutput) {
-	ret := _m.ctrl.Call(_m, "PutItemRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.PutItemOutput)
+func (_m *MockDynamoDBAPI) ListTagsOfResourceWithContext(_param0 aws.Context, _param1 *dynamodb.ListTagsOfResourceInput, _param2 ...request.Option) (*dynamodb.ListTagsOfResourceOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "ListTagsOfResourceWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.ListTagsOfResourceOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) PutItemRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "PutItemRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) ListTagsOfResourceWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTagsOfResourceWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) ListTagsOfResourceRequest(_param0 *dynamodb.ListTagsOfResourceInput) (*request.Request, *dynamodb.ListTagsOfResourceOutput) {
+	ret := _m.ctrl.Call(_m, "ListTagsOfResourceRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.ListTagsOfResourceOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) ListTagsOfResourceRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListTagsOfResourceRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) PutItem(_param0 *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
@@ -314,15 +510,31 @@ func (_mr *_MockDynamoDBAPIRecorder) PutItem(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "PutItem", arg0)
 }
 
-func (_m *MockDynamoDBAPI) QueryRequest(_param0 *dynamodb.QueryInput) (*request.Request, *dynamodb.QueryOutput) {
-	ret := _m.ctrl.Call(_m, "QueryRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.QueryOutput)
+func (_m *MockDynamoDBAPI) PutItemWithContext(_param0 aws.Context, _param1 *dynamodb.PutItemInput, _param2 ...request.Option) (*dynamodb.PutItemOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "PutItemWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.PutItemOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) QueryRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "QueryRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) PutItemWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "PutItemWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) PutItemRequest(_param0 *dynamodb.PutItemInput) (*request.Request, *dynamodb.PutItemOutput) {
+	ret := _m.ctrl.Call(_m, "PutItemRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.PutItemOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) PutItemRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "PutItemRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) Query(_param0 *dynamodb.QueryInput) (*dynamodb.QueryOutput, error) {
@@ -336,6 +548,33 @@ func (_mr *_MockDynamoDBAPIRecorder) Query(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Query", arg0)
 }
 
+func (_m *MockDynamoDBAPI) QueryWithContext(_param0 aws.Context, _param1 *dynamodb.QueryInput, _param2 ...request.Option) (*dynamodb.QueryOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "QueryWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.QueryOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) QueryWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "QueryWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) QueryRequest(_param0 *dynamodb.QueryInput) (*request.Request, *dynamodb.QueryOutput) {
+	ret := _m.ctrl.Call(_m, "QueryRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.QueryOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) QueryRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "QueryRequest", arg0)
+}
+
 func (_m *MockDynamoDBAPI) QueryPages(_param0 *dynamodb.QueryInput, _param1 func(*dynamodb.QueryOutput, bool) bool) error {
 	ret := _m.ctrl.Call(_m, "QueryPages", _param0, _param1)
 	ret0, _ := ret[0].(error)
@@ -346,15 +585,19 @@ func (_mr *_MockDynamoDBAPIRecorder) QueryPages(arg0, arg1 interface{}) *gomock.
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "QueryPages", arg0, arg1)
 }
 
-func (_m *MockDynamoDBAPI) ScanRequest(_param0 *dynamodb.ScanInput) (*request.Request, *dynamodb.ScanOutput) {
-	ret := _m.ctrl.Call(_m, "ScanRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.ScanOutput)
-	return ret0, ret1
+func (_m *MockDynamoDBAPI) QueryPagesWithContext(_param0 aws.Context, _param1 *dynamodb.QueryInput, _param2 func(*dynamodb.QueryOutput, bool) bool, _param3 ...request.Option) error {
+	_s := []interface{}{_param0, _param1, _param2}
+	for _, _x := range _param3 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "QueryPagesWithContext", _s...)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) ScanRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "ScanRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) QueryPagesWithContext(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "QueryPagesWithContext", _s...)
 }
 
 func (_m *MockDynamoDBAPI) Scan(_param0 *dynamodb.ScanInput) (*dynamodb.ScanOutput, error) {
@@ -368,6 +611,33 @@ func (_mr *_MockDynamoDBAPIRecorder) Scan(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Scan", arg0)
 }
 
+func (_m *MockDynamoDBAPI) ScanWithContext(_param0 aws.Context, _param1 *dynamodb.ScanInput, _param2 ...request.Option) (*dynamodb.ScanOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "ScanWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.ScanOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) ScanWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ScanWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) ScanRequest(_param0 *dynamodb.ScanInput) (*request.Request, *dynamodb.ScanOutput) {
+	ret := _m.ctrl.Call(_m, "ScanRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.ScanOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) ScanRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ScanRequest", arg0)
+}
+
 func (_m *MockDynamoDBAPI) ScanPages(_param0 *dynamodb.ScanInput, _param1 func(*dynamodb.ScanOutput, bool) bool) error {
 	ret := _m.ctrl.Call(_m, "ScanPages", _param0, _param1)
 	ret0, _ := ret[0].(error)
@@ -378,15 +648,19 @@ func (_mr *_MockDynamoDBAPIRecorder) ScanPages(arg0, arg1 interface{}) *gomock.C
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ScanPages", arg0, arg1)
 }
 
-func (_m *MockDynamoDBAPI) TagResourceRequest(_param0 *dynamodb.TagResourceInput) (*request.Request, *dynamodb.TagResourceOutput) {
-	ret := _m.ctrl.Call(_m, "TagResourceRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.TagResourceOutput)
-	return ret0, ret1
+func (_m *MockDynamoDBAPI) ScanPagesWithContext(_param0 aws.Context, _param1 *dynamodb.ScanInput, _param2 func(*dynamodb.ScanOutput, bool) bool, _param3 ...request.Option) error {
+	_s := []interface{}{_param0, _param1, _param2}
+	for _, _x := range _param3 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "ScanPagesWithContext", _s...)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) TagResourceRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "TagResourceRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) ScanPagesWithContext(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ScanPagesWithContext", _s...)
 }
 
 func (_m *MockDynamoDBAPI) TagResource(_param0 *dynamodb.TagResourceInput) (*dynamodb.TagResourceOutput, error) {
@@ -400,15 +674,31 @@ func (_mr *_MockDynamoDBAPIRecorder) TagResource(arg0 interface{}) *gomock.Call 
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "TagResource", arg0)
 }
 
-func (_m *MockDynamoDBAPI) UntagResourceRequest(_param0 *dynamodb.UntagResourceInput) (*request.Request, *dynamodb.UntagResourceOutput) {
-	ret := _m.ctrl.Call(_m, "UntagResourceRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.UntagResourceOutput)
+func (_m *MockDynamoDBAPI) TagResourceWithContext(_param0 aws.Context, _param1 *dynamodb.TagResourceInput, _param2 ...request.Option) (*dynamodb.TagResourceOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "TagResourceWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.TagResourceOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) UntagResourceRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "UntagResourceRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) TagResourceWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "TagResourceWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) TagResourceRequest(_param0 *dynamodb.TagResourceInput) (*request.Request, *dynamodb.TagResourceOutput) {
+	ret := _m.ctrl.Call(_m, "TagResourceRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.TagResourceOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) TagResourceRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "TagResourceRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) UntagResource(_param0 *dynamodb.UntagResourceInput) (*dynamodb.UntagResourceOutput, error) {
@@ -422,15 +712,31 @@ func (_mr *_MockDynamoDBAPIRecorder) UntagResource(arg0 interface{}) *gomock.Cal
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UntagResource", arg0)
 }
 
-func (_m *MockDynamoDBAPI) UpdateItemRequest(_param0 *dynamodb.UpdateItemInput) (*request.Request, *dynamodb.UpdateItemOutput) {
-	ret := _m.ctrl.Call(_m, "UpdateItemRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.UpdateItemOutput)
+func (_m *MockDynamoDBAPI) UntagResourceWithContext(_param0 aws.Context, _param1 *dynamodb.UntagResourceInput, _param2 ...request.Option) (*dynamodb.UntagResourceOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "UntagResourceWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.UntagResourceOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) UpdateItemRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateItemRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) UntagResourceWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UntagResourceWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) UntagResourceRequest(_param0 *dynamodb.UntagResourceInput) (*request.Request, *dynamodb.UntagResourceOutput) {
+	ret := _m.ctrl.Call(_m, "UntagResourceRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.UntagResourceOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) UntagResourceRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UntagResourceRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) UpdateItem(_param0 *dynamodb.UpdateItemInput) (*dynamodb.UpdateItemOutput, error) {
@@ -444,15 +750,31 @@ func (_mr *_MockDynamoDBAPIRecorder) UpdateItem(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateItem", arg0)
 }
 
-func (_m *MockDynamoDBAPI) UpdateTableRequest(_param0 *dynamodb.UpdateTableInput) (*request.Request, *dynamodb.UpdateTableOutput) {
-	ret := _m.ctrl.Call(_m, "UpdateTableRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.UpdateTableOutput)
+func (_m *MockDynamoDBAPI) UpdateItemWithContext(_param0 aws.Context, _param1 *dynamodb.UpdateItemInput, _param2 ...request.Option) (*dynamodb.UpdateItemOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "UpdateItemWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.UpdateItemOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) UpdateTableRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTableRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) UpdateItemWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateItemWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) UpdateItemRequest(_param0 *dynamodb.UpdateItemInput) (*request.Request, *dynamodb.UpdateItemOutput) {
+	ret := _m.ctrl.Call(_m, "UpdateItemRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.UpdateItemOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) UpdateItemRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateItemRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) UpdateTable(_param0 *dynamodb.UpdateTableInput) (*dynamodb.UpdateTableOutput, error) {
@@ -466,15 +788,31 @@ func (_mr *_MockDynamoDBAPIRecorder) UpdateTable(arg0 interface{}) *gomock.Call 
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTable", arg0)
 }
 
-func (_m *MockDynamoDBAPI) UpdateTimeToLiveRequest(_param0 *dynamodb.UpdateTimeToLiveInput) (*request.Request, *dynamodb.UpdateTimeToLiveOutput) {
-	ret := _m.ctrl.Call(_m, "UpdateTimeToLiveRequest", _param0)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*dynamodb.UpdateTimeToLiveOutput)
+func (_m *MockDynamoDBAPI) UpdateTableWithContext(_param0 aws.Context, _param1 *dynamodb.UpdateTableInput, _param2 ...request.Option) (*dynamodb.UpdateTableOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "UpdateTableWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.UpdateTableOutput)
+	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockDynamoDBAPIRecorder) UpdateTimeToLiveRequest(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTimeToLiveRequest", arg0)
+func (_mr *_MockDynamoDBAPIRecorder) UpdateTableWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTableWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) UpdateTableRequest(_param0 *dynamodb.UpdateTableInput) (*request.Request, *dynamodb.UpdateTableOutput) {
+	ret := _m.ctrl.Call(_m, "UpdateTableRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.UpdateTableOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) UpdateTableRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTableRequest", arg0)
 }
 
 func (_m *MockDynamoDBAPI) UpdateTimeToLive(_param0 *dynamodb.UpdateTimeToLiveInput) (*dynamodb.UpdateTimeToLiveOutput, error) {
@@ -488,6 +826,33 @@ func (_mr *_MockDynamoDBAPIRecorder) UpdateTimeToLive(arg0 interface{}) *gomock.
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTimeToLive", arg0)
 }
 
+func (_m *MockDynamoDBAPI) UpdateTimeToLiveWithContext(_param0 aws.Context, _param1 *dynamodb.UpdateTimeToLiveInput, _param2 ...request.Option) (*dynamodb.UpdateTimeToLiveOutput, error) {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "UpdateTimeToLiveWithContext", _s...)
+	ret0, _ := ret[0].(*dynamodb.UpdateTimeToLiveOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) UpdateTimeToLiveWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTimeToLiveWithContext", _s...)
+}
+
+func (_m *MockDynamoDBAPI) UpdateTimeToLiveRequest(_param0 *dynamodb.UpdateTimeToLiveInput) (*request.Request, *dynamodb.UpdateTimeToLiveOutput) {
+	ret := _m.ctrl.Call(_m, "UpdateTimeToLiveRequest", _param0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*dynamodb.UpdateTimeToLiveOutput)
+	return ret0, ret1
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) UpdateTimeToLiveRequest(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateTimeToLiveRequest", arg0)
+}
+
 func (_m *MockDynamoDBAPI) WaitUntilTableExists(_param0 *dynamodb.DescribeTableInput) error {
 	ret := _m.ctrl.Call(_m, "WaitUntilTableExists", _param0)
 	ret0, _ := ret[0].(error)
@@ -498,6 +863,21 @@ func (_mr *_MockDynamoDBAPIRecorder) WaitUntilTableExists(arg0 interface{}) *gom
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "WaitUntilTableExists", arg0)
 }
 
+func (_m *MockDynamoDBAPI) WaitUntilTableExistsWithContext(_param0 aws.Context, _param1 *dynamodb.DescribeTableInput, _param2 ...request.WaiterOption) error {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "WaitUntilTableExistsWithContext", _s...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) WaitUntilTableExistsWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "WaitUntilTableExistsWithContext", _s...)
+}
+
 func (_m *MockDynamoDBAPI) WaitUntilTableNotExists(_param0 *dynamodb.DescribeTableInput) error {
 	ret := _m.ctrl.Call(_m, "WaitUntilTableNotExists", _param0)
 	ret0, _ := ret[0].(error)
@@ -506,4 +886,19 @@ func (_m *MockDynamoDBAPI) WaitUntilTableNotExists(_param0 *dynamodb.DescribeTab
 
 func (_mr *_MockDynamoDBAPIRecorder) WaitUntilTableNotExists(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "WaitUntilTableNotExists", arg0)
+}
+
+func (_m *MockDynamoDBAPI) WaitUntilTableNotExistsWithContext(_param0 aws.Context, _param1 *dynamodb.DescribeTableInput, _param2 ...request.WaiterOption) error {
+	_s := []interface{}{_param0, _param1}
+	for _, _x := range _param2 {
+		_s = append(_s, _x)
+	}
+	ret := _m.ctrl.Call(_m, "WaitUntilTableNotExistsWithContext", _s...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (_mr *_MockDynamoDBAPIRecorder) WaitUntilTableNotExistsWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	_s := append([]interface{}{arg0, arg1}, arg2...)
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "WaitUntilTableNotExistsWithContext", _s...)
 }
