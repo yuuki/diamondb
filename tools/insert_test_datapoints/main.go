@@ -73,7 +73,6 @@ func write(name string, n int, step int, start int64, endpoint string, concurren
 		}()
 	}
 	wg.Wait()
-	return
 }
 
 func main() {

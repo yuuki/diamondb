@@ -97,7 +97,6 @@ func (h *Handler) pingHandler() http.Handler {
 			return
 		}
 		ok(w, "PONG")
-		return
 	})
 }
 
@@ -105,7 +104,6 @@ func (h *Handler) pingHandler() http.Handler {
 func (h *Handler) inspectHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		renderJSONIndent(w, http.StatusOK, config.Config)
-		return
 	})
 }
 
@@ -187,6 +185,5 @@ func (h *Handler) writeHandler() http.Handler {
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
-		return
 	})
 }
