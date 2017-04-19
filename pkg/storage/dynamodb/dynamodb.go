@@ -54,6 +54,8 @@ type query struct {
 }
 
 const (
+	HTTPMaxRetries = 3
+
 	oneYear time.Duration = time.Duration(24*360) * time.Hour
 	oneWeek time.Duration = time.Duration(24*7) * time.Hour
 	oneDay  time.Duration = time.Duration(24*1) * time.Hour
@@ -79,7 +81,7 @@ func New() (*DynamoDB, error) {
 	}
 	// the default MaxRetries of DynamoDB is 10, it is too many to take timeout too long.
 	// https://github.com/aws/aws-sdk-go/blob/a1f22039/service/dynamodb/customizations.go#L43
-	awsConf.WithMaxRetries(3)
+	awsConf.WithMaxRetries(HTTPMaxRetries)
 	awsConf.WithHTTPClient(&http.Client{
 		Timeout:   10 * time.Second,
 		Transport: http.DefaultTransport,
