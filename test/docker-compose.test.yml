@@ -10,6 +10,7 @@ services:
       - web
   web:
     image: diamondb_web
+    entrypoint: [/wait-for-it.sh, "dynamodb:8000", --timeout=30, --strict, --, /go/src/github.com/yuuki/diamondb/diamondb-server]
     expose:
       - "8000"
     environment:

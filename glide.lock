@@ -1,10 +1,10 @@
-hash: 8ec4a877381ffec59a0fcd0a400fd2a9dae15013a814c863a6813fbe4ffd2d37
-updated: 2017-04-19T22:03:00.234043024+09:00
+hash: ba80eadeca856710b4727afe0c6fbabfd742258d35e8993c14d35942ca7b9f78
+updated: 2017-04-19T23:08:12.210487504+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
 - name: github.com/aws/aws-sdk-go
-  version: 695fe24acaf9afe80b0ce261d4637f42ba0b4c7d
+  version: 4bbd6fa3fdede4c68e941248f974b8951c17de89
   subpackages:
   - aws
   - aws/awserr
@@ -29,7 +29,6 @@ imports:
   - private/protocol/query/queryutil
   - private/protocol/rest
   - private/protocol/xml/xmlutil
-  - private/waiter
   - service/dynamodb
   - service/dynamodb/dynamodbiface
   - service/sts
