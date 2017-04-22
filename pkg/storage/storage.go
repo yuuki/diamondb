@@ -1,11 +1,10 @@
 package storage
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/yuuki/diamondb/pkg/config"
 	"github.com/yuuki/diamondb/pkg/mathutil"
@@ -45,19 +44,14 @@ func New() (*Store, error) {
 
 // Ping pings each storage.
 func (s *Store) Ping() error {
-	rerr := s.Redis.Ping()
-	derr := s.DynamoDB.Ping()
-	if rerr != nil || derr != nil {
-		var errMsg string
-		if rerr != nil {
-			errMsg += fmt.Sprintf("Redis connection error: %s \n", rerr)
-		}
-		if derr != nil {
-			errMsg += fmt.Sprintf("DynamoDB connection error: %s ", derr)
-		}
-		return errors.New(errMsg)
-	}
-	return nil
+	eg := errgroup.Group{}
+	eg.Go(func() error {
+		return s.Redis.Ping()
+	})
+	eg.Go(func() error {
+		return s.DynamoDB.Ping()
+	})
+	return eg.Wait()
 }
 
 // Init initializes the store object.
