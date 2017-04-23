@@ -16,7 +16,7 @@ func TestPing(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mock := NewMockDynamoDBAPI(ctrl)
-	mock.EXPECT().DescribeTable(gomock.Any()).Return(
+	mock.EXPECT().DescribeTableWithContext(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 		&godynamodb.DescribeTableOutput{}, nil,
 	)
 	d := NewTestDynamoDB(mock)

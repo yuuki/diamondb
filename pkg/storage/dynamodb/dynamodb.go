@@ -2,6 +2,7 @@ package dynamodb
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"log"
@@ -12,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	godynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	godynamodbiface "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
@@ -54,7 +56,7 @@ type query struct {
 }
 
 const (
-	HTTPMaxRetries = 3
+	pingTimeout = time.Duration(5) * time.Second
 
 	oneYear time.Duration = time.Duration(24*360) * time.Hour
 	oneWeek time.Duration = time.Duration(24*7) * time.Hour
@@ -103,10 +105,18 @@ func (d *DynamoDB) Client() godynamodbiface.DynamoDBAPI {
 
 // Ping pings DynamoDB endpoint.
 func (d *DynamoDB) Ping() error {
-	_, err := d.svc.DescribeTable(&godynamodb.DescribeTableInput{
+	ctx, cancel := context.WithTimeout(context.TODO(), pingTimeout)
+	defer cancel()
+	var opt request.Option = func(r *request.Request) {}
+	_, err := d.svc.DescribeTableWithContext(ctx, &godynamodb.DescribeTableInput{
 		TableName: aws.String(config.Config.DynamoDBTableName),
-	})
+	}, opt)
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == request.CanceledErrorCode {
+			// If the SDK can determine the request or retry delay was canceled
+			// by a context the CanceledErrorCode error code will be returned.
+			return errors.Wrap(err, "failed to ping dynamodb due to timeout")
+		}
 		return errors.Wrapf(err, "failed to ping dynamodb")
 	}
 	return nil
