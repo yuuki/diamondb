@@ -79,9 +79,6 @@ func New() (*DynamoDB, error) {
 		awsConf.WithEndpoint(config.Config.DynamoDBEndpoint)
 		awsConf.WithCredentials(credentials.NewStaticCredentials("dummy", "dummy", "dummy"))
 	}
-	// the default MaxRetries of DynamoDB is 10, it is too many to take timeout too long.
-	// https://github.com/aws/aws-sdk-go/blob/a1f22039/service/dynamodb/customizations.go#L43
-	awsConf.WithMaxRetries(HTTPMaxRetries)
 	awsConf.WithHTTPClient(&http.Client{
 		Timeout:   10 * time.Second,
 		Transport: http.DefaultTransport,
@@ -106,8 +103,9 @@ func (d *DynamoDB) Client() godynamodbiface.DynamoDBAPI {
 
 // Ping pings DynamoDB endpoint.
 func (d *DynamoDB) Ping() error {
-	var params *godynamodb.DescribeLimitsInput
-	_, err := d.svc.DescribeLimits(params)
+	_, err := d.svc.DescribeTable(&godynamodb.DescribeTableInput{
+		TableName: aws.String(config.Config.DynamoDBTableName),
+	})
 	if err != nil {
 		return errors.Wrapf(err, "failed to ping dynamodb")
 	}
