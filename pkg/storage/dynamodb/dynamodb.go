@@ -56,8 +56,7 @@ type query struct {
 }
 
 const (
-	pingTimeout        = time.Duration(5) * time.Second
-	dynamodbBatchLimit = 100
+	pingTimeout = time.Duration(5) * time.Second
 
 	oneYear time.Duration = time.Duration(24*360) * time.Hour
 	oneWeek time.Duration = time.Duration(24*7) * time.Hour
@@ -65,6 +64,8 @@ const (
 )
 
 var (
+	dynamodbBatchLimit = 100
+
 	oneYearSeconds = int(oneYear.Seconds())
 	oneWeekSeconds = int(oneWeek.Seconds())
 	oneDaySeconds  = int(oneDay.Seconds())
