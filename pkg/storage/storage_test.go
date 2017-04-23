@@ -29,8 +29,8 @@ func TestStorePing(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mock := dynamodb.NewMockDynamoDBAPI(ctrl)
-	mock.EXPECT().DescribeLimits(gomock.Any()).Return(
-		&godynamodb.DescribeLimitsOutput{}, nil,
+	mock.EXPECT().DescribeTableWithContext(gomock.Any(), gomock.Any(), gomock.Any()).Return(
+		&godynamodb.DescribeTableOutput{}, nil,
 	)
 	d := dynamodb.NewTestDynamoDB(mock)
 
