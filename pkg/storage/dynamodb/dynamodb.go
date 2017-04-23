@@ -56,7 +56,8 @@ type query struct {
 }
 
 const (
-	pingTimeout = time.Duration(5) * time.Second
+	pingTimeout   = time.Duration(5) * time.Second
+	updateTimeout = time.Duration(5) * time.Second
 
 	oneYear time.Duration = time.Duration(24*360) * time.Hour
 	oneWeek time.Duration = time.Duration(24*7) * time.Hour
@@ -328,7 +329,16 @@ func (d *DynamoDB) Put(name, slot, history string, itemEpoch int64, tv map[int64
 		},
 		ReturnValues: aws.String("NONE"),
 	}
-	if _, err := d.svc.UpdateItem(params); err != nil {
+
+	ctx, cancel := context.WithTimeout(context.TODO(), updateTimeout)
+	defer cancel()
+	var opt request.Option = func(r *request.Request) {}
+	if _, err := d.svc.UpdateItemWithContext(ctx, params, opt); err != nil {
+		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == request.CanceledErrorCode {
+			// If the SDK can determine the request or retry delay was canceled
+			// by a context the CanceledErrorCode error code will be returned.
+			return errors.Wrap(err, "failed to updateItem dynamodb due to timeout")
+		}
 		return errors.Wrapf(err, "failed to call dynamodb API putItem (%s,%s,%d)",
 			config.Config.DynamoDBTableName, name, itemEpoch)
 	}
