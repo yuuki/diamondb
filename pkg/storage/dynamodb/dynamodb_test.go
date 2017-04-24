@@ -213,7 +213,7 @@ func TestFetchSeriesMap_Empty(t *testing.T) {
 		awserr.New("ResourceNotFoundException", "resource not found", errors.New("dummy")),
 		404, "dummyID",
 	)
-	dmock.EXPECT().BatchGetItem(gomock.Any()).Return(
+	dmock.EXPECT().BatchGetItemWithContext(gomock.Any(), gomock.Any(), gomock.Any()).Return(
 		&godynamodb.BatchGetItemOutput{Responses: responses}, reqErr,
 	)
 	d := NewTestDynamoDB(dmock)

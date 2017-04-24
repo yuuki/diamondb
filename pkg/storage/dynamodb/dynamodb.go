@@ -56,8 +56,9 @@ type query struct {
 }
 
 const (
-	pingTimeout   = time.Duration(5) * time.Second
-	updateTimeout = time.Duration(5) * time.Second
+	pingTimeout     = time.Duration(5) * time.Second
+	batchGetTimeout = time.Duration(5) * time.Second
+	updateTimeout   = time.Duration(5) * time.Second
 
 	oneYear time.Duration = time.Duration(24*360) * time.Hour
 	oneWeek time.Duration = time.Duration(24*7) * time.Hour
@@ -271,8 +272,16 @@ func (d *DynamoDB) batchGet(q *query) (model.SeriesMap, error) {
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
 	}
-	resp, err := d.svc.BatchGetItem(params)
+	ctx, cancel := context.WithTimeout(context.TODO(), batchGetTimeout)
+	defer cancel()
+	var opt request.Option = func(r *request.Request) {}
+	resp, err := d.svc.BatchGetItemWithContext(ctx, params, opt)
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == request.CanceledErrorCode {
+			// If the SDK can determine the request or retry delay was canceled
+			// by a context the CanceledErrorCode error code will be returned.
+			return nil, errors.Wrap(err, "failed to batchGet dynamodb due to timeout")
+		}
 		if awsErr, ok := err.(awserr.Error); ok {
 			if awsErr.Code() == "ResourceNotFoundException" {
 				// Don't handle ResourceNotFoundException as error

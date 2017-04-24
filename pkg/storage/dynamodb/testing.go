@@ -51,7 +51,7 @@ func mockExpectBatchGetItem(mock *MockDynamoDBAPI, m *mockDynamoDBParam) *gomock
 		RequestItems:           items,
 		ReturnConsumedCapacity: aws.String("NONE"),
 	}
-	return mock.EXPECT().BatchGetItem(params)
+	return mock.EXPECT().BatchGetItemWithContext(gomock.Any(), params, gomock.Any())
 }
 
 func mockReturnBatchGetItem(expect *gomock.Call, m *mockDynamoDBParam) *gomock.Call {
