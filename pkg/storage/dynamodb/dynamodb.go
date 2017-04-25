@@ -56,6 +56,7 @@ type query struct {
 }
 
 const (
+	HTTPTimeout     = time.Duration(10) * time.Second
 	pingTimeout     = time.Duration(5) * time.Second
 	batchGetTimeout = time.Duration(5) * time.Second
 	updateTimeout   = time.Duration(5) * time.Second
@@ -84,7 +85,7 @@ func New() (*DynamoDB, error) {
 		awsConf.WithCredentials(credentials.NewStaticCredentials("dummy", "dummy", "dummy"))
 	}
 	awsConf.WithHTTPClient(&http.Client{
-		Timeout:   10 * time.Second,
+		Timeout:   HTTPTimeout,
 		Transport: http.DefaultTransport,
 	})
 	sess, err := session.NewSession(awsConf)
