@@ -3,9 +3,6 @@
   - Copyright 2015 Amazon.com, Inc. or its affiliates.
   - Copyright 2014-2015 Stripe, Inc.
   - [Apache License Version 2.0](https://github.com/aws/aws-sdk-go/blob/master/LICENSE.txt)
-- github.com/BurntSushi/toml
-  - Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
-  - [WTFPL LICENSE](https://github.com/BurntSushi/toml/blob/master/COPYING)
 - github.com/pkg/errors
   - Copyright (c) 2015, Dave Cheney <dave@cheney.net>
   - [BSD LICENSE](https://github.com/pkg/errors/blob/master/LICENSE)
