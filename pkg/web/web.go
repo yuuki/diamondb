@@ -92,7 +92,7 @@ func (h *Handler) Shutdown(sig os.Signal) error {
 func (h *Handler) pingHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := h.store.Ping(); err != nil {
-			log.Printf("%+v", err) // Print stack trace by pkg/errors
+			log.Printf("%+v\n", err) // Print stack trace by pkg/errors
 			unavaliableError(w, errors.Cause(err).Error())
 			return
 		}
@@ -177,7 +177,7 @@ func (h *Handler) writeHandler() http.Handler {
 		}
 
 		if err := h.store.InsertMetric(wr.Metric); err != nil {
-			log.Printf("%+v", err) // Print stack trace by pkg/errors
+			log.Printf("%+v\n", err) // Print stack trace by pkg/errors
 			switch err.(type) {
 			default:
 				serverError(w, errors.Cause(err).Error())
