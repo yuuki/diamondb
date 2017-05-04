@@ -17,6 +17,10 @@ DiamonDB is a reliable, scalable, cloud-based time series database.
 - __Compatible with Graphite API__
 - __Written in Go__
 
+# Architecture
+
+![Overview](./docs/images/overview.png "Overview of Architecture")
+
 # Development
 
 ## Run server with Docker
