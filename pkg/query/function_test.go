@@ -1285,3 +1285,185 @@ func TestLinearRegression_EvalTargetsErr(t *testing.T) {
 		t.Fatalf("should raise error %v", err)
 	}
 }
+
+func TestDoTimeLeftByLinearRegression(t *testing.T) {
+	tests := []struct {
+		desc string
+		args []*funcArg
+		err  error
+	}{
+		{
+			"SeriesListExpr + NumberExpr",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				{
+					expr: NumberExpr{Literal: 10},
+				},
+			},
+			nil,
+		},
+		{
+			"SeriesListExpr + NumberExpr + StringExpr",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				{
+					expr: NumberExpr{Literal: 10},
+				},
+				{
+					expr: StringExpr{Literal: "10"}, // unix time
+				},
+			},
+			nil,
+		},
+		{
+			"SeriesListExpr + NumberExpr + StringExpr + StringExpr",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				{
+					expr: NumberExpr{Literal: 10},
+				},
+				{
+					expr: StringExpr{Literal: "10"}, // unix time
+				},
+				{
+					expr: StringExpr{Literal: "50"}, // unix time
+				},
+			},
+			nil,
+		},
+		{
+			"too many arguments",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				{
+					expr: NumberExpr{Literal: 10},
+				},
+				{
+					expr: StringExpr{Literal: "10"}, // unix time
+				},
+				{
+					expr: StringExpr{Literal: "50"}, // unix time
+				},
+				{
+					expr: StringExpr{Literal: "-1"},
+				},
+			},
+			errors.New("timeLeftByLinearRegression: wrong number of arguments (5 for 1,2,3,4)"),
+		},
+		{
+			"the type of the arguments is different (1)",
+			[]*funcArg{
+				{
+					expr: NumberExpr{Literal: 1.0},
+				},
+				{
+					expr: NumberExpr{Literal: 10},
+				},
+			},
+			errors.New("timeLeftByLinearRegression: invalid argument type (1) as SeriesSlice"),
+		},
+		{
+			"the type of the arguments is different (2)",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				{
+					expr: StringExpr{Literal: "10"},
+				},
+			},
+			errors.New("timeLeftByLinearRegression: invalid argument type (10) as threshold"),
+		},
+		{
+			"the type of the arguments is different (3)",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				{
+					expr: NumberExpr{Literal: 10},
+				},
+				{
+					expr: NumberExpr{Literal: 1.0},
+				},
+			},
+			errors.New("timeLeftByLinearRegression: invalid argument type (1) as startSourceAt"),
+		},
+		{
+			"the type of the arguments is different (4)",
+			[]*funcArg{
+				{
+					expr: SeriesListExpr{Literal: "server1.loadavg5"},
+					seriesSlice: SeriesSlice{
+						NewSeries("server1.loadavg5", []float64{}, 0, 1),
+					},
+				},
+				{
+					expr: NumberExpr{Literal: 10},
+				},
+				{
+					expr: StringExpr{Literal: "10"},
+				},
+				{
+					expr: NumberExpr{Literal: 1.0},
+				},
+			},
+			errors.New("timeLeftByLinearRegression: invalid argument type (1) as endSourceAt"),
+		},
+	}
+
+	ff := &storage.FakeReadWriter{
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+			return SeriesSlice{}, nil
+		},
+	}
+
+	for _, tc := range tests {
+		_, err := doTimeLeftByLinerRegression(ff, tc.args, time.Unix(100, 0), time.Unix(200, 0))
+		if err != tc.err {
+			if diff := pretty.Compare(errors.Cause(err).Error(), errors.Cause(tc.err).Error()); diff != "" {
+				t.Errorf("desc: %s, diff: (-actual +expected)\n%s", tc.desc, diff)
+			}
+		}
+	}
+}
+
+func TestTimeLeftByLinearRegression_EvalTargetsErr(t *testing.T) {
+	ff := &storage.FakeReadWriter{
+		FakeFetch: func(name string, start, end time.Time) (SeriesSlice, error) {
+			return nil, errors.New("something occurs")
+		},
+	}
+	_, err := timeLeftByLinearRegression(ff, SeriesSlice{
+		NewSeries("server1.loadavg5", []float64{}, 1, 1),
+	}, 3.0, time.Unix(0, 0), time.Unix(1, 0))
+	if err == nil {
+		t.Fatalf("should raise error %v", err)
+	}
+}

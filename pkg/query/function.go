@@ -603,3 +603,91 @@ func linearRegression(fetcher storage.ReadWriter, ss model.SeriesSlice, startSou
 	}
 	return results, nil
 }
+
+func doTimeLeftByLinerRegression(fetcher storage.ReadWriter, args []*funcArg, startTime, endTime time.Time) (model.SeriesSlice, error) {
+	if len(args) == 0 || len(args) > 4 {
+		return nil, &ArgumentError{
+			funcName: "timeLeftByLinearRegression",
+			msg:      fmt.Sprintf("wrong number of arguments (%d for 1,2,3,4)", len(args)),
+		}
+	}
+	_, ok := args[0].expr.(SeriesListExpr)
+	if !ok {
+		return nil, &ArgumentError{
+			funcName: "timeLeftByLinearRegression",
+			msg:      fmt.Sprintf("invalid argument type (%s) as SeriesSlice", args[0].expr),
+		}
+	}
+	threshold, ok := args[1].expr.(NumberExpr)
+	if !ok {
+		return nil, &ArgumentError{
+			funcName: "timeLeftByLinearRegression",
+			msg:      fmt.Sprintf("invalid argument type (%s) as threshold", args[1].expr),
+		}
+	}
+	var (
+		startSourceAt, endSourceAt = startTime, endTime
+		err                        error
+	)
+	if len(args) >= 3 {
+		t, ok := args[2].expr.(StringExpr)
+		if !ok {
+			return nil, &ArgumentError{
+				funcName: "timeLeftByLinearRegression",
+				msg:      fmt.Sprintf("invalid argument type (%s) as startSourceAt", args[2].expr),
+			}
+		}
+		startSourceAt, err = timeparser.ParseAtTime(t.Literal, config.Config.TimeZone)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+	}
+	if len(args) >= 4 {
+		t, ok := args[3].expr.(StringExpr)
+		if !ok {
+			return nil, &ArgumentError{
+				funcName: "timeLeftByLinearRegression",
+				msg:      fmt.Sprintf("invalid argument type (%s) as endSourceAt", args[3].expr),
+			}
+		}
+		endSourceAt, err = timeparser.ParseAtTime(t.Literal, config.Config.TimeZone)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+	}
+	return timeLeftByLinearRegression(fetcher, args[0].seriesSlice, threshold.Literal, startSourceAt, endSourceAt)
+}
+
+// timeLeftByLinearRegression is diamondb's original function.
+func timeLeftByLinearRegression(fetcher storage.ReadWriter, ss model.SeriesSlice, threshold float64, startSourceAt, endSourceAt time.Time) (model.SeriesSlice, error) {
+	targets := make([]string, 0, len(ss))
+	for _, s := range ss {
+		targets = append(targets, s.Name())
+	}
+	sourceSlice, err := EvalTargets(fetcher, targets, startSourceAt, endSourceAt)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to evaluate targets(%s)", strings.Join(targets, ","))
+	}
+
+	length := mathutil.MinInt64(int64(len(ss)), int64(len(sourceSlice)))
+	results := make(model.SeriesSlice, 0, length)
+	for i := 0; i < int(length); i++ {
+		source, s := sourceSlice[i], ss[i]
+		factor, offset := mathutil.LinearRegressionAnalysis(
+			source.Values(), source.Start(), source.Step(),
+		)
+		if math.IsNaN(factor) || math.IsNaN(offset) {
+			continue
+		}
+		vals := make([]float64, 0, s.Len())
+		for j := 0; j < s.Len(); j++ {
+			v := (threshold-offset)/float64(factor) - (float64(s.Start()) + float64(i*s.Step()))
+			vals = append(vals, v)
+		}
+		newName := fmt.Sprintf("timeLeftByLinearRegression(%s, %f, %d, %d)",
+			s.Name(), threshold, startSourceAt.Unix(), endSourceAt.Unix(),
+		)
+		results = append(results, model.NewSeries(newName, vals, s.Start(), s.Step()))
+	}
+	return results, nil
+}
