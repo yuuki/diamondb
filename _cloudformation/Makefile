@@ -1,4 +1,4 @@
-all: infrastrcuture/create storage/create app/create info
+all: infrastructure/create storage/create app/create info
 
 info:
 	@echo "diamondb URL:" $(shell aws cloudformation describe-stacks --stack-name diamondb-app | jq -r -M '.Stacks[0].Outputs | map(select(.OutputKey == "DiamonDBUrl"))[0].OutputValue')
