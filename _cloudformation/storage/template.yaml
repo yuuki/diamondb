@@ -85,6 +85,7 @@ Resources:
     Type: AWS::ElastiCache::ReplicationGroup
     Properties:
       ReplicationGroupDescription: !Join ["-", [!Ref "AWS::StackName", "redis replication group"]]
+      ReplicationGroupId: !Join ["-", [!Ref "AWS::StackName", "buffer"]]
       CacheSubnetGroupName: !Ref RedisClusterSubnetGroup
       SecurityGroupIds:
         - !Ref RedisClusterSecurityGroup
