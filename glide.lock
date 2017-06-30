@@ -1,10 +1,12 @@
-hash: ba80eadeca856710b4727afe0c6fbabfd742258d35e8993c14d35942ca7b9f78
-updated: 2017-04-19T23:08:12.210487504+09:00
+hash: 53cb38274d788010582d39a83a598d6ef458f8e787d81b1053d0cd2d16aad29e
+updated: 2017-06-30T22:44:50.312237449+09:00
 imports:
 - name: github.com/alicebob/miniredis
-  version: 10ddf01f45bee3c40d1af5dbaad9aa71e6f20835
+  version: 995ba133bd8fe5dae5a34732bd99f558b0b60e1a
+  subpackages:
+  - server
 - name: github.com/aws/aws-sdk-go
-  version: 4bbd6fa3fdede4c68e941248f974b8951c17de89
+  version: f9684fc1d5bd49f51bf61afe6fb4059fbb9060d1
   subpackages:
   - aws
   - aws/awserr
@@ -22,6 +24,7 @@ imports:
   - aws/request
   - aws/session
   - aws/signer/v4
+  - internal/shareddefaults
   - private/protocol
   - private/protocol/json/jsonutil
   - private/protocol/jsonrpc
@@ -35,7 +38,7 @@ imports:
 - name: github.com/go-ini/ini
   version: 6f66b0e091edb3c7b380f7c4f0f884274d550b67
 - name: github.com/golang/mock
-  version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
+  version: 93f6609a15b7de76bd49259f1f9a6b58df358936
   subpackages:
   - gomock
 - name: github.com/jmespath/go-jmespath
@@ -52,9 +55,7 @@ imports:
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/rs/cors
-  version: a62a804a8a009876ca59105f7899938a1349f4b3
-- name: github.com/rs/xhandler
-  version: ed27b6fd65218132ee50cd95f38474a3d8a2cd12
+  version: 8dd4211afb5d08dbb39a533b9bb9e4b486351df6
 - name: github.com/urfave/negroni
   version: fde5e16d32adc7ad637e9cd9ad21d4ebc6192535
 - name: golang.org/x/net
@@ -74,9 +75,5 @@ imports:
   - internal/pool
   - internal/proto
 testImports:
-- name: github.com/bsm/redeo
-  version: 1ce09fc76693fb3c1ca9b529c66f38920beb6fb8
-  subpackages:
-  - info
 - name: github.com/fortytw2/leaktest
-  version: 0db74e8cd5adacfcc982838c6e185789e4b44e14
+  version: 7dad53304f9614c1c365755c1176a8e876fee3e8

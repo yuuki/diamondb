@@ -2,6 +2,7 @@ package miniredis
 
 import (
 	"testing"
+	"time"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -53,8 +54,8 @@ func TestRestart(t *testing.T) {
 	s.Close()
 	err = s.Restart()
 	ok(t, err)
-	if s.Addr() != addr {
-		t.Fatal("should be the same address")
+	if have, want := s.Addr(), addr; have != want {
+		t.Fatalf("have: %s, want: %s", have, want)
 	}
 
 	c, err := redis.Dial("tcp", s.Addr())
@@ -181,4 +182,19 @@ func TestKeysAndFlush(t *testing.T) {
 	equals(t, []string{}, s.Keys())
 	s.Select(1)
 	equals(t, []string{}, s.Keys())
+}
+
+func TestExpireWithFastForward(t *testing.T) {
+	s, err := Run()
+	ok(t, err)
+
+	s.Set("aap", "noot")
+	s.Set("noot", "aap")
+	s.SetTTL("aap", 10*time.Second)
+
+	s.FastForward(5 * time.Second)
+	equals(t, 2, len(s.Keys()))
+
+	s.FastForward(5 * time.Second)
+	equals(t, 1, len(s.Keys()))
 }
