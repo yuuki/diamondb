@@ -3,7 +3,9 @@ language: go
 go:
   - 1.8
 
-sudo: false
+sudo: required
+
+group: deprecated-2017Q2
 
 services:
   - docker
