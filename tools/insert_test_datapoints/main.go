@@ -85,7 +85,7 @@ func main() {
 	)
 
 	flags := flag.NewFlagSet("insert_test_datapoints", flag.ContinueOnError)
-	flags.StringVar(&name, "name", "server1.loadavg5", "number of datapoints")
+	flags.StringVar(&name, "name", "server1.loadavg5", "metric name")
 	flags.IntVar(&n, "num", 100, "number of datapoints")
 	flags.IntVar(&step, "step", 60, "step")
 	flags.StringVar(&start, "start", "now-1d", "start time (eg. now-1d)")
