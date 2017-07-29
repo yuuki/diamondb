@@ -3,10 +3,12 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/phyber/negroni-gzip/gzip"
@@ -143,16 +145,22 @@ func (h *Handler) renderHandler() http.Handler {
 			switch err := errors.Cause(err).(type) {
 			case *query.ParserError, *query.UnsupportedFunctionError,
 				*query.ArgumentError, *timeparser.TimeParserError:
-				log.Println(err)
+				logErrorWithQuery(err, targets, from, until)
 				badRequest(w, err.Error())
 			default:
-				log.Printf("%+v\n", err)
+				logErrorWithQuery(err, targets, from, until)
 				serverError(w, err.Error())
 			}
 			return
 		}
 		renderJSON(w, http.StatusOK, seriesSlice)
 	})
+}
+
+func logErrorWithQuery(err error, targets []string, from, until time.Time) {
+	query := fmt.Sprintf("from=%v&until=%v&target=", from.Unix(), until.Unix())
+	query += strings.Join(targets, "&target=")
+	log.Printf("[error] query: \"%s\"\n%+v", query, err) // Print stack trace by pkg/errors
 }
 
 // WriteRequest reprensents a request of /datapoints.
