@@ -1,12 +1,12 @@
-hash: 53cb38274d788010582d39a83a598d6ef458f8e787d81b1053d0cd2d16aad29e
-updated: 2017-06-30T22:44:50.312237449+09:00
+hash: 2f51741287d6fa00df2e5d9de5d03ea5fd24f1d5b30fbd56680c8ecbd9d2567a
+updated: 2017-07-29T20:39:08.080740668+09:00
 imports:
 - name: github.com/alicebob/miniredis
   version: 995ba133bd8fe5dae5a34732bd99f558b0b60e1a
   subpackages:
   - server
 - name: github.com/aws/aws-sdk-go
-  version: f9684fc1d5bd49f51bf61afe6fb4059fbb9060d1
+  version: 5e436e55ac5eddc739f26a2a209b3f4248ee8e0e
   subpackages:
   - aws
   - aws/awserr
@@ -55,7 +55,7 @@ imports:
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/rs/cors
-  version: 8dd4211afb5d08dbb39a533b9bb9e4b486351df6
+  version: 7af7a1e09ba336d2ea14b1ce73bf693c6837dbf6
 - name: github.com/urfave/negroni
   version: fde5e16d32adc7ad637e9cd9ad21d4ebc6192535
 - name: golang.org/x/net
